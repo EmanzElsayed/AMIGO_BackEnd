@@ -1,0 +1,10 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Amigo.Application.Validation.Common.Rules
+{
+    internal class BusinessRules
+    {
+    }
+}
