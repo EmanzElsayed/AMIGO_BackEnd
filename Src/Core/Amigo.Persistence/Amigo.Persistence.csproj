@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Amigo.Application\Amigo.Application.csproj" />
+  </ItemGroup>
+
 </Project>

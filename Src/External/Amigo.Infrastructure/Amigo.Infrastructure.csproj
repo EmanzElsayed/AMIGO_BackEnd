@@ -11,4 +11,8 @@
     <Folder Include="Localization\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Amigo.Application\Amigo.Application.csproj" />
+  </ItemGroup>
+
 </Project>
