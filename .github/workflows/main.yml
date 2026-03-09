@@ -1,4 +1,4 @@
-name: Deploy ASP.NET Core to MonsterASP
+name: Deploy ASP.NET Core API to MonsterASP
 
 on:
   push:
@@ -6,11 +6,10 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -25,7 +24,7 @@ jobs:
     - name: Publish API
       run: dotnet publish Api/Amigo.API/Amigo.API.csproj -c Release -o publish
 
-    - name: Deploy to FTP
+    - name: Deploy to MonsterASP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
@@ -33,3 +32,8 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: publish/
         server-dir: /wwwroot/
+        dangerous-clean-slate: true
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/*.pdb
