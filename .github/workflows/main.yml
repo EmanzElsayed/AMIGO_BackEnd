@@ -22,11 +22,8 @@ jobs:
     - name: Restore packages
       run: dotnet restore
 
-    - name: Build project
-      run: dotnet build --configuration Release --no-restore
-
     - name: Publish project
-      run: dotnet publish -c Release -o publish
+      run: dotnet publish ./Src -c Release -o publish
 
     - name: Deploy to MonsterASP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -35,3 +32,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: publish/
+        server-dir: /wwwroot/
