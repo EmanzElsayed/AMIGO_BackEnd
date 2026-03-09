@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -23,9 +22,9 @@ jobs:
       run: dotnet restore
 
     - name: Publish project
-      run: dotnet publish ./Src -c Release -o publish
+      run: dotnet publish Src/Api/Api.csproj -c Release -o publish
 
-    - name: Deploy to MonsterASP
+    - name: Deploy
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
