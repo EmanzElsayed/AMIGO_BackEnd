@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -21,10 +22,10 @@ jobs:
     - name: Restore packages
       run: dotnet restore
 
-    - name: Publish project
-      run: dotnet publish Src/Api/Api.csproj -c Release -o publish
+    - name: Publish API
+      run: dotnet publish Api/Amigo.API/Amigo.API.csproj -c Release -o publish
 
-    - name: Deploy
+    - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
         server: ${{ secrets.FTP_SERVER }}
