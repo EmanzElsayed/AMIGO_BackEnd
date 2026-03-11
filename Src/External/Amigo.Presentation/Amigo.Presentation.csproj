@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.9" />
+    <PackageReference Include="Newtonsoft.JsonResult" Version="1.0.5778.10762" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\Amigo.Application\Amigo.Application.csproj" />
     <ProjectReference Include="..\..\Core\Amigo.Domain\Amigo.Domain.csproj" />
   </ItemGroup>

@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Src\External\Amigo.Persistence\Amigo.Persistence.csproj" />
+    <ProjectReference Include="..\..\Src\External\Amigo.Presentation\Amigo.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
