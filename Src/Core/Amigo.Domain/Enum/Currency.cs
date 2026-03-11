@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Amigo.Domain.Enum;
 
-namespace Amigo.Domain.Enum
+public enum Currency
 {
-    internal class Currency
-    {
-    }
+    Sar = 1,
+    Usd = 2,
+    Eur = 3
 }

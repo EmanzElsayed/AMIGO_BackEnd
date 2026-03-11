@@ -11,8 +11,8 @@
     <Project Path="Src/Core/Amigo.Domain/Amigo.Domain.csproj" />
   </Folder>
   <Folder Name="/Src/External/">
-    <Project Path="Src/Core/Amigo.Persistence/Amigo.Persistence.csproj" />
     <Project Path="Src/External/Amigo.Infrastructure/Amigo.Infrastructure.csproj" />
+    <Project Path="Src/External/Amigo.Persistence/Amigo.Persistence.csproj" />
     <Project Path="Src/External/Amigo.Presentation/Amigo.Presentation.csproj" />
   </Folder>
 </Solution>

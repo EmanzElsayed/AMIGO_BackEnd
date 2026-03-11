@@ -1,7 +1,5 @@
-﻿namespace Amigo.Domain
-{
-    public class Class1
-    {
+namespace Amigo.Domain;
 
-    }
+public class Class1
+{
 }
