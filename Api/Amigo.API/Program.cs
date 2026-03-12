@@ -1,5 +1,6 @@
 
 using Amigo.API.MiddleWareExceptions;
+using Amigo.Application;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Services;
 using Amigo.Domain.Abstraction;
@@ -21,7 +22,8 @@ namespace Amigo.API
             // Add services to the container.
 
             builder.Services.AddBasicDependencyInjcetion(builder.Configuration)
-                            .AddPersistence(builder.Configuration);
+                            .AddPersistence(builder.Configuration)
+                            .AddApplicationDependencyInjection();
             
 
             builder.Services.AddScoped< IEmailService, EmailService>();
@@ -31,17 +33,6 @@ namespace Amigo.API
 
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-            {
-                options.Password.RequiredLength = 8;
-                options.User.RequireUniqueEmail = true;
-                options.SignIn.RequireConfirmedEmail = true;
-                options.Lockout.MaxFailedAccessAttempts = 5;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            })
-            .AddEntityFrameworkStores<AmigoDbContext>()
-            .AddDefaultTokenProviders();
 
             #region AllowCors
             builder.Services.AddCors(options =>

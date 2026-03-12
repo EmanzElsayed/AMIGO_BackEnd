@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.Abstraction;
+using Amigo.Domain.Abstraction;
 using Amigo.Domain.Enum;
 using FluentResults;
 using Microsoft.AspNetCore.Identity;
@@ -32,26 +32,36 @@ namespace Amigo.Persistence
                 }
                 if (!_userManager.Users.Any())
                 {
-                    var admin = new ApplicationUser()
+                    var adminEmail = _configuration["AdminInfo:Email"] ?? string.Empty;
+                    var adminPassword = _configuration["AdminInfo:Password"];
+
+                    if (string.IsNullOrWhiteSpace(adminPassword))
                     {
-                        FullName = "Emera.AI Company",
-                        Email = _configuration["AdminInfo:Email"],
-                        UserName = "Emera.AI",
-                        EmailConfirmed = true,
-                        PhoneNumber = "+201111111111",
-                        PhoneNumberConfirmed = true,
-                        Nationality = "Egyptian",
-                        Gender = Gender.Female,
-                        Language = Language.English,
-                        Address = new Address{
+                        throw new InvalidOperationException("AdminInfo:Password is not configured in appsettings.");
+                    }
+
+                    var admin = new ApplicationUser(
+                        adminEmail,
+                        "Emera.AI Company",
+                        new DateOnly(1990, 1, 1),
+                        "+201111111111",
+                        Gender.Female,
+                        Language.English,
+                        new Address
+                        {
                             BuildingNumber = 1,
                             City = "Ismailia",
                             Country = "Egypt"
-                        }
-
-
+                        },
+                        "Emera.AI",
+                        "Egyptian"
+                    )
+                    {
+                        EmailConfirmed = true,
+                        PhoneNumberConfirmed = true
                     };
-                    var result = await _userManager.CreateAsync(admin, _configuration["AdminInfo:Password"]);
+
+                    var result = await _userManager.CreateAsync(admin, adminPassword);
                     if (result.Succeeded)
                     {
                         await _userManager.AddToRoleAsync(admin, "Admin");

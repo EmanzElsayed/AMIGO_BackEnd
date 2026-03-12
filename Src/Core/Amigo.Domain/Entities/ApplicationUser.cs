@@ -1,44 +1,57 @@
-﻿
+
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace Amigo.Domain.Entities
 {
-    public class ApplicationUser:IdentityUser
+    public class ApplicationUser : IdentityUser
     {
-        // inherit from base or note 
-        [Required]
         public string FullName { get; set; } = null!;
 
-        public bool IsActive { get; set; } = true;
-
+        public bool IsActive { get; set; } = false;
         public string? Image {  get; set; }
         public Gender Gender { get; set; }
-
         public DateOnly BirthDate { get; set; }
-
-        [Required]
-        public string Nationality { get; set; } = null!; // -> or enum
+        public string Nationality { get; set; } = null!;
 
         public Language Language { get; set; }
 
-        //Address ->owned or seperated class
-
-
-        [Required]
         public Address Address { get; set; } = null!;
+        public DateTime LastLoginAt { get; set; }
 
+        // Auditing
+        public int? CreatedBy { get; private set; }
+        public DateTime CreatedDate { get; private set; }
+        public int? ModifiedBy { get; private set; }
+        public DateTime? ModifiedDate { get; private set; }
+        public bool IsDeleted { get; private set; }
 
-        //base Info
-        public int? CreatedBy { get;  set; }
+        // For EF Core and general usage
+        public ApplicationUser() { }
 
-        public DateTime CreatedDate { get; set; }
+        public ApplicationUser(
+            string email,
+            string fullName,
+            DateOnly birthDate,
+            string phoneNumber,
+            Gender gender,
+            Language language,
+            Address address,
+            string userName,
+            string nationality)
+        {
+            Email = email;
+            UserName = userName;
+            PhoneNumber = phoneNumber;
 
-        public int? ModifiedBy { get;  set; }
+            FullName = fullName;
+            BirthDate = birthDate;
+            Gender = gender;
+            Language = language;
+            Address = address;
+            Nationality = nationality;
+        }
 
-        public DateTime? ModifiedDate { get; set; }
-
-        public bool IsDeleted { get;  set; }
     }
 }

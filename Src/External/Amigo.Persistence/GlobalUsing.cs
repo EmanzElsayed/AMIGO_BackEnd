@@ -1,5 +1,4 @@
-﻿global using System;
-global using System.Collections.Generic;
+﻿global using System.Collections.Generic;
 global using System.Text;
 global using Amigo.Domain.Entities;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

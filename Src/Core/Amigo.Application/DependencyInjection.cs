@@ -1,15 +1,20 @@
-﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Services;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using FluentValidation;
 
 namespace Amigo.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplicationDependencyInjection(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplicationDependencyInjection(this IServiceCollection services)
     {
-        services.AddScoped<ITourService, ITourService>();
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+
+        services.AddScoped<ITourService, TourService>();
         return services;
     }
 }

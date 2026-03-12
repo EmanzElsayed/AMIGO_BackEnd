@@ -1,26 +1,30 @@
-﻿//namespace Amigo.SharedKernal.JsonConvertors;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-//internal class ExceptionConverter : JsonConverter<Exception>
-//{
-//    public override Exception? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-//    {
-//        throw new NotSupportedException("Deserializing exceptions is not supported.");
-//    }
+namespace Amigo.SharedKernal.JsonConvertors;
 
-//    public override void Write(Utf8JsonWriter writer, Exception value, JsonSerializerOptions options)
-//    {
-//        writer.WriteStartObject();
+public class ExceptionConverter : JsonConverter<Exception>
+{
+    public override Exception? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        throw new NotSupportedException("Deserializing exceptions is not supported.");
+    }
 
-//        writer.WriteString(nameof(value.Message).ToLower(), value.Message);
-//        writer.WriteString(nameof(value.Source).ToLower(), value.Source);
-//        writer.WriteString("stackTrace", value.StackTrace);
+    public override void Write(Utf8JsonWriter writer, Exception value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
 
-//        if (value.InnerException is not null)
-//        {
-//            writer.WritePropertyName("innerException");
-//            JsonSerializer.Serialize(writer, value.InnerException, options);
-//        }
+        writer.WriteString(nameof(value.Message).ToLower(), value.Message);
+        writer.WriteString(nameof(value.Source).ToLower(), value.Source);
+        writer.WriteString("stackTrace", value.StackTrace);
 
-//        writer.WriteEndObject();
-//    }
-//}
+        if (value.InnerException is not null)
+        {
+            writer.WritePropertyName("innerException");
+            JsonSerializer.Serialize(writer, value.InnerException, options);
+        }
+
+        writer.WriteEndObject();
+    }
+}
+
