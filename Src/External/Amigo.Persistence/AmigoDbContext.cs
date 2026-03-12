@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Amigo.Persistence
 {
-    public class AmigoDbContext(DbContextOptions<AmigoDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole,Guid>(options)
+    public class AmigoDbContext(DbContextOptions<AmigoDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
 
 
@@ -65,7 +65,7 @@ namespace Amigo.Persistence
             builder.ApplyConfigurationsFromAssembly(typeof(AmigoDbContext).Assembly);
 
             builder.Entity<ApplicationUser>().ToTable("Users");
-            builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<IdentityRole>().ToTable("Roles");
 
         }

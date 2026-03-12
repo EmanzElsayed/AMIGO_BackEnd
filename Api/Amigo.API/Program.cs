@@ -1,62 +1,90 @@
 
+using Amigo.API.MiddleWareExceptions;
+using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Services;
+using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
 using Amigo.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace Amigo.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
 
-            builder.Services.AddBasicDependencyInjcetion(builder.Configuration);
+            builder.Services.AddBasicDependencyInjcetion(builder.Configuration)
+                            .AddPersistence(builder.Configuration);
+            
+
+            builder.Services.AddScoped< IEmailService, EmailService>();
+            builder.Services.AddScoped<IAuthenticationService,AuthenticationService>();
+            builder.Services.AddScoped<IDataSeeding, DataSeeding>();
 
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-            builder.Services.AddDbContext<AmigoDbContext>(options =>
-            {
-
-                options.UseNpgsql(connectionString);
-
-            });
-           
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-            //builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
-            //{
-            //    options.Password.RequiredLength = 8;
-            //    options.User.RequireUniqueEmail = true;
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            })
+            .AddEntityFrameworkStores<AmigoDbContext>()
+            .AddDefaultTokenProviders();
 
-            //    //blocks login if email not confirmed
-            //    options.SignIn.RequireConfirmedEmail = true;
+            #region AllowCors
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyMethod();
+                    builder.AllowAnyHeader();
+                });
 
-            //    //If a user enters the wrong password 5 times, their account becomes locked.
-            //    options.Lockout.MaxFailedAccessAttempts = 5;
+            });
 
-            //    //How long the user stays locked out:
-            //    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-
-            //}).AddEntityFrameworkStores<AmigoDbContext>()
-            //  .AddDefaultTokenProviders();
+            #endregion
 
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
             var app = builder.Build();
 
+            #region SeedingData
+
+            using var scope = app.Services.CreateScope();
+            var seedObj =  scope.ServiceProvider.GetRequiredService<IDataSeeding>();
+            await seedObj.IdentityDataSeedAsync();
+            
+
+
+
+            #endregion
+
+            app.UseMiddleware<MiddleWareCustomException>();
+
             app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI();
-            
+
+            app.UseStaticFiles(); //For images ,files
+
+            app.UseCors("AllowAll");
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

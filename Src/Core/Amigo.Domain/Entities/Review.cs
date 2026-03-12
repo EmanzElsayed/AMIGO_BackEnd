@@ -8,8 +8,9 @@ namespace Amigo.Domain.Entities
         [Required]
         public Tour Tour { get; set; } = null!;
 
-        
-        public Guid UserId { get; set; } 
+
+        [Required]
+        public string UserId { get; set; } = null!;
 
         [Required]
         public ApplicationUser User { get; set; } = null!;

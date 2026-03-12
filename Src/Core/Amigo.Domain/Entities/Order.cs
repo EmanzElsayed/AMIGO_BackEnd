@@ -4,7 +4,8 @@ namespace Amigo.Domain.Entities
 {
     public class Order :BaseEntity<Guid>
     {
-        public Guid UserId { get; set; } 
+        [Required]
+        public string UserId { get; set; } = null!;
 
         [Required]
         public ApplicationUser User { get; set; } = null!;

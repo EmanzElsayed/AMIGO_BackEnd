@@ -11,10 +11,10 @@ namespace Amigo.Persistence.EntityConfiguration
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
 
-            builder.HasKey(x => x.Id);
+            //builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Id)
-                .HasDefaultValueSql("gen_random_uuid()");
+            //builder.Property(x => x.Id)
+            //    .HasDefaultValueSql("gen_random_uuid()");
 
             //Identity Info 
             builder.Property(u => u.UserName)
