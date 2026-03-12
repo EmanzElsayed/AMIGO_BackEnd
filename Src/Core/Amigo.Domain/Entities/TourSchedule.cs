@@ -1,17 +1,16 @@
-using Amigo.SharedKernal.Entities;
+﻿
 
-namespace Amigo.Domain.Entities;
 
-public class TourSchedule : BaseEntity<Guid>
+namespace Amigo.Domain.Entities
 {
-    public Guid TourId { get; set; }
-    public Tour Tour { get; set; } = null!;
+    public class TourSchedule: BaseEntity<Guid>
+    {
+        public Guid TourId { get; set; }
+        [Required]
+        public Tour Tour { get; set; } = null!;
+        public DateOnly StartDate {  get; set; }
+        public DateOnly EndDate { get; set; }
 
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan? EndTime { get; set; }
-    public int MaxCapacity { get; set; }
-    public bool IsActive { get; set; }
-
-    public ICollection<TourAvailability> Availabilities { get; set; } = new List<TourAvailability>();
+        public AvailableDateTimeStatus AvailableDateStatus { get; set; }
+    }
 }
-

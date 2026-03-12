@@ -1,46 +1,74 @@
+
 using Amigo.Domain.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Amigo.Domain.Entities.TranslationEntities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Amigo.Persistence;
-
-public class AmigoDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+namespace Amigo.Persistence
 {
-    public AmigoDbContext(DbContextOptions<AmigoDbContext> options) : base(options)
+    public class AmigoDbContext(DbContextOptions<AmigoDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole,Guid>(options)
     {
-    }
 
-    public DbSet<Destination> Destinations => Set<Destination>();
-    public DbSet<DestinationTranslation> DestinationTranslations => Set<DestinationTranslation>();
-    public DbSet<Tour> Tours => Set<Tour>();
-    public DbSet<TourTranslation> TourTranslations => Set<TourTranslation>();
-    public DbSet<TourMedia> TourMedia => Set<TourMedia>();
-    public DbSet<TourIncluded> TourIncluded => Set<TourIncluded>();
-    public DbSet<TourNotIncluded> TourNotIncluded => Set<TourNotIncluded>();
-    public DbSet<TourSchedule> TourSchedules => Set<TourSchedule>();
-    public DbSet<TourAvailability> TourAvailabilities => Set<TourAvailability>();
-    public DbSet<Category> Categories => Set<Category>();
-    public DbSet<CategoryTranslation> CategoryTranslations => Set<CategoryTranslation>();
-    public DbSet<TourCategory> TourCategories => Set<TourCategory>();
-    public DbSet<PriceCategory> PriceCategories => Set<PriceCategory>();
-    public DbSet<TourPrice> TourPrices => Set<TourPrice>();
-    public DbSet<Booking> Bookings => Set<Booking>();
-    public DbSet<BookingItem> BookingItems => Set<BookingItem>();
-    public DbSet<BookingTraveler> BookingTravelers => Set<BookingTraveler>();
-    public DbSet<Cart> Carts => Set<Cart>();
-    public DbSet<CartItem> CartItems => Set<CartItem>();
-    public DbSet<Order> Orders => Set<Order>();
-    public DbSet<Payment> Payments => Set<Payment>();
-    public DbSet<Coupon> Coupons => Set<Coupon>();
-    public DbSet<CancellationPolicy> CancellationPolicies => Set<CancellationPolicy>();
-    public DbSet<Review> Reviews => Set<Review>();
-    public DbSet<ReviewImage> ReviewImages => Set<ReviewImage>();
-    public DbSet<Favorite> Favorites => Set<Favorite>();
-    public DbSet<InterestedTour> InterestedTours => Set<InterestedTour>();
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
-        base.OnModelCreating(builder);
-        builder.ApplyConfigurationsFromAssembly(typeof(AmigoDbContext).Assembly);
+
+
+        // Translation Entities
+        public DbSet<DestinationTranslation> DestinationTranslations { get; set; }
+        public DbSet<ReviewTranslation> ReviewTranslations { get; set; }
+        public DbSet<CancellationTranslation> CancelationTranslations { get; set; }
+        public DbSet<TourTranslation> TourTranslations { get; set; }
+
+            
+        // Core Entities
+
+        public DbSet<Tour> Tours { get; set; }
+        public DbSet<Destination> Destinations { get; set; }
+
+        public DbSet<AvailableSlots> AvailableSlots { get; set; }
+        public DbSet<TourSchedule> TourSchedules { get; set; }
+        public DbSet<Cancellation> Cancelations { get; set; }
+        public DbSet<Price> Prices { get; set; }
+
+        public DbSet<TourImage> TourImages { get; set; }
+        public DbSet<TourIncluded> TourIncluded { get; set; }
+        public DbSet<TourNotIncluded> TourNotIncluded { get; set; }
+
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewImage> ReviewImages
+        {
+            get; set;
+        }
+
+
+        // Booking & Order
+
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<PeopleBooking> PeopleBookings { get; set; }
+        public DbSet<PeopleBookingDetails> PeopleBookingDetails { get; set; }
+
+        // ---------------------------
+        // Basket / Favorites
+        // ---------------------------
+        public DbSet<Basket> Baskets { get; set; }
+        public DbSet<BasketItem> BasketItems { get; set; }
+        public DbSet<Favorites> Favorites { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.ApplyConfigurationsFromAssembly(typeof(AmigoDbContext).Assembly);
+
+            builder.Entity<ApplicationUser>().ToTable("Users");
+            builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            builder.Entity<IdentityRole>().ToTable("Roles");
+
+        }
+
     }
 }

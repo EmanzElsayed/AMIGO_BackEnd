@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +15,9 @@ public static class DependencyInjection
         services.AddDbContext<AmigoDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        
+
+        
         return services;
     }
 }

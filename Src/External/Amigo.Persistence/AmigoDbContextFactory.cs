@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace Amigo.Persistence;
@@ -9,9 +9,20 @@ public class AmigoDbContextFactory : IDesignTimeDbContextFactory<AmigoDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AmigoDbContext>();
 
-        var connectionString =
-           "Host=ep-proud-wind-adnbu4xz-pooler.c-2.us-east-1.aws.neon.tech; Database=neondb; Username=neondb_owner; Password=npg_ndD2RI6wNayg; SSL Mode=VerifyFull; Channel Binding=Require;";
+        //IConfigurationRoot configuration = new ConfigurationBuilder()
+        //    .SetBasePath(Directory.GetCurrentDirectory())
+        //    .AddUserSecrets<AmigoDbContextFactory>()
+        //        .AddEnvironmentVariables() // fallback
+        //        .Build();
 
+        //var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        //if (string.IsNullOrEmpty(connectionString))
+        //{
+        //    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        //}
+        //2️⃣ Get the connection string
+        var connectionString = "Host=ep-curly-hall-adndu74g-pooler.c-2.us-east-1.aws.neon.tech; Database=neondb; Username=neondb_owner; Password=npg_YFqog6QfUP0R; SSL Mode=VerifyFull; Channel Binding=Require;";
         optionsBuilder.UseNpgsql(connectionString);
 
         return new AmigoDbContext(optionsBuilder.Options);

@@ -1,44 +1,53 @@
-using Amigo.Domain.Enum;
-using Amigo.SharedKernal.Entities;
+﻿
 
-namespace Amigo.Domain.Entities;
+using Amigo.Domain.Entities.TranslationEntities;
 
-public class Tour : BaseEntity<Guid>
+namespace Amigo.Domain.Entities
 {
-   
-    public Guid DestinationId { get; set; }
-    public Destination Destination { get; set; } = null!;
+    public class Tour: BaseEntity<Guid>
+    {
+        public TimeSpan Duration { get; set; }
 
-    public int DurationMinutes { get; set; }
-    public decimal? DiscountPercentage { get; set; }
-    public bool IsPetsAllowed { get; set; }
-    public bool IsWheelchairAccessible { get; set; }
-    public bool IsPrivate { get; set; }
-    public bool InstantConfirmation { get; set; }
-    public bool IsActive { get; set; }
+        public decimal Discount { get; set; }
 
-    public string MeetingPoint { get; set; } = null!;
-    public double MeetingPointLatitude { get; set; }
-    public double MeetingPointLongitude { get; set; }
+        public Language GuideLanguage { get; set; }
 
-    public Currency Currency { get; set; }
+        public string? MeetingPoint { get; set; }
+        
+        public bool IsPitsAllowed { get; set; }
 
-    public double RatingAverage { get; set; }
-    public int ReviewCount { get; set; }
-    public int BookingCount { get; set; }
-    public bool IsFeatured { get; set; }
+        public bool IsWheelchairAvailable { get; set; }
 
-    public ICollection<TourSchedule> Schedules { get; set; } = new List<TourSchedule>();
-    public ICollection<TourMedia> Media { get; set; } = new List<TourMedia>();
-    public ICollection<TourTranslation> Translations { get; set; } = new List<TourTranslation>();
-    public ICollection<TourIncluded> IncludedItems { get; set; } = new List<TourIncluded>();
-    public ICollection<TourNotIncluded> NotIncludedItems { get; set; } = new List<TourNotIncluded>();
-    public ICollection<Review> Reviews { get; set; } = new List<Review>();
-    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
-    public ICollection<InterestedTour> RelatedTours { get; set; } = new List<InterestedTour>();
-    public ICollection<InterestedTour> RelatedFromTours { get; set; } = new List<InterestedTour>();
-    public ICollection<TourPrice> Prices { get; set; } = new List<TourPrice>();
-    public ICollection<TourCategory> Categories { get; set; } = new List<TourCategory>();
-    public ICollection<CancellationPolicy> CancellationPolicies { get; set; } = new List<CancellationPolicy>();
+        // Destination 
+        public Guid DestinationId { get; set; }
+
+        [Required]
+        public Destination Destination { get; set; } = null!;
+
+
+
+        // cancelation one to one relation
+        public Cancellation Cancellation { get; set; } = null!;
+        //Available Time 
+        public ICollection<TourSchedule> AvailableTimes { get; set; } = new List<TourSchedule>();
+
+
+        //Price 
+        //people booking
+        //tourImage
+        //tourIncluded
+        //tourNotIncluded
+
+        public ICollection<TourTranslation> Translations { get; set; } = new List<TourTranslation>();
+
+        public ICollection<Price> Prices { get; set; } = new List<Price>();
+
+        public ICollection<TourImage> Images { get; set; } = new List<TourImage>();
+
+        public ICollection<TourIncluded> Included { get; set; } = new List<TourIncluded>();
+
+        public ICollection<TourNotIncluded> NotIncluded { get; set; } = new List<TourNotIncluded>();
+
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    }
 }

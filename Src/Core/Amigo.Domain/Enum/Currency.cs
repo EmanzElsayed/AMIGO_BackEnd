@@ -1,8 +1,11 @@
-namespace Amigo.Domain.Enum;
+﻿
 
-public enum Currency
+namespace Amigo.Domain.Enum
 {
-    Sar = 1,
-    Usd = 2,
-    Eur = 3
+    public enum Currency
+    {
+        USD  = 1,
+        EUR = 2,
+        SAR = 3
+    }
 }

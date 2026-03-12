@@ -1,10 +1,12 @@
-namespace Amigo.Domain.Enum;
+﻿
 
-public enum BookingStatus
+namespace Amigo.Domain.Enum
 {
-    Pending = 1,
-    PaymentReceived,
-    PaymentFailed,
-    Refund
+    public enum BookingStatus
+    {
+        Pending = 1,
+        Confirmed = 2,
+        Cancelled = 3 ,
+       
+    }
 }
-

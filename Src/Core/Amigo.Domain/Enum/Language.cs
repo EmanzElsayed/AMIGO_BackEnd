@@ -1,11 +1,13 @@
-namespace Amigo.Domain.Enum;
+﻿
 
-public enum Language
+namespace Amigo.Domain.Enum
 {
-    English = 1,
-    Italian,
-    Spanish,
-    French,
-    Portuguese
+    public enum Language
+    {
+        English = 1,
+        Italian = 2,
+        Spanish = 3,
+        Frensh = 4,
+        Portuguese = 5
+    }
 }
-
