@@ -12,8 +12,9 @@ namespace Amigo.Application.Abstraction.Services
 {
     public interface IAuthenticationService
     {
-        Task<Result> RegisterAsync(RegisterRequestDTO request);
+        Task<Result<ResultDTO<RegisterReturnDTO>>> RegisterAsync(RegisterRequestDTO request);
         //public Task<ResultDTO<RegisterReturnDTO>> RegisterAsync(RegisterRequestDTO registerRequestDTO);
-
+        Task<Result<ResultDTO<string>>> ConfirmEmailAsync(ConfirmEmailRequestDTO confirmEmailDTO);
+        Task<Result<ResultDTO<LoginReturnDTO>>> LoginAsync(LoginRequestDTO loginDTO);
     }
 }

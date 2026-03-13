@@ -16,9 +16,9 @@ public class RegisterValidator : AbstractValidator<RegisterRequestDTO>
             .NotEmpty()
             .WithMessage("Email is required.")
             .EmailAddress()
-            .WithMessage("Email must be a valid email address.")
-            .Matches(@"^[^@\s]+@nfsc\.sa$")
-            .WithMessage("Email must end with @nfsc.sa.");
+            .WithMessage("Email must be a valid email address.");
+            //.Matches(@"^[^@\s]+@nfsc\.sa$")
+            //.WithMessage("Email must end with @nfsc.sa.");
 
         RuleFor(x => x.FullName)
             .NotEmpty()

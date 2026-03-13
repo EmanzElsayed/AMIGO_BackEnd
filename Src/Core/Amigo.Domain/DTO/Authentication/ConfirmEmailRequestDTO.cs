@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Amigo.Domain.DTO.Authentication
 {
-    public record LoginRequestDTO
+    public record ConfirmEmailRequestDTO
     (
-        string Email,
-        string Password
-     );
+        string Email ,
+        string Token
+    );
 }

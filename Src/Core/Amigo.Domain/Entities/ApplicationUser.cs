@@ -9,7 +9,7 @@ namespace Amigo.Domain.Entities
     {
         public string FullName { get; set; } = null!;
 
-        public bool IsActive { get; set; } = false;
+        public bool IsActive { get; set; } = true;
         public string? Image {  get; set; }
         public Gender Gender { get; set; }
         public DateOnly BirthDate { get; set; }

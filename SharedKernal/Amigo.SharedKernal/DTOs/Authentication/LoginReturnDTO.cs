@@ -4,13 +4,12 @@ using System.Text;
 
 namespace Amigo.SharedKernal.DTOs.Authentication
 {
-    public record RegisterReturnDTO
+    public record LoginReturnDTO
     (
-      string FullName ,
+        string FullName,
+        string Email ,
+        string Token,
+        string Role
 
-        
-       string Email ,
-
-        string Role 
     );
 }

@@ -4,7 +4,7 @@ namespace Amigo.SharedKernal.DTOs;
 
 public record ResultDTO<T>
 (
-    T Data,
+    T? Data,
     int count = 0,
     int PageNumber = 1,
     int PageSize = 10,
