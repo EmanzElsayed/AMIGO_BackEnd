@@ -1,10 +1,7 @@
-﻿
+﻿namespace Amigo.Domain.Enum;
 
-namespace Amigo.Domain.Enum
+public enum PaymentMethod
 {
-    public enum PaymentMethod
-    {
-        Paypal = 1,
-        Card = 2
-    }
+    Paypal = 1,
+    Card = 2
 }

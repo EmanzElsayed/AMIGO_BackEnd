@@ -1,11 +1,7 @@
-﻿
-
-namespace Amigo.Domain.Enum
+﻿namespace Amigo.Domain.Enum;
+public enum AvailableDateTimeStatus
 {
-    public enum AvailableDateTimeStatus
-    {
-        Available = 1,
-        SoldOut = 2,
-        Closed = 3
-    }
+    Available = 1,
+    SoldOut = 2,
+    Closed = 3
 }

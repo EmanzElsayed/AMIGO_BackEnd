@@ -1,13 +1,12 @@
-﻿
+﻿namespace Amigo.Domain.Entities;
 
-namespace Amigo.Domain.Entities
+[Table($"{nameof(ReviewImage)}", Schema = SchemaConstants.review_schema)]
+
+public class ReviewImage:BaseEntity<Guid>
 {
-    public class ReviewImage:BaseEntity<Guid>
-    {
-        public Guid ReviewId { get; set; }
-        [Required]
-        public Review Review { get; set; } = null!;
-        [Required]
-        public string Image { get; set; } = null!;
-    }
+    public Guid ReviewId { get; set; }
+    
+    public Review Review { get; set; } = null!;
+   
+    public string Image { get; set; } = null!;
 }

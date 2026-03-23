@@ -1,10 +1,7 @@
-﻿
-namespace Amigo.Domain.Enum
+﻿namespace Amigo.Domain.Enum;
+public enum Gender
 {
-    public enum Gender
-    {
-        Femal = 1,
-        Male = 2
-        
-    }
+    Female = 1,
+    Male = 2
+    
 }

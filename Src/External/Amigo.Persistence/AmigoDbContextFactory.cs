@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
+﻿using System.CommandLine;
 
 namespace Amigo.Persistence;
 
@@ -7,24 +6,37 @@ public class AmigoDbContextFactory : IDesignTimeDbContextFactory<AmigoDbContext>
 {
     public AmigoDbContext CreateDbContext(string[] args)
     {
+        var connectionOption = new Option<string>
+       (
+           name: "--connection",
+           description: "The connection string to use for the database"
+       );
+
+        var rootCommand = new RootCommand { connectionOption };
+
+        var result = rootCommand.Parse(args);
+        var connectionString = result.GetValueForOption(connectionOption);
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            var basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../../api/Amigo.API"));
+
+            var config = new ConfigurationBuilder()
+                .SetBasePath(basePath)
+                .AddJsonFile("appsettings.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
+            connectionString = config.GetConnectionString("DefaultConnection");
+        }
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("No connection string provided.");
+
         var optionsBuilder = new DbContextOptionsBuilder<AmigoDbContext>();
-
-        //IConfigurationRoot configuration = new ConfigurationBuilder()
-        //    .SetBasePath(Directory.GetCurrentDirectory())
-        //    .AddUserSecrets<AmigoDbContextFactory>()
-        //        .AddEnvironmentVariables() // fallback
-        //        .Build();
-
-        //var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-        //if (string.IsNullOrEmpty(connectionString))
-        //{
-        //    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        //}
-        //2️⃣ Get the connection string
-        var connectionString = "Host=ep-curly-hall-adndu74g-pooler.c-2.us-east-1.aws.neon.tech; Database=neondb; Username=neondb_owner; Password=npg_YFqog6QfUP0R; SSL Mode=VerifyFull; Channel Binding=Require;";
         optionsBuilder.UseNpgsql(connectionString);
 
         return new AmigoDbContext(optionsBuilder.Options);
+
     }
 }

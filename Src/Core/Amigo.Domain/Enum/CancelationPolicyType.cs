@@ -1,10 +1,6 @@
-﻿
-
-namespace Amigo.Domain.Enum
+﻿namespace Amigo.Domain.Enum;
+public enum CancelationPolicyType
 {
-    public enum CancelationPolicyType
-    {
-        Free = 1,
-        Paid = 2
-    }
+    Free = 1,
+    Paid = 2
 }

@@ -1,16 +1,7 @@
-
-using Amigo.Domain.Entities;
-using Amigo.Domain.Entities.TranslationEntities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-
 namespace Amigo.Persistence
 {
-    public class AmigoDbContext(DbContextOptions<AmigoDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole,Guid>(options)
+    public class AmigoDbContext(DbContextOptions<AmigoDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
-
-
-
 
         // Translation Entities
         public DbSet<DestinationTranslation> DestinationTranslations { get; set; }
@@ -18,7 +9,6 @@ namespace Amigo.Persistence
         public DbSet<CancellationTranslation> CancelationTranslations { get; set; }
         public DbSet<TourTranslation> TourTranslations { get; set; }
 
-            
         // Core Entities
 
         public DbSet<Tour> Tours { get; set; }
@@ -49,6 +39,7 @@ namespace Amigo.Persistence
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<PeopleBooking> PeopleBookings { get; set; }
         public DbSet<PeopleBookingDetails> PeopleBookingDetails { get; set; }
+        public DbSet<UserRefreshToken> RefreshTokens { get; set; }
 
         // ---------------------------
         // Basket / Favorites
@@ -67,7 +58,7 @@ namespace Amigo.Persistence
             builder.Entity<ApplicationUser>().ToTable("Users");
             builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
             builder.Entity<IdentityRole>().ToTable("Roles");
-
+            builder.Entity<UserRefreshToken>().ToTable("RefreshTokens");
         }
 
     }

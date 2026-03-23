@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Amigo.Domain.DTO.Authentication;
 
-namespace Amigo.Domain.DTO.Authentication
-{
-    internal class LoginRequestDTO
-    {
-    }
-}
+public record LoginRequestDTO
+(string Email , string Password);

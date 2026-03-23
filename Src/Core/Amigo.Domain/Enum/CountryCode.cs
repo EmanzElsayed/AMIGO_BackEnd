@@ -1,13 +1,9 @@
-﻿
-
-namespace Amigo.Domain.Enum
+﻿namespace Amigo.Domain.Enum;
+public enum CountryCode
 {
-    public enum CountryCode
-    {
-        Egypt = 1,
-        UAE = 2,
-        Turkey = 3,
-        KSA = 4
+    Egypt = 1,
+    UAE = 2,
+    Turkey = 3,
+    KSA = 4
 
-    }
 }

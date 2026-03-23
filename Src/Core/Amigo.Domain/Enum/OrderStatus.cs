@@ -1,13 +1,9 @@
-﻿
-
-namespace Amigo.Domain.Enum
+﻿namespace Amigo.Domain.Enum;
+public enum OrderStatus
 {
-    public enum OrderStatus
-    {
-        Pending = 1,
-        Paid = 2,
-        Failed = 3,
-        Cancelled = 4,
-        Refunded = 5
-    }
+    Pending = 1,
+    Paid = 2,
+    Failed = 3,
+    Cancelled = 4,
+    Refunded = 5
 }

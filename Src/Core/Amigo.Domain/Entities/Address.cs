@@ -1,14 +1,13 @@
-﻿
-namespace Amigo.Domain.Entities
-{
-    [Owned]
-    public class Address
-    {
-        public int BuildingNumber { get; set; }
-        [Required]
-        public string City { get; set; } = null!;
+﻿namespace Amigo.Domain.Entities;
 
-        [Required]
-        public string Country { get; set; } = null!;
-    }
+[Owned]
+[Table($"{nameof(Address)}", Schema = SchemaConstants.auth_schema)]
+public class Address
+{
+    public int BuildingNumber { get; set; }
+   
+    public string City { get; set; } = null!;
+
+   
+    public string Country { get; set; } = null!;
 }

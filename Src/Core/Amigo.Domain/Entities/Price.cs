@@ -1,16 +1,11 @@
-﻿
+﻿namespace Amigo.Domain.Entities;
 
-namespace Amigo.Domain.Entities
+[Table($"{nameof(Price)}", Schema = SchemaConstants.booking_schema)]
+
+public class Price : BaseEntity<Guid>
 {
-    public class Price : BaseEntity<Guid>
-    {
-        public Guid TourId { get; set; }
-        [Required]
-        public Tour Tour { get; set; } = null!;
-
-        [Required]
-        public string Type { get; set; } = null!;
-
-        public decimal Cost { get; set; }
-    }
+    public Guid TourId { get; set; }
+    public Tour Tour { get; set; } = null!;
+    public string Type { get; set; } = null!;
+    public decimal Cost { get; set; }
 }

@@ -1,15 +1,11 @@
-﻿using System;
+﻿namespace Amigo.Domain.Entities;
 
+[Table($"{nameof(Destination)}", Schema = SchemaConstants.auth_schema)]
 
-namespace Amigo.Domain.Entities
+public class Destination : BaseEntity<Guid>
 {
-    public class Destination : BaseEntity<Guid>
-    {
-        public CountryCode CountryCode { get; set; }
-        public bool IsActive { get; set; }
-
-        public string? Image {  get; set; }
-
-        public ICollection<Tour> Tours { get; set; } = new List<Tour>();
-    }
+    public CountryCode CountryCode { get; set; }
+    public bool IsActive { get; set; }
+    public string? Image {  get; set; }
+    public ICollection<Tour> Tours { get; set; } = new List<Tour>();
 }

@@ -1,16 +1,14 @@
-﻿
+﻿namespace Amigo.Domain.Entities.TranslationEntities;
 
-namespace Amigo.Domain.Entities.TranslationEntities
+[Table($"{nameof(DestinationTranslation)}", Schema = SchemaConstants.tour_schema)]
+public class DestinationTranslation:BaseEntity<Guid>
 {
-    public class DestinationTranslation:BaseEntity<Guid>
-    {
-        public Guid DestinationId { get; set; }
-        [Required]
-        public Destination Destination { get; set; } = null!;
+    public Guid DestinationId { get; set; }
+  
+    public Destination Destination { get; set; } = null!;
 
-        [Required]
-        public string Name { get; set; } = null!;
+  
+    public string Name { get; set; } = null!;
 
-        public Language Language { get; set; }
-    }
+    public Language Language { get; set; }
 }
