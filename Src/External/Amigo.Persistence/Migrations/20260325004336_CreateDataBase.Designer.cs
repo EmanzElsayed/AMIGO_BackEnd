@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    [Migration("20260311235542_DatabaseInitAndApplyEntitesAndEnums")]
-    partial class DatabaseInitAndApplyEntitesAndEnums
+    [Migration("20260325004336_CreateDataBase")]
+    partial class CreateDataBase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,125 +24,6 @@ namespace Amigo.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Amigo.Domain.Entities.ApplicationUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int>("Gender")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Image")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("Language")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<string>("Nationality")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .IsUnique()
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("PhoneNumber")
-                        .IsUnique();
-
-                    b.ToTable("Users", (string)null);
-                });
 
             modelBuilder.Entity("Amigo.Domain.Entities.AvailableSlots", b =>
                 {
@@ -199,7 +80,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("StartTime", "EndTime");
 
-                    b.ToTable("AvailableSlots");
+                    b.ToTable("AvailableSlots", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Basket", b =>
@@ -239,15 +120,16 @@ namespace Amigo.Persistence.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Baskets");
+                    b.ToTable("Basket", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.BasketItem", b =>
@@ -302,7 +184,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("BasketId");
 
-                    b.ToTable("BasketItems");
+                    b.ToTable("BasketItem", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Booking", b =>
@@ -359,7 +241,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("Bookings");
+                    b.ToTable("Booking", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Cancellation", b =>
@@ -414,7 +296,7 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("TourId")
                         .IsUnique();
 
-                    b.ToTable("Cancelations");
+                    b.ToTable("Cancellation", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Destination", b =>
@@ -469,7 +351,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("IsActive");
 
-                    b.ToTable("Destinations");
+                    b.ToTable("Destination", "auth");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Favorites", b =>
@@ -477,8 +359,8 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer");
@@ -505,7 +387,164 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Favorites");
+                    b.ToTable("Favorites", "auth");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.Identity.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FullName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int?>("Gender")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Image")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("Language")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ModifiedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<string>("Nationality")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .IsUnique()
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("PhoneNumber");
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.Identity.UserRefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("JwtId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Order", b =>
@@ -554,14 +593,15 @@ namespace Amigo.Persistence.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Order", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.OrderItem", b =>
@@ -616,7 +656,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItem", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Payment", b =>
@@ -682,7 +722,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payment", "payment");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.PeopleBooking", b =>
@@ -734,7 +774,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("PriceId");
 
-                    b.ToTable("PeopleBookings");
+                    b.ToTable("PeopleBooking", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.PeopleBookingDetails", b =>
@@ -792,7 +832,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("PeopleBookingId");
 
-                    b.ToTable("PeopleBookingDetails");
+                    b.ToTable("PeopleBookingDetails", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Price", b =>
@@ -847,7 +887,7 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("TourId", "Type")
                         .IsUnique();
 
-                    b.ToTable("Prices");
+                    b.ToTable("Price", "booking");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Review", b =>
@@ -896,8 +936,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<string>("TravelWith")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -905,7 +946,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Review", "review");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.ReviewImage", b =>
@@ -959,7 +1000,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("ReviewId1");
 
-                    b.ToTable("ReviewImages");
+                    b.ToTable("ReviewImage", "review");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Tour", b =>
@@ -1026,7 +1067,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("DestinationId");
 
-                    b.ToTable("Tours");
+                    b.ToTable("Tour", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TourImage", b =>
@@ -1071,16 +1112,11 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("TourId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TourId");
 
-                    b.HasIndex("TourId1");
-
-                    b.ToTable("TourImages");
+                    b.ToTable("TourImage", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TourIncluded", b =>
@@ -1128,18 +1164,13 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("TourId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TourId");
 
-                    b.HasIndex("TourId1");
-
                     b.HasIndex("TourId", "Language");
 
-                    b.ToTable("TourIncluded");
+                    b.ToTable("TourIncluded", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TourNotIncluded", b =>
@@ -1187,18 +1218,13 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("TourId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TourId");
 
-                    b.HasIndex("TourId1");
-
                     b.HasIndex("TourId", "Language");
 
-                    b.ToTable("TourNotIncluded");
+                    b.ToTable("TourNotIncluded", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TourSchedule", b =>
@@ -1253,7 +1279,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("StartDate", "EndDate");
 
-                    b.ToTable("TourSchedules");
+                    b.ToTable("TourSchedule", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CancellationTranslation", b =>
@@ -1308,7 +1334,7 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("CancellationId", "Language")
                         .IsUnique();
 
-                    b.ToTable("CancelationTranslations");
+                    b.ToTable("CancellationTranslation", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.DestinationTranslation", b =>
@@ -1363,7 +1389,7 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("DestinationId", "Language")
                         .IsUnique();
 
-                    b.ToTable("DestinationTranslations");
+                    b.ToTable("DestinationTranslation", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.ReviewTranslation", b =>
@@ -1418,7 +1444,7 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("ReviewId", "Language")
                         .IsUnique();
 
-                    b.ToTable("ReviewTranslations");
+                    b.ToTable("ReviewTranslation", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.TourTranslation", b =>
@@ -1480,14 +1506,13 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("TourId", "Language")
                         .IsUnique();
 
-                    b.ToTable("TourTranslations");
+                    b.ToTable("TourTranslation", "tour");
                 });
 
-            modelBuilder.Entity("Amigo.Persistence.ApplicationRole", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -1507,29 +1532,10 @@ namespace Amigo.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NormalizedName")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
                     b.ToTable("Roles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1543,8 +1549,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1553,7 +1560,7 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1567,8 +1574,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -1577,7 +1585,7 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("text");
@@ -1588,8 +1596,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -1598,13 +1607,13 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -1613,10 +1622,10 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("UserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("text");
@@ -1632,39 +1641,6 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Amigo.Domain.Entities.ApplicationUser", b =>
-                {
-                    b.OwnsOne("Amigo.Domain.Entities.Address", "Address", b1 =>
-                        {
-                            b1.Property<Guid>("ApplicationUserId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<int>("BuildingNumber")
-                                .HasMaxLength(200)
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("character varying(100)");
-
-                            b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasMaxLength(100)
-                                .HasColumnType("character varying(100)");
-
-                            b1.HasKey("ApplicationUserId");
-
-                            b1.ToTable("Users");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ApplicationUserId");
-                        });
-
-                    b.Navigation("Address")
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Amigo.Domain.Entities.AvailableSlots", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.TourSchedule", "TourSchedule")
@@ -1678,7 +1654,7 @@ namespace Amigo.Persistence.Migrations
 
             modelBuilder.Entity("Amigo.Domain.Entities.Basket", b =>
                 {
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1744,7 +1720,7 @@ namespace Amigo.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1755,9 +1731,50 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Amigo.Domain.Entities.Identity.ApplicationUser", b =>
+                {
+                    b.OwnsOne("Amigo.Domain.Entities.Identity.Address", "Address", b1 =>
+                        {
+                            b1.Property<string>("ApplicationUserId")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("BuildingNumber")
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)");
+
+                            b1.Property<string>("City")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)");
+
+                            b1.Property<string>("Country")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)");
+
+                            b1.HasKey("ApplicationUserId");
+
+                            b1.ToTable("Address", "auth");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ApplicationUserId");
+                        });
+
+                    b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.Identity.UserRefreshToken", b =>
+                {
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", "User")
+                        .WithMany("UserRefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Amigo.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1845,7 +1862,7 @@ namespace Amigo.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", "User")
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1885,14 +1902,10 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.TourImage", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
-                        .WithMany()
+                        .WithMany("Images")
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Amigo.Domain.Entities.Tour", null)
-                        .WithMany("Images")
-                        .HasForeignKey("TourId1");
 
                     b.Navigation("Tour");
                 });
@@ -1900,14 +1913,10 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.TourIncluded", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
-                        .WithMany()
+                        .WithMany("Included")
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Amigo.Domain.Entities.Tour", null)
-                        .WithMany("Included")
-                        .HasForeignKey("TourId1");
 
                     b.Navigation("Tour");
                 });
@@ -1915,14 +1924,10 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.TourNotIncluded", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
-                        .WithMany()
+                        .WithMany("NotIncluded")
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Amigo.Domain.Entities.Tour", null)
-                        .WithMany("NotIncluded")
-                        .HasForeignKey("TourId1");
 
                     b.Navigation("Tour");
                 });
@@ -1986,51 +1991,51 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("Tour");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("Amigo.Persistence.ApplicationRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("Amigo.Persistence.ApplicationRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Amigo.Domain.Entities.ApplicationUser", null)
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2050,6 +2055,11 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.Destination", b =>
                 {
                     b.Navigation("Tours");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("UserRefreshTokens");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Order", b =>

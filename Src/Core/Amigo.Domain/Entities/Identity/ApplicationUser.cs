@@ -3,14 +3,14 @@ namespace Amigo.Domain.Entities.Identity;
 [Table($"{nameof(ApplicationUser)}", Schema =SchemaConstants.auth_schema)]
 public class ApplicationUser : IdentityUser
 {
-    public string FullName { get; set; } = null!;
+    public string? FullName { get; set; } 
     public bool IsActive { get; set; } = true;
     public string? Image {  get; set; }
-    public Gender Gender { get; set; }
-    public DateOnly BirthDate { get; set; }
-    public string Nationality { get; set; } = null!;
-    public Language Language { get; set; }
-    public Address Address { get; set; } = null!;
+    public Gender? Gender { get; set; }
+    public DateOnly? BirthDate { get; set; }
+    public string? Nationality { get; set; }
+    public Language? Language { get; set; }
+    public Address? Address { get; set; }
     public DateTime LastLoginAt { get; set; }
     public int? CreatedBy { get; private set; }
     public DateTime CreatedDate { get; private set; }
@@ -18,7 +18,7 @@ public class ApplicationUser : IdentityUser
     public DateTime? ModifiedDate { get; private set; }
     public bool IsDeleted { get; private set; }
     public ICollection<UserRefreshToken> UserRefreshTokens { get; set; }
-    private ApplicationUser() { }
+    public ApplicationUser() { }
 
     public ApplicationUser(
         string email,

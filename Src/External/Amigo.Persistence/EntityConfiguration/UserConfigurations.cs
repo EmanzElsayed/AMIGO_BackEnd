@@ -13,20 +13,19 @@ namespace Amigo.Persistence.EntityConfiguration
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Id)
-                .HasDefaultValueSql("gen_random_uuid()");
+           
 
             //Identity Info 
             builder.Property(u => u.UserName)
                .HasMaxLength(256);
 
             builder.Property(u => u.Email)
-                          .HasMaxLength(256);
+                          .HasMaxLength(256)
+                          ;
             //ApplicationUser Info
 
 
             builder.Property(u => u.FullName)
-              .IsRequired()
               .HasMaxLength(200);
 
             builder.Property(u => u.IsActive)
@@ -42,7 +41,7 @@ namespace Amigo.Persistence.EntityConfiguration
                    .HasColumnType("date");
 
             builder.Property(u => u.Nationality)
-                           .IsRequired()
+                    
                            .HasMaxLength(200);
 
             builder.Property(u => u.Language)
@@ -52,15 +51,15 @@ namespace Amigo.Persistence.EntityConfiguration
 
             builder.OwnsOne(u => u.Address, a =>
             {
-                a.Property(p => p.BuildingNumber).HasMaxLength(200).IsRequired();
-                a.Property(p => p.City).HasMaxLength(100).IsRequired();
-                a.Property(p => p.Country).HasMaxLength(100).IsRequired();
+                a.Property(p => p.BuildingNumber).HasMaxLength(200);
+                a.Property(p => p.City).HasMaxLength(100);
+                a.Property(p => p.Country).HasMaxLength(100);
             });
 
             //Index 
 
             builder.HasIndex(u => u.NormalizedEmail).IsUnique();
-            builder.HasIndex(u => u.PhoneNumber).IsUnique();
+            builder.HasIndex(u => u.PhoneNumber).IsUnique(false);
 
             //Base Info 
 

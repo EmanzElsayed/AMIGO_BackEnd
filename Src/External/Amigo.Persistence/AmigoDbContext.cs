@@ -56,7 +56,7 @@ namespace Amigo.Persistence
             builder.ApplyConfigurationsFromAssembly(typeof(AmigoDbContext).Assembly);
 
             builder.Entity<ApplicationUser>().ToTable("Users");
-            builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<UserRefreshToken>().ToTable("RefreshTokens");
         }

@@ -1,4 +1,6 @@
-﻿namespace Amigo.Domain.Extension;
+﻿using System.Net;
+
+namespace Amigo.Domain.Extension;
 
 public static class FluentValidationExtension
 {
@@ -18,6 +20,37 @@ public static class FluentValidationExtension
             .Select(x => new ValidationPropertError(x.Key, x.Select(y => y.ErrorMessage).ToList()))
             .ToList();
 
-        return Result.Fail(new ValidationErrror(errors));
+        return Result.Fail(new ValidationErrror(errors).WithMetadata("StatusCode",(int) HttpStatusCode.BadRequest));
+    }
+
+    public static  Result FromIdentityErrors(
+
+        IEnumerable<Microsoft.AspNetCore.Identity.IdentityError> errors
+       
+       )
+
+    {
+        
+
+        var list = errors
+            .GroupBy(e => e.Code)
+            .Select(g => new ValidationPropertError(g.Key, g.Select(e => e.Description)))
+            .ToList();
+
+
+        return Result.Fail(new ValidationErrror(list, "Identity validation failed").WithMetadata("StatusCode", (int)HttpStatusCode.BadRequest));
+    }
+
+    public static Result FromException(
+
+        string? details,
+        string msg = "Internal Server Error"
+       
+        )
+
+    {
+
+
+        return Result.Fail(new ExceptionError( msg,details).WithMetadata("StatusCode", (int)HttpStatusCode.InternalServerError));
     }
 }

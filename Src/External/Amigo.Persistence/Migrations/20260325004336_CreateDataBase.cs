@@ -7,30 +7,30 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class DatabaseInitAndApplyEntitesAndEnums : Migration
+    public partial class CreateDataBase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
             migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS \"pgcrypto\";");
+            migrationBuilder.EnsureSchema(
+                name: "auth");
+
+            migrationBuilder.EnsureSchema(
+                name: "tour");
+
+            migrationBuilder.EnsureSchema(
+                name: "booking");
+
+            migrationBuilder.EnsureSchema(
+                name: "payment");
+
+            migrationBuilder.EnsureSchema(
+                name: "review");
 
             migrationBuilder.CreateTable(
-                name: "AspNetRoles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Destinations",
+                name: "Destination",
+                schema: "auth",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -45,7 +45,7 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Destinations", x => x.Id);
+                    table.PrimaryKey("PK_Destination", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -53,8 +53,8 @@ namespace Amigo.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    NormalizedName = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -66,17 +66,15 @@ namespace Amigo.Persistence.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     Image = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    Gender = table.Column<int>(type: "integer", nullable: false),
-                    BirthDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Nationality = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Language = table.Column<int>(type: "integer", nullable: false),
-                    Address_BuildingNumber = table.Column<int>(type: "integer", maxLength: 200, nullable: false),
-                    Address_City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Address_Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Gender = table.Column<int>(type: "integer", nullable: true),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    Nationality = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Language = table.Column<int>(type: "integer", nullable: true),
+                    LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<int>(type: "integer", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     ModifiedBy = table.Column<int>(type: "integer", nullable: true),
@@ -103,28 +101,8 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DestinationTranslations",
+                name: "DestinationTranslation",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -139,17 +117,19 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DestinationTranslations", x => x.Id);
+                    table.PrimaryKey("PK_DestinationTranslation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DestinationTranslations_Destinations_DestinationId",
+                        name: "FK_DestinationTranslation_Destination_DestinationId",
                         column: x => x.DestinationId,
-                        principalTable: "Destinations",
+                        principalSchema: "auth",
+                        principalTable: "Destination",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tours",
+                name: "Tour",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -168,13 +148,56 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tours", x => x.Id);
+                    table.PrimaryKey("PK_Tour", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tours_Destinations_DestinationId",
+                        name: "FK_Tour_Destination_DestinationId",
                         column: x => x.DestinationId,
-                        principalTable: "Destinations",
+                        principalSchema: "auth",
+                        principalTable: "Destination",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetRoleClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Address",
+                schema: "auth",
+                columns: table => new
+                {
+                    ApplicationUserId = table.Column<string>(type: "text", nullable: false),
+                    BuildingNumber = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Address", x => x.ApplicationUserId);
+                    table.ForeignKey(
+                        name: "FK_Address_Users_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -183,7 +206,7 @@ namespace Amigo.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     ClaimType = table.Column<string>(type: "text", nullable: true),
                     ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
@@ -205,7 +228,7 @@ namespace Amigo.Persistence.Migrations
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
                     ProviderKey = table.Column<string>(type: "text", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -222,7 +245,7 @@ namespace Amigo.Persistence.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Value = table.Column<string>(type: "text", nullable: true)
@@ -239,7 +262,8 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Baskets",
+                name: "Basket",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -248,14 +272,14 @@ namespace Amigo.Persistence.Migrations
                     ModifiedBy = table.Column<int>(type: "integer", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Baskets", x => x.Id);
+                    table.PrimaryKey("PK_Basket", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Baskets_Users_UserId",
+                        name: "FK_Basket_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -263,7 +287,8 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
+                name: "Order",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -272,7 +297,7 @@ namespace Amigo.Persistence.Migrations
                     ModifiedBy = table.Column<int>(type: "integer", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     Currency = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -280,9 +305,35 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.PrimaryKey("PK_Order", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_Users_UserId",
+                        name: "FK_Order_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: true),
+                    RefreshToken = table.Column<string>(type: "text", nullable: true),
+                    JwtId = table.Column<string>(type: "text", nullable: true),
+                    IsUsed = table.Column<bool>(type: "boolean", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "boolean", nullable: false),
+                    AddedTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -293,16 +344,16 @@ namespace Amigo.Persistence.Migrations
                 name: "UserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_UserRoles_AspNetRoles_RoleId",
+                        name: "FK_UserRoles_Roles_RoleId",
                         column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
+                        principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -314,7 +365,8 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Cancelations",
+                name: "Cancellation",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -330,21 +382,23 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cancelations", x => x.Id);
+                    table.PrimaryKey("PK_Cancellation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Cancelations_Tours_TourId",
+                        name: "FK_Cancellation_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Favorites",
+                schema: "auth",
                 columns: table => new
                 {
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     CreatedBy = table.Column<int>(type: "integer", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     ModifiedBy = table.Column<int>(type: "integer", nullable: true),
@@ -355,9 +409,10 @@ namespace Amigo.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Favorites", x => new { x.TourId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_Favorites_Tours_TourId",
+                        name: "FK_Favorites_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -369,7 +424,8 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Prices",
+                name: "Price",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -384,17 +440,19 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Prices", x => x.Id);
+                    table.PrimaryKey("PK_Price", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Prices_Tours_TourId",
+                        name: "FK_Price_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reviews",
+                name: "Review",
+                schema: "review",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -404,22 +462,23 @@ namespace Amigo.Persistence.Migrations
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     Rate = table.Column<decimal>(type: "numeric(3,2)", nullable: false),
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     TravelWith = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reviews", x => x.Id);
+                    table.PrimaryKey("PK_Review", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reviews_Tours_TourId",
+                        name: "FK_Review_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Reviews_Users_UserId",
+                        name: "FK_Review_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -427,7 +486,8 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TourImages",
+                name: "TourImage",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -437,27 +497,23 @@ namespace Amigo.Persistence.Migrations
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Image = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    TourId1 = table.Column<Guid>(type: "uuid", nullable: true)
+                    Image = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TourImages", x => x.Id);
+                    table.PrimaryKey("PK_TourImage", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TourImages_Tours_TourId",
+                        name: "FK_TourImage_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TourImages_Tours_TourId1",
-                        column: x => x.TourId1,
-                        principalTable: "Tours",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "TourIncluded",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -468,27 +524,23 @@ namespace Amigo.Persistence.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
                     Included = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Language = table.Column<int>(type: "integer", nullable: false),
-                    TourId1 = table.Column<Guid>(type: "uuid", nullable: true)
+                    Language = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TourIncluded", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TourIncluded_Tours_TourId",
+                        name: "FK_TourIncluded_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TourIncluded_Tours_TourId1",
-                        column: x => x.TourId1,
-                        principalTable: "Tours",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "TourNotIncluded",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -499,27 +551,23 @@ namespace Amigo.Persistence.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
                     NotIncluded = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Language = table.Column<int>(type: "integer", nullable: false),
-                    TourId1 = table.Column<Guid>(type: "uuid", nullable: true)
+                    Language = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TourNotIncluded", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TourNotIncluded_Tours_TourId",
+                        name: "FK_TourNotIncluded_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TourNotIncluded_Tours_TourId1",
-                        column: x => x.TourId1,
-                        principalTable: "Tours",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "TourSchedules",
+                name: "TourSchedule",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -535,17 +583,19 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TourSchedules", x => x.Id);
+                    table.PrimaryKey("PK_TourSchedule", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TourSchedules_Tours_TourId",
+                        name: "FK_TourSchedule_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TourTranslations",
+                name: "TourTranslation",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -562,22 +612,25 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TourTranslations", x => x.Id);
+                    table.PrimaryKey("PK_TourTranslation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TourTranslations_Tours_TourId",
+                        name: "FK_TourTranslation_Tour_TourId",
                         column: x => x.TourId,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TourTranslations_Tours_TourId1",
+                        name: "FK_TourTranslation_Tour_TourId1",
                         column: x => x.TourId1,
-                        principalTable: "Tours",
+                        principalSchema: "tour",
+                        principalTable: "Tour",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Payments",
+                name: "Payment",
+                schema: "payment",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -597,17 +650,19 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Payments", x => x.Id);
+                    table.PrimaryKey("PK_Payment", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Payments_Orders_OrderId",
+                        name: "FK_Payment_Order_OrderId",
                         column: x => x.OrderId,
-                        principalTable: "Orders",
+                        principalSchema: "booking",
+                        principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "CancelationTranslations",
+                name: "CancellationTranslation",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -622,17 +677,19 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CancelationTranslations", x => x.Id);
+                    table.PrimaryKey("PK_CancellationTranslation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CancelationTranslations_Cancelations_CancellationId",
+                        name: "FK_CancellationTranslation_Cancellation_CancellationId",
                         column: x => x.CancellationId,
-                        principalTable: "Cancelations",
+                        principalSchema: "tour",
+                        principalTable: "Cancellation",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ReviewImages",
+                name: "ReviewImage",
+                schema: "review",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -647,22 +704,25 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ReviewImages", x => x.Id);
+                    table.PrimaryKey("PK_ReviewImage", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ReviewImages_Reviews_ReviewId",
+                        name: "FK_ReviewImage_Review_ReviewId",
                         column: x => x.ReviewId,
-                        principalTable: "Reviews",
+                        principalSchema: "review",
+                        principalTable: "Review",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ReviewImages_Reviews_ReviewId1",
+                        name: "FK_ReviewImage_Review_ReviewId1",
                         column: x => x.ReviewId1,
-                        principalTable: "Reviews",
+                        principalSchema: "review",
+                        principalTable: "Review",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "ReviewTranslations",
+                name: "ReviewTranslation",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -677,17 +737,19 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ReviewTranslations", x => x.Id);
+                    table.PrimaryKey("PK_ReviewTranslation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ReviewTranslations_Reviews_ReviewId",
+                        name: "FK_ReviewTranslation_Review_ReviewId",
                         column: x => x.ReviewId,
-                        principalTable: "Reviews",
+                        principalSchema: "review",
+                        principalTable: "Review",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AvailableSlots",
+                schema: "tour",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -706,15 +768,17 @@ namespace Amigo.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_AvailableSlots", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AvailableSlots_TourSchedules_TourScheduleId",
+                        name: "FK_AvailableSlots_TourSchedule_TourScheduleId",
                         column: x => x.TourScheduleId,
-                        principalTable: "TourSchedules",
+                        principalSchema: "tour",
+                        principalTable: "TourSchedule",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "BasketItems",
+                name: "BasketItem",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -730,23 +794,26 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BasketItems", x => x.Id);
+                    table.PrimaryKey("PK_BasketItem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BasketItems_AvailableSlots_AvailableSlotsId",
+                        name: "FK_BasketItem_AvailableSlots_AvailableSlotsId",
                         column: x => x.AvailableSlotsId,
+                        principalSchema: "tour",
                         principalTable: "AvailableSlots",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_BasketItems_Baskets_BasketId",
+                        name: "FK_BasketItem_Basket_BasketId",
                         column: x => x.BasketId,
-                        principalTable: "Baskets",
+                        principalSchema: "booking",
+                        principalTable: "Basket",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Bookings",
+                name: "Booking",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -762,23 +829,26 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Bookings", x => x.Id);
+                    table.PrimaryKey("PK_Booking", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Bookings_AvailableSlots_AvailableSlotsId",
+                        name: "FK_Booking_AvailableSlots_AvailableSlotsId",
                         column: x => x.AvailableSlotsId,
+                        principalSchema: "tour",
                         principalTable: "AvailableSlots",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Bookings_Orders_OrderId",
+                        name: "FK_Booking_Order_OrderId",
                         column: x => x.OrderId,
-                        principalTable: "Orders",
+                        principalSchema: "booking",
+                        principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderItems",
+                name: "OrderItem",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -794,23 +864,26 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderItems", x => x.Id);
+                    table.PrimaryKey("PK_OrderItem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrderItems_AvailableSlots_AvailableSlotsId",
+                        name: "FK_OrderItem_AvailableSlots_AvailableSlotsId",
                         column: x => x.AvailableSlotsId,
+                        principalSchema: "tour",
                         principalTable: "AvailableSlots",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItems_Orders_OrderId",
+                        name: "FK_OrderItem_Order_OrderId",
                         column: x => x.OrderId,
-                        principalTable: "Orders",
+                        principalSchema: "booking",
+                        principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "PeopleBookings",
+                name: "PeopleBooking",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -825,23 +898,26 @@ namespace Amigo.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PeopleBookings", x => x.Id);
+                    table.PrimaryKey("PK_PeopleBooking", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PeopleBookings_Bookings_BookingId",
+                        name: "FK_PeopleBooking_Booking_BookingId",
                         column: x => x.BookingId,
-                        principalTable: "Bookings",
+                        principalSchema: "booking",
+                        principalTable: "Booking",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_PeopleBookings_Prices_PriceId",
+                        name: "FK_PeopleBooking_Price_PriceId",
                         column: x => x.PriceId,
-                        principalTable: "Prices",
+                        principalSchema: "booking",
+                        principalTable: "Price",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "PeopleBookingDetails",
+                schema: "booking",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -859,9 +935,10 @@ namespace Amigo.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_PeopleBookingDetails", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PeopleBookingDetails_PeopleBookings_PeopleBookingId",
+                        name: "FK_PeopleBookingDetails_PeopleBooking_PeopleBookingId",
                         column: x => x.PeopleBookingId,
-                        principalTable: "PeopleBookings",
+                        principalSchema: "booking",
+                        principalTable: "PeopleBooking",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -870,12 +947,6 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -889,229 +960,266 @@ namespace Amigo.Persistence.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_AvailableSlots_StartTime_EndTime",
+                schema: "tour",
                 table: "AvailableSlots",
                 columns: new[] { "StartTime", "EndTime" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AvailableSlots_TourScheduleId",
+                schema: "tour",
                 table: "AvailableSlots",
                 column: "TourScheduleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BasketItems_AvailableSlotsId",
-                table: "BasketItems",
-                column: "AvailableSlotsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BasketItems_BasketId",
-                table: "BasketItems",
-                column: "BasketId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Baskets_UserId",
-                table: "Baskets",
+                name: "IX_Basket_UserId",
+                schema: "booking",
+                table: "Basket",
                 column: "UserId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_AvailableSlotsId",
-                table: "Bookings",
+                name: "IX_BasketItem_AvailableSlotsId",
+                schema: "booking",
+                table: "BasketItem",
                 column: "AvailableSlotsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_OrderId",
-                table: "Bookings",
+                name: "IX_BasketItem_BasketId",
+                schema: "booking",
+                table: "BasketItem",
+                column: "BasketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Booking_AvailableSlotsId",
+                schema: "booking",
+                table: "Booking",
+                column: "AvailableSlotsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Booking_OrderId",
+                schema: "booking",
+                table: "Booking",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Bookings_Status",
-                table: "Bookings",
+                name: "IX_Booking_Status",
+                schema: "booking",
+                table: "Booking",
                 column: "Status");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cancelations_TourId",
-                table: "Cancelations",
+                name: "IX_Cancellation_TourId",
+                schema: "tour",
+                table: "Cancellation",
                 column: "TourId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CancelationTranslations_CancellationId_Language",
-                table: "CancelationTranslations",
+                name: "IX_CancellationTranslation_CancellationId_Language",
+                schema: "tour",
+                table: "CancellationTranslation",
                 columns: new[] { "CancellationId", "Language" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CancelationTranslations_Language",
-                table: "CancelationTranslations",
+                name: "IX_CancellationTranslation_Language",
+                schema: "tour",
+                table: "CancellationTranslation",
                 column: "Language");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Destinations_CountryCode",
-                table: "Destinations",
+                name: "IX_Destination_CountryCode",
+                schema: "auth",
+                table: "Destination",
                 column: "CountryCode");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Destinations_IsActive",
-                table: "Destinations",
+                name: "IX_Destination_IsActive",
+                schema: "auth",
+                table: "Destination",
                 column: "IsActive");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DestinationTranslations_DestinationId_Language",
-                table: "DestinationTranslations",
+                name: "IX_DestinationTranslation_DestinationId_Language",
+                schema: "tour",
+                table: "DestinationTranslation",
                 columns: new[] { "DestinationId", "Language" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DestinationTranslations_Language",
-                table: "DestinationTranslations",
+                name: "IX_DestinationTranslation_Language",
+                schema: "tour",
+                table: "DestinationTranslation",
                 column: "Language");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Favorites_UserId",
+                schema: "auth",
                 table: "Favorites",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_AvailableSlotsId",
-                table: "OrderItems",
-                column: "AvailableSlotsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_OrderId",
-                table: "OrderItems",
-                column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_UserId",
-                table: "Orders",
+                name: "IX_Order_UserId",
+                schema: "booking",
+                table: "Order",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Payments_OrderId",
-                table: "Payments",
+                name: "IX_OrderItem_AvailableSlotsId",
+                schema: "booking",
+                table: "OrderItem",
+                column: "AvailableSlotsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItem_OrderId",
+                schema: "booking",
+                table: "OrderItem",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Payment_OrderId",
+                schema: "payment",
+                table: "Payment",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PeopleBooking_BookingId",
+                schema: "booking",
+                table: "PeopleBooking",
+                column: "BookingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PeopleBooking_PriceId",
+                schema: "booking",
+                table: "PeopleBooking",
+                column: "PriceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PeopleBookingDetails_PeopleBookingId",
+                schema: "booking",
                 table: "PeopleBookingDetails",
                 column: "PeopleBookingId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PeopleBookings_BookingId",
-                table: "PeopleBookings",
-                column: "BookingId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PeopleBookings_PriceId",
-                table: "PeopleBookings",
-                column: "PriceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Prices_TourId",
-                table: "Prices",
+                name: "IX_Price_TourId",
+                schema: "booking",
+                table: "Price",
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Prices_TourId_Type",
-                table: "Prices",
+                name: "IX_Price_TourId_Type",
+                schema: "booking",
+                table: "Price",
                 columns: new[] { "TourId", "Type" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReviewImages_ReviewId",
-                table: "ReviewImages",
-                column: "ReviewId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ReviewImages_ReviewId1",
-                table: "ReviewImages",
-                column: "ReviewId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reviews_TourId",
-                table: "Reviews",
-                column: "TourId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reviews_UserId",
-                table: "Reviews",
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReviewTranslations_Language",
-                table: "ReviewTranslations",
+                name: "IX_Review_TourId",
+                schema: "review",
+                table: "Review",
+                column: "TourId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Review_UserId",
+                schema: "review",
+                table: "Review",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReviewImage_ReviewId",
+                schema: "review",
+                table: "ReviewImage",
+                column: "ReviewId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReviewImage_ReviewId1",
+                schema: "review",
+                table: "ReviewImage",
+                column: "ReviewId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReviewTranslation_Language",
+                schema: "tour",
+                table: "ReviewTranslation",
                 column: "Language");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReviewTranslations_ReviewId_Language",
-                table: "ReviewTranslations",
+                name: "IX_ReviewTranslation_ReviewId_Language",
+                schema: "tour",
+                table: "ReviewTranslation",
                 columns: new[] { "ReviewId", "Language" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourImages_TourId",
-                table: "TourImages",
+                name: "RoleNameIndex",
+                table: "Roles",
+                column: "NormalizedName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tour_DestinationId",
+                schema: "tour",
+                table: "Tour",
+                column: "DestinationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TourImage_TourId",
+                schema: "tour",
+                table: "TourImage",
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourImages_TourId1",
-                table: "TourImages",
-                column: "TourId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TourIncluded_TourId",
+                schema: "tour",
                 table: "TourIncluded",
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TourIncluded_TourId_Language",
+                schema: "tour",
                 table: "TourIncluded",
                 columns: new[] { "TourId", "Language" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourIncluded_TourId1",
-                table: "TourIncluded",
-                column: "TourId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TourNotIncluded_TourId",
+                schema: "tour",
                 table: "TourNotIncluded",
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TourNotIncluded_TourId_Language",
+                schema: "tour",
                 table: "TourNotIncluded",
                 columns: new[] { "TourId", "Language" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourNotIncluded_TourId1",
-                table: "TourNotIncluded",
-                column: "TourId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tours_DestinationId",
-                table: "Tours",
-                column: "DestinationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TourSchedules_StartDate_EndDate",
-                table: "TourSchedules",
+                name: "IX_TourSchedule_StartDate_EndDate",
+                schema: "tour",
+                table: "TourSchedule",
                 columns: new[] { "StartDate", "EndDate" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourSchedules_TourId",
-                table: "TourSchedules",
+                name: "IX_TourSchedule_TourId",
+                schema: "tour",
+                table: "TourSchedule",
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourTranslations_TourId_Language",
-                table: "TourTranslations",
+                name: "IX_TourTranslation_TourId_Language",
+                schema: "tour",
+                table: "TourTranslation",
                 columns: new[] { "TourId", "Language" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TourTranslations_TourId1",
-                table: "TourTranslations",
+                name: "IX_TourTranslation_TourId1",
+                schema: "tour",
+                table: "TourTranslation",
                 column: "TourId1");
 
             migrationBuilder.CreateIndex(
@@ -1128,8 +1236,7 @@ namespace Amigo.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Users_PhoneNumber",
                 table: "Users",
-                column: "PhoneNumber",
-                unique: true);
+                column: "PhoneNumber");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -1141,6 +1248,10 @@ namespace Amigo.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Address",
+                schema: "auth");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -1154,88 +1265,112 @@ namespace Amigo.Persistence.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BasketItems");
+                name: "BasketItem",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "CancelationTranslations");
+                name: "CancellationTranslation",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "DestinationTranslations");
+                name: "DestinationTranslation",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "Favorites");
+                name: "Favorites",
+                schema: "auth");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "OrderItem",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "Payments");
+                name: "Payment",
+                schema: "payment");
 
             migrationBuilder.DropTable(
-                name: "PeopleBookingDetails");
+                name: "PeopleBookingDetails",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "ReviewImages");
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
-                name: "ReviewTranslations");
+                name: "ReviewImage",
+                schema: "review");
 
             migrationBuilder.DropTable(
-                name: "Roles");
+                name: "ReviewTranslation",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "TourImages");
+                name: "TourImage",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "TourIncluded");
+                name: "TourIncluded",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "TourNotIncluded");
+                name: "TourNotIncluded",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "TourTranslations");
+                name: "TourTranslation",
+                schema: "tour");
 
             migrationBuilder.DropTable(
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
-                name: "Baskets");
+                name: "Basket",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "Cancelations");
+                name: "Cancellation",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "PeopleBookings");
+                name: "PeopleBooking",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "Reviews");
+                name: "Review",
+                schema: "review");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Bookings");
+                name: "Booking",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "Prices");
+                name: "Price",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "AvailableSlots");
+                name: "AvailableSlots",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Order",
+                schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "TourSchedules");
+                name: "TourSchedule",
+                schema: "tour");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Tours");
+                name: "Tour",
+                schema: "tour");
 
             migrationBuilder.DropTable(
-                name: "Destinations");
+                name: "Destination",
+                schema: "auth");
         }
     }
 }

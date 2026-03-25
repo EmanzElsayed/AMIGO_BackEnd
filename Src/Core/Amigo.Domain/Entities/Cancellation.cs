@@ -1,6 +1,6 @@
 ﻿namespace Amigo.Domain.Entities;
 
-[Table($"{nameof(Cancellation)}", Schema = SchemaConstants.auth_schema)]
+[Table($"{nameof(Cancellation)}", Schema = SchemaConstants.tour_schema)]
 
 
 public class Cancellation:BaseEntity<Guid>

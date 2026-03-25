@@ -1,6 +1,6 @@
 ﻿namespace Amigo.Domain.DTO.Authentication;
 
-public record ConfirmEmailRequest
+public record ConfirmEmailRequestDTO
 (
     string Email,
      string Token

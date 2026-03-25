@@ -1,4 +1,4 @@
-﻿using Amigo.Domain;
+﻿using Amigo.Domain.Abstraction;
 using Amigo.Domain.Enum;
 
 namespace Amigo.Persistence;
@@ -41,7 +41,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     Language.English,
                     new Address
                     {
-                        BuildingNumber = 1,
+                        BuildingNumber = "25",
                         City = "Ismailia",
                         Country = "Egypt"
                     },

@@ -21,7 +21,7 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
             builder.HasIndex(x => x.TourId);
 
             builder.HasOne(x => x.Tour)
-                   .WithMany()
+                   .WithMany(p => p.Images)
                    .HasForeignKey(x => x.TourId)
                    .OnDelete(DeleteBehavior.Cascade);
         }

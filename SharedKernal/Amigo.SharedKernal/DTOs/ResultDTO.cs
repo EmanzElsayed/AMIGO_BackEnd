@@ -2,13 +2,15 @@
 
 public record ResultDTO<T>
 (
-    T Data,
-    int count = 0,
+    T? Data,
+    int StatusCode,
+    bool IsSuccess = true,
+    int Count = 0,
     int PageNumber = 1,
     int PageSize = 10,
     int TotalPages = 1,
-    bool isSuccess = false,
-    Dictionary<string, string>? Messages = null,
-    Dictionary<string, string>? ErrorMessages = null,
+    string Message = "Succeed",
+    object? Errors = null,
     [property: JsonConverter(typeof(ExceptionConverter))] Exception? Exception = null
+    
 );

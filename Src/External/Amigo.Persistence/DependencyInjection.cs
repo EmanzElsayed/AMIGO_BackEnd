@@ -1,3 +1,4 @@
+using Amigo.Domain.Abstraction;
 using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Persistence.Repositories;
 
@@ -52,7 +53,8 @@ public static class DependencyInjection
 
         services.AddScoped<IRefreshTokenRepo, RefreshTokenRepo>();
 
-        
+        services.AddScoped<IDataSeeding, DataSeeding>();
+
         return services;
     }
 }
