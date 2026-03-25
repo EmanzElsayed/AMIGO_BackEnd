@@ -5,6 +5,11 @@
 *.userosscache
 *.sln.docstates
 
+# Ignore appsettings
+
+appsettings.json
+appsettings.*.json
+
 # Build results
 bin/
 obj/
