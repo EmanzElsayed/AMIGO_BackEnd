@@ -16,6 +16,7 @@ using FluentResults;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -38,8 +39,8 @@ public class AuthService(
                          IValidator<ConfirmEmailRequestDTO> confirmEmailValidator,
                          IValidator<LoginRequestDTO> loginValidator,
                          IValidator<ResendConfrimEmailRequestDTO> resendConfirmEmailValidator,
-
-                         
+                         IValidator<ForgetPasswordRequestDTO> forgetPasswordValidator,
+                         IValidator<ResetPasswordRequestDTO> resetPasswordValidator,
                          IConfiguration _configuration,
                          IEmailService _emailService,
                          IUserMapping _userMapping
@@ -66,6 +67,11 @@ public class AuthService(
 
         if (!user.EmailConfirmed)
         {
+            var SendEmailResult = await SendConfirmEmail(user);
+            if (!SendEmailResult.IsSuccess)
+            {
+                return SendEmailResult;
+            }
             return Result.Fail(new Error("Please Confirm Your Email First")
                                 .WithMetadata("StatusCode", HttpStatusCode.BadRequest));
 
@@ -106,7 +112,64 @@ public class AuthService(
         throw new NotImplementedException();
     }
 
-   
+    public async Task<Result> ForgetPassword(ForgetPasswordRequestDTO requestDTO)
+    {
+        // Use the extension method
+        Result validationResult = await forgetPasswordValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        if (!validationResult.IsSuccess)
+        {
+            return validationResult;
+        }
+        var user = await _userManager.FindByEmailAsync(requestDTO.Email);
+
+        if (!IsEmailExist(user))
+        {
+            return Result.Fail(new Error($"This Email '{requestDTO.Email}' Not Found")
+                               .WithMetadata("StatusCode", HttpStatusCode.NotFound));
+
+        }
+        var resetEmailResult =  await SendResetPasswordEmail(user);
+        if(!resetEmailResult.IsSuccess)
+        {
+            return resetEmailResult;
+        }
+
+        return Result.Ok()
+           .WithSuccess(new Success("If an account is associated with this email, you’ll receive a password reset link.")
+           .WithMetadata("StatusCode", HttpStatusCode.OK));
+    }
+
+    public async Task<Result> ResetPassword(ResetPasswordRequestDTO requestDTO)
+    {
+        // Use the extension method
+        Result validationResult = await resetPasswordValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        if (!validationResult.IsSuccess)
+        {
+            return validationResult;
+        }
+        var user = await _userManager.FindByEmailAsync(requestDTO.Email);
+
+        if (!IsEmailExist(user))
+        {
+            return Result.Fail(new Error($"This Email '{requestDTO.Email}' Not Found")
+                               .WithMetadata("StatusCode", HttpStatusCode.NotFound));
+
+        }
+
+        var token = WebUtility.UrlDecode(requestDTO.Token);
+       
+        var result = await _userManager.ResetPasswordAsync(user, token, requestDTO.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            return FluentValidationExtension.FromIdentityErrors(result.Errors);
+        }
+
+        return Result.Ok()
+          .WithSuccess(new Success("Password Changed SuccessFully, Please Login")
+          .WithMetadata("StatusCode", HttpStatusCode.OK));
+
+    }
     public async Task<Result<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO requestDTO)
     {
 
@@ -318,6 +381,32 @@ public class AuthService(
 
     }
 
+    private async Task<Result> SendResetPasswordEmail(ApplicationUser user)
+    {
+        try
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebUtility.UrlEncode(token);
+            var resetPasswordLink =
+                $"{_configuration["FrontendAPIs:ResetPasswordFrontend"]}?email={user.Email}&token={encodedToken}";
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "Reset Password",
+                $"""
+                    <h3>Welcome</h3>
+                    <p>Click the link below to reset your password:</p>
+                    <a href='{resetPasswordLink}'>Confirm Email</a>
+                    """
+            );
+
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            return FluentValidationExtension.FromException(details: ex.Message);
+        }
+
+    }
     private async Task<string> GenerateToken(ApplicationUser User)
     {
         // header 
@@ -358,6 +447,6 @@ public class AuthService(
 
     }
 
-
+    
 }
 

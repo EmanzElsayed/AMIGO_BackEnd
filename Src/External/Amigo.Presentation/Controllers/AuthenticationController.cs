@@ -68,6 +68,7 @@ namespace Amigo.Presentation.Controllers
 
             return StatusCode(statusCode, dto);
         }
+       
         [HttpPost("resend-confirmation")]
         public async Task<ActionResult> ResendConfirmEmail([FromBody] ResendConfrimEmailRequestDTO requestDTO)
         {
@@ -83,13 +84,36 @@ namespace Amigo.Presentation.Controllers
             return StatusCode(statusCode, dto);
         }
 
+        [HttpPost("forget-password")]
+        public async Task<ActionResult> ForgotPassword([FromBody] ForgetPasswordRequestDTO requestDTO)
+        {
+            var result = await _authService.ForgetPassword(requestDTO);
 
-        //[HttpPost("login")]
-        //public async Task<ActionResult<ResultDTO<LoginReturnDTO>>> Login([FromBody] LoginRequestDTO loginDTO)
-        //{
+            var dto = ResultMapping.ToResultDTO<string>(result);
 
-        //    var res = await _authenticationService.LoginAsync(loginDTO);
-        //    return Ok(res);
-        //}
+            // Choose status code
+            var statusCode = result.IsSuccess
+                                 ? result.Successes.FirstOrDefault()?.Metadata["StatusCode"] as int? ?? 200
+                                 : result.Errors.FirstOrDefault()?.Metadata["StatusCode"] as int? ?? 400;
+
+            return StatusCode(statusCode, dto);
+        }
+
+
+        [HttpPost("reset-password")]
+        public async Task<ActionResult> ResetPasswod([FromBody] ResetPasswordRequestDTO requestDTO)
+        {
+            var result = await _authService.ResetPassword(requestDTO);
+
+            var dto = ResultMapping.ToResultDTO<string>(result);
+
+            // Choose status code
+            var statusCode = result.IsSuccess
+                                 ? result.Successes.FirstOrDefault()?.Metadata["StatusCode"] as int? ?? 200
+                                 : result.Errors.FirstOrDefault()?.Metadata["StatusCode"] as int? ?? 400;
+
+            return StatusCode(statusCode, dto);
+        }
+
     }
 }
