@@ -361,7 +361,7 @@ public class AuthService(
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
             var confirmLink =
-                $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?confirmemail={user.Email}&token={encodedToken}";
+                $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?email={user.Email}&token={encodedToken}";
             await _emailService.SendEmailAsync(
                 user.Email,
                 "Confirm your email",
