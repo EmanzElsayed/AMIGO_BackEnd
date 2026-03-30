@@ -11,13 +11,20 @@ namespace Amigo.Application.Validators
         public RegisterRequestDTOValidator()
         {
 
+            RuleFor(x => x.FullName)
+              .NotEmpty()
+              .WithMessage("FullName is required.")
+              .MinimumLength(3)
+              .WithMessage("FullName must be at least 3 Characters.")
+              .MaximumLength(256)
+              .WithMessage("FullName must be less than 256 Characters.");
+
+
             RuleFor(x => x.Email)
                 .NotEmpty()
                 .WithMessage("Email is required.")
                 .EmailAddress()
                 .WithMessage("Email must be a valid email address.");
-           
-
            
 
             RuleFor(x => x.Password)

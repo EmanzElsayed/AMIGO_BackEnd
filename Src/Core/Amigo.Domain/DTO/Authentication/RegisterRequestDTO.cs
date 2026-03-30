@@ -4,9 +4,9 @@ public record RegisterRequestDTO(
     string Email,
     string Password,
     string ConfirmPassword,
+    string FullName,   
     bool TermsAccepted
     
-   
 );
 
 //in update profile

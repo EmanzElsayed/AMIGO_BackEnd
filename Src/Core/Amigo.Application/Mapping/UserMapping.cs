@@ -13,7 +13,8 @@ namespace Amigo.Application;
         => new ApplicationUser()
         {
             Email = requestDTO.Email,
-            UserName = requestDTO.Email.Split('@')[0]
+            UserName = requestDTO.Email.Split('@')[0],
+            FullName = requestDTO.FullName,
         };
             
     }

@@ -395,7 +395,7 @@ public class AuthService(
                 $"""
                     <h3>Welcome</h3>
                     <p>Click the link below to reset your password:</p>
-                    <a href='{resetPasswordLink}'>Confirm Email</a>
+                    <a href='{resetPasswordLink}'>Reset Password Email</a>
                     """
             );
 
