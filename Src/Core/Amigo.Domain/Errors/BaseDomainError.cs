@@ -2,11 +2,14 @@
 
 namespace Amigo.Domain.Errors;
 
-public abstract class BaseDomainError(string msg, ErrorCode errorCode, int statusCode)
-    : Error(msg)
+public abstract class BaseDomainError
+    : Error
 {
-    protected ErrorCode ErrorCode { get; set; } = errorCode;
-    protected int StatusCode { get; set; } = statusCode;
-    protected string Message { get; set; } = msg;
+    public ErrorCode Code { get;}
+    protected BaseDomainError(string message, ErrorCode code)
+         : base(message)
+    {
+        Code = code;
+    }
 
 }

@@ -1,19 +1,19 @@
 
+using Amigo.Application;
 using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Services;
-using Amigo.Application;
-
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
 using Amigo.Persistence;
+using Amigo.Presentation;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Amigo.API
@@ -28,7 +28,8 @@ namespace Amigo.API
 
             builder.Services.AddBasicDependencyInjcetion(builder.Configuration)
                             .AddPersistence(builder.Configuration)
-                            .AddApplicationDependencyInjection(builder.Configuration);
+                            .AddApplicationDependencyInjection(builder.Configuration)
+                            .AddPresentationDependencyInjection(builder.Configuration);
 
 
 
@@ -63,8 +64,8 @@ namespace Amigo.API
 
             #endregion
 
+            app.UseMiddleware<GlobalExceptionMiddleware>();
 
-           
             app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI();

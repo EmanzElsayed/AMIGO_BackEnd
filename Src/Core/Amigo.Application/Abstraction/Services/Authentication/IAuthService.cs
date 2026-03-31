@@ -1,12 +1,8 @@
-﻿using Amigo.Domain.DTO.Authentication;
-using Amigo.SharedKernal.DTOs;
-using Amigo.SharedKernal.DTOs.Authentication;
-using FluentResults;
-
+﻿
 namespace Amigo.Application.Abstraction.Services.Authentication;
 public interface IAuthService
 {
-    Task<Result<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO request);
+    Task<Result> RegisterAsync(RegisterRequestDTO request);
     Task<Result<LoginResponseDTO>> LoginAsync(LoginRequestDTO request);
 
 

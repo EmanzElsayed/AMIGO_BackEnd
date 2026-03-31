@@ -24,6 +24,7 @@ namespace Amigo.Application.Validators
                 .NotEmpty()
                 .WithMessage("Email is required.")
                 .EmailAddress()
+                .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")
                 .WithMessage("Email must be a valid email address.");
            
 

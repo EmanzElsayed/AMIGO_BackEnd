@@ -1,9 +1,5 @@
-﻿using Amigo.Application.Abstraction.Services.Authentication;
-using Microsoft.Extensions.Configuration;
+﻿
 
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
 
 namespace Amigo.Application.Services
 {

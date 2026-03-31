@@ -20,7 +20,8 @@ public static class FluentValidationExtension
             .Select(x => new ValidationPropertError(x.Key, x.Select(y => y.ErrorMessage).ToList()))
             .ToList();
 
-        return Result.Fail(new ValidationErrror(errors).WithMetadata("StatusCode",(int) HttpStatusCode.BadRequest));
+        return Result.Fail(new ValidationErrror(errors));
+            
     }
 
     public static  Result FromIdentityErrors(
@@ -38,19 +39,20 @@ public static class FluentValidationExtension
             .ToList();
 
 
-        return Result.Fail(new ValidationErrror(list, "Identity validation failed").WithMetadata("StatusCode", (int)HttpStatusCode.BadRequest));
+        return Result.Fail(new ValidationErrror(list, "Identity validation failed"));
     }
 
     public static Result FromException(
 
-        string? details,
-        string msg = "Internal Server Error"
+        string? details
+       
        
         )
 
     {
 
 
-        return Result.Fail(new ExceptionError( msg,details).WithMetadata("StatusCode", (int)HttpStatusCode.InternalServerError));
+        return Result.Fail(new ExceptionError(details:details)
+            );
     }
 }

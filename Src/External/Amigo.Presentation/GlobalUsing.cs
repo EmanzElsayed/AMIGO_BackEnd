@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿#region Packages
+global using FluentResults;
+global using Microsoft.AspNetCore.Mvc;
 
-namespace Amigo.Presentation
-{
-    internal class GlobalUsing
-    {
-    }
-}
+#endregion
+
+
+#region References
+global using Amigo.Application.Abstraction.Services.Authentication;
+ 
+global using Amigo.Domain.DTO.Authentication;
+global using Amigo.Presentation.Filters;
+
+#endregion

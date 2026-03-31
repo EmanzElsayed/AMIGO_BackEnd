@@ -20,6 +20,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailService, GoogleEmailService>();
 
+        services.AddScoped<IEnumService, EnumService>();
+
         return services;
     }
 }

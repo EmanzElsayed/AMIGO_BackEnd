@@ -9,7 +9,7 @@ namespace Amigo.Domain.Errors
         public string? Details { get; }
 
         public ExceptionError(string message = "Internal Server Error", string? details = null)
-            : base(message, ErrorCode.InternalServerError, 500)
+            : base(message, ErrorCode.InternalServerError)
         {
             Details = details;
         }

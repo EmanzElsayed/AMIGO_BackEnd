@@ -1,33 +1,4 @@
-﻿using Amigo.Application.Abstraction;
-using Amigo.Application.Abstraction.Services.Authentication;
-using Amigo.Application.Mapping;
-using Amigo.Application.Validators;
-using Amigo.Domain.Abstraction.Repositories;
-using Amigo.Domain.DTO.Authentication;
-using Amigo.Domain.Entities;
-using Amigo.Domain.Entities.Identity;
-using Amigo.Domain.Enum;
-using Amigo.Domain.Errors;
-using Amigo.Domain.Errors.BusinessErrors;
-using Amigo.Domain.Extension;
-using Amigo.SharedKernal.DTOs;
-using Amigo.SharedKernal.DTOs.Authentication;
-using FluentResults;
-using FluentValidation;
-using FluentValidation.Results;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Runtime.InteropServices;
-using System.Security.Claims;
-using System.Text;
+﻿
 
 namespace Amigo.Application.Services;
 
@@ -60,8 +31,8 @@ public class AuthService(
 
         if (user is null)
         {
-            return Result.Fail(new Error("Invalid Email Or Password")
-                                .WithMetadata("StatusCode", HttpStatusCode.BadRequest));
+            return Result.Fail(new UnauthorizedError());
+                                
 
         }
 
@@ -72,8 +43,7 @@ public class AuthService(
             {
                 return SendEmailResult;
             }
-            return Result.Fail(new Error("Please Confirm Your Email First")
-                                .WithMetadata("StatusCode", HttpStatusCode.BadRequest));
+            return Result.Fail(new ForbiddenError("Please Confirm Your Email First"));
 
 
         }
@@ -95,14 +65,14 @@ public class AuthService(
             );
 
             return Result.Ok(data)
-                 .WithSuccess(new Success("Welcome To Amigo Arabe Tours")
-                 .WithMetadata("StatusCode", HttpStatusCode.OK));
+                 .WithSuccess(new Success("Welcome To Amigo Arabe Tours"));
+                 
 
         }
         else
         {
-            return Result.Fail(new Error("Invalid Email Or Password")
-                                  .WithMetadata("StatusCode", HttpStatusCode.BadRequest));
+            return Result.Fail(new UnauthorizedError());
+                                  
 
         }
     }
@@ -124,8 +94,8 @@ public class AuthService(
 
         if (!IsEmailExist(user))
         {
-            return Result.Fail(new Error($"This Email '{requestDTO.Email}' Not Found")
-                               .WithMetadata("StatusCode", HttpStatusCode.NotFound));
+            return Result.Fail(new NotFoundEmailError(requestDTO.Email));
+
 
         }
         var resetEmailResult =  await SendResetPasswordEmail(user);
@@ -135,8 +105,8 @@ public class AuthService(
         }
 
         return Result.Ok()
-           .WithSuccess(new Success("If an account is associated with this email, you’ll receive a password reset link.")
-           .WithMetadata("StatusCode", HttpStatusCode.OK));
+           .WithSuccess(new Success("If an account is associated with this email, you’ll receive a password reset link."));
+           
     }
 
     public async Task<Result> ResetPassword(ResetPasswordRequestDTO requestDTO)
@@ -151,8 +121,8 @@ public class AuthService(
 
         if (!IsEmailExist(user))
         {
-            return Result.Fail(new Error($"This Email '{requestDTO.Email}' Not Found")
-                               .WithMetadata("StatusCode", HttpStatusCode.NotFound));
+            return Result.Fail(new NotFoundEmailError(requestDTO.Email));
+
 
         }
 
@@ -166,11 +136,11 @@ public class AuthService(
         }
 
         return Result.Ok()
-          .WithSuccess(new Success("Password Changed SuccessFully, Please Login")
-          .WithMetadata("StatusCode", HttpStatusCode.OK));
+          .WithSuccess(new Success("Password Changed SuccessFully, Please Login"));
+
 
     }
-    public async Task<Result<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO requestDTO)
+    public async Task<Result> RegisterAsync(RegisterRequestDTO requestDTO)
     {
 
         // Use the extension method
@@ -185,9 +155,9 @@ public class AuthService(
         #region Check Email
         if ( IsEmailExist(existingUser))
         {
-            return Result.Fail(new EmailAlreadyExistsError(requestDTO.Email)
-                            .WithMetadata("StatusCode",(int)HttpStatusCode.Conflict));
-          
+            return Result.Fail(new EmailAlreadyExistsError(requestDTO.Email));
+
+
         }
 
         #endregion
@@ -211,8 +181,7 @@ public class AuthService(
         }
         await _userManager.AddToRoleAsync(user, "Customer");
 
-        // Get Role 
-        var role = await GetRole(user);
+       
        
 
         var SendEmailResult =   await SendConfirmEmail(user);
@@ -221,17 +190,13 @@ public class AuthService(
             return SendEmailResult;
         }
 
-        var result = new RegisterResponseDTO
-        (
-            
-                user.Email,
-                role
-        );
+      
 
-        return Result.Ok(result)
-            .WithSuccess(new Success("Registration successful. Please confirm your email using the link sent to your inbox")
-            .WithMetadata("StatusCode", HttpStatusCode.Created));
-            
+        return Result.Ok()
+            .WithSuccess(new Success("Registration successful. Please confirm your email using the link sent to your inbox") 
+            .WithMetadata("StatusCode",(int) HttpStatusCode.Created ));
+
+
 
     }
 
@@ -249,16 +214,16 @@ public class AuthService(
 
         if (user is null)
         {
-            return Result.Fail(new Error($"This Email '{requestDTO.Email}' Not Found")
-                                .WithMetadata("StatusCode",HttpStatusCode.NotFound));
+            return Result.Fail(new NotFoundEmailError(requestDTO.Email));
+
 
         }
 
         if (IsEmailExist(user))
         {
             return Result.Ok()
-                       .WithSuccess(new Success("Email Already Confirmed Please Login")
-                       .WithMetadata("StatusCode", HttpStatusCode.OK));
+                       .WithSuccess(new Success("Email Already Confirmed Please Login"));
+
         }
 
         var token = WebUtility.UrlDecode(requestDTO.Token);
@@ -272,8 +237,8 @@ public class AuthService(
         }
 
         return Result.Ok()
-            .WithSuccess(new Success("Email Confirmed SuccessFully, Please Login")
-            .WithMetadata("StatusCode", HttpStatusCode.OK));
+            .WithSuccess(new Success("Email Confirmed SuccessFully, Please Login"));
+
 
     }
 
@@ -291,16 +256,16 @@ public class AuthService(
 
         if (user is null)
         {
-            return Result.Fail(new Error($"This Email '{requestDTO.Email}' Not Found")
-                                .WithMetadata("StatusCode", HttpStatusCode.NotFound));
+            return Result.Fail(new NotFoundEmailError(requestDTO.Email));
+
 
         }
 
         if (IsEmailExist(user))
         {
             return Result.Ok()
-                       .WithSuccess(new Success("Email Already Confirmed Please Login")
-                       .WithMetadata("StatusCode", HttpStatusCode.OK));
+                       .WithSuccess(new Success("Email Already Confirmed Please Login"));
+
         }
 
         if (user is not null && !user.EmailConfirmed)
@@ -313,8 +278,8 @@ public class AuthService(
         }
 
         return Result.Ok()
-            .WithSuccess(new Success("Please confirm your email using the link sent to your inbox")
-            .WithMetadata("StatusCode", HttpStatusCode.OK));
+            .WithSuccess(new Success("Please confirm your email using the link sent to your inbox"));
+
     }
 
 
@@ -335,7 +300,7 @@ public class AuthService(
         return primaryRole;
 
     }
-    private async Task<Result<RegisterResponseDTO>?> IsEmailExistAndNotConfirmedAndResingEmail(ApplicationUser? existingUser)
+    private async Task<Result?> IsEmailExistAndNotConfirmedAndResingEmail(ApplicationUser? existingUser)
     {
         if (existingUser is null) return null;
 
@@ -343,12 +308,11 @@ public class AuthService(
         {
             await SendConfirmEmail(existingUser);
 
-            string role = await GetRole(existingUser);
-            var response = new RegisterResponseDTO(existingUser.Email, role);
+          
 
-
-            return Result.Ok(response).WithSuccess(new Success("Email already exists but not confirmed. Please check your email.")
-            .WithMetadata("StatusCode", HttpStatusCode.OK));
+            return Result.Ok()
+                .WithSuccess(new Success("Email already exists but not confirmed. Please check your email.")
+            );
 
         }
         else return null;

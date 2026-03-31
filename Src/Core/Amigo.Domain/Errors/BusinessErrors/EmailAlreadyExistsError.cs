@@ -9,8 +9,8 @@ namespace Amigo.Domain.Errors.BusinessErrors
     {
         public EmailAlreadyExistsError(string email)
         : base($"Email '{email}' already exists.",
-              ErrorCode.EmailAlreadyExist,
-              (int) HttpStatusCode.Conflict)
+              ErrorCode.EmailAlreadyExist
+              )
         { 
             
         }
