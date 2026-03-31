@@ -22,6 +22,15 @@ public static class DependencyInjection
 
         services.AddScoped<IEnumService, EnumService>();
 
+        services.AddScoped<IValidationService, ValidationService>();
+        services.AddValidatorsFromAssemblyContaining<RegisterRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<ConfirmEmailRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<LoginRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<ResendConfrimEmailRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<ForgetPasswordRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<ResetPasswordRequestDTO>();
+
+
         return services;
     }
 }

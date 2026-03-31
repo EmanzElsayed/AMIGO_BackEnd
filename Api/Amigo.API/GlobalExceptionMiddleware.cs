@@ -49,17 +49,20 @@ namespace Amigo.API
                     IsSuccess = false,
                     StatusCode = (int)HttpStatusCode.InternalServerError,
                     Message = ex.Message,
-                    //Exception = ex,
+                    
                     ErrorCode = ErrorCode.InternalServerError.ToString(),
                     
                     TraceId = context.TraceIdentifier
                 };
-                
 
-                context.Response.StatusCode = response.StatusCode;
-                context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsJsonAsync(response);
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = response.StatusCode;
+                    context.Response.ContentType = "application/json";
+                     await context.Response.WriteAsJsonAsync(response);
+                }
+
             }
         }
     }

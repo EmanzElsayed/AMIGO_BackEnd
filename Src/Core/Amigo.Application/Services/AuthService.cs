@@ -6,12 +6,7 @@ public class AuthService(
                          UserManager<ApplicationUser> _userManager,
                          IRefreshTokenRepo _refreshTokenRepo,
 
-                         IValidator<RegisterRequestDTO> registerValidator,
-                         IValidator<ConfirmEmailRequestDTO> confirmEmailValidator,
-                         IValidator<LoginRequestDTO> loginValidator,
-                         IValidator<ResendConfrimEmailRequestDTO> resendConfirmEmailValidator,
-                         IValidator<ForgetPasswordRequestDTO> forgetPasswordValidator,
-                         IValidator<ResetPasswordRequestDTO> resetPasswordValidator,
+                        IValidationService _validationService,
                          IConfiguration _configuration,
                          IEmailService _emailService,
                          IUserMapping _userMapping
@@ -21,7 +16,7 @@ public class AuthService(
 
     public async Task<Result<LoginResponseDTO>> LoginAsync(LoginRequestDTO requestDTO)
     {
-        var validationResult = await loginValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         {
             return validationResult;
@@ -29,7 +24,7 @@ public class AuthService(
 
         var user = await _userManager.FindByEmailAsync(requestDTO.Email);
 
-        if (user is null)
+        if (user is null)   
         {
             return Result.Fail(new UnauthorizedError());
                                 
@@ -85,7 +80,7 @@ public class AuthService(
     public async Task<Result> ForgetPassword(ForgetPasswordRequestDTO requestDTO)
     {
         // Use the extension method
-        Result validationResult = await forgetPasswordValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         {
             return validationResult;
@@ -112,7 +107,7 @@ public class AuthService(
     public async Task<Result> ResetPassword(ResetPasswordRequestDTO requestDTO)
     {
         // Use the extension method
-        Result validationResult = await resetPasswordValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         {
             return validationResult;
@@ -144,7 +139,7 @@ public class AuthService(
     {
 
         // Use the extension method
-        Result validationResult = await registerValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         { 
             return validationResult;
@@ -203,9 +198,9 @@ public class AuthService(
 
     public async Task<Result> ConfirmEmail(ConfirmEmailRequestDTO requestDTO)
     {
-        
+
         // Use the extension method
-        Result validationResult = await confirmEmailValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         {
             return validationResult;
@@ -247,7 +242,7 @@ public class AuthService(
     public async Task<Result> ResendConfirmEmail(ResendConfrimEmailRequestDTO requestDTO)
     {
         // Use the extension method
-        Result validationResult = await resendConfirmEmailValidator.ValidateAndGroupErrorsAsync(requestDTO);
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         {
             return validationResult;
