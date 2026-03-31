@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepo, RefreshTokenRepo>();
 
         services.AddScoped<IDataSeeding, DataSeeding>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

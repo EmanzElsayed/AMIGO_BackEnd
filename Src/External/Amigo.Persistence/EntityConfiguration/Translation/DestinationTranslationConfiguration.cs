@@ -30,7 +30,7 @@ namespace Amigo.Persistence.EntityConfiguration.Translation
             builder.HasIndex(x => x.Language);
 
             builder.HasOne(x => x.Destination)
-                   .WithMany()
+                   .WithMany(x => x.Translations)
                    .HasForeignKey(x => x.DestinationId)
                    .OnDelete(DeleteBehavior.Cascade);
         }

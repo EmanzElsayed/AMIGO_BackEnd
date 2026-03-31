@@ -20,7 +20,7 @@ namespace Amigo.Persistence.EntityConfiguration
             builder.Property(d => d.CountryCode)
                    .HasConversion<int>();
 
-            builder.Property(d => d.Image)
+            builder.Property(d => d.ImageUrl)
                    .HasMaxLength(500);
 
             builder.Property(d => d.IsActive)
@@ -29,6 +29,8 @@ namespace Amigo.Persistence.EntityConfiguration
 
             builder.HasIndex(d => d.CountryCode);
             builder.HasIndex(d => d.IsActive);
+
+          
         }
     }
 }

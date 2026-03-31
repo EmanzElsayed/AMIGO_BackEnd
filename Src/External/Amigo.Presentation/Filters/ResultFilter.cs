@@ -14,6 +14,23 @@ namespace Amigo.Presentation.Filters
 {
     public class ResultFilter : IAsyncResultFilter
     {
+        private int ResolveStatusCode(IResultBase result)
+        {
+            // Success case
+            if (result.IsSuccess)
+            {
+                var successWithStatus = result.Successes.FirstOrDefault(s =>
+                    s.Metadata.ContainsKey("StatusCode"));
+
+                if (successWithStatus != null)
+                    return Convert.ToInt32(successWithStatus.Metadata["StatusCode"]);
+
+                return (int)HttpStatusCode.OK;
+            }
+
+            // Failure case
+            return MapStatusCode(result.Errors);
+        }
         public async Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             if (context.Result is ObjectResult objectResult &&
@@ -23,14 +40,14 @@ namespace Amigo.Presentation.Filters
 
                 context.Result = new ObjectResult(response)
                 {
-                    StatusCode = response.StatusCode
+                    StatusCode = ResolveStatusCode(result)
                 };
             }
 
             await next();
         }
 
-        private ApiResponse<object> Map(IResultBase result, ResultExecutingContext context)
+        private object Map(IResultBase result, ResultExecutingContext context)
         {
             object? value = null;
 
@@ -54,7 +71,11 @@ namespace Amigo.Presentation.Filters
                 {
                     statusCode = Convert.ToInt32(successWithStatus.Metadata["StatusCode"]);
                 }
-
+                // 👇 Detect PaginatedResult
+                if (value != null && IsPaginated(value))
+                {
+                    return MapPaginated(value, result, context, statusCode);
+                }
                 return new ApiResponse<object>
                 {
                     IsSuccess = true,
@@ -75,6 +96,46 @@ namespace Amigo.Presentation.Filters
                 TraceId = context.HttpContext.TraceIdentifier
             };
         }
+        private bool IsPaginated(object value)
+        {
+            var type = value.GetType();
+
+            return type.IsGenericType &&
+                   type.GetGenericTypeDefinition() == typeof(PaginatedResponse<>);
+        }
+
+        private object MapPaginated(object value, IResultBase result, ResultExecutingContext context, int statusCode)
+        {
+            var type = value.GetType();
+
+            var data = type.GetProperty("Data")?.GetValue(value);
+            var pageNumber = (int)(type.GetProperty("PageNumber")?.GetValue(value) ?? 1);
+            var pageSize = (int)(type.GetProperty("PageSize")?.GetValue(value) ?? 10);
+            var totalItems = (int)(type.GetProperty("TotalItems")?.GetValue(value) ?? 0);
+
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+           
+            var responseType = typeof(PaginatedResponse<>)
+                .MakeGenericType(type.GetGenericArguments()[0]);
+
+            var response = Activator.CreateInstance(responseType);
+
+            responseType.GetProperty("IsSuccess")?.SetValue(response, true);
+            responseType.GetProperty("StatusCode")?.SetValue(response, statusCode);
+            responseType.GetProperty("Message")?.SetValue(response, result.Successes.FirstOrDefault()?.Message);
+            responseType.GetProperty("Data")?.SetValue(response, data);
+
+            responseType.GetProperty("PageNumber")?.SetValue(response, pageNumber);
+            responseType.GetProperty("PageSize")?.SetValue(response, pageSize);
+            responseType.GetProperty("TotalItems")?.SetValue(response, totalItems);
+            responseType.GetProperty("TotalPages")?.SetValue(response, totalPages);
+
+            responseType.GetProperty("TraceId")?.SetValue(response, context.HttpContext.TraceIdentifier);
+
+            return response!;
+        }
+
         private int MapStatusCode(IReadOnlyList <IError> errors)
         {
             if (errors.OfType<ValidationErrror>().Any())

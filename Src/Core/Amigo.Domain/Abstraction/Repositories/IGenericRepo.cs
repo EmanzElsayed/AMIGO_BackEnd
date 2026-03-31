@@ -1,6 +1,28 @@
 ﻿namespace Amigo.Domain.Abstraction.Repositories;
 
-public interface IGenericRepo
+public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
 {
-    Task SaveChanges(CancellationToken cancellationToken);
+    //Task SaveChanges(CancellationToken cancellationToken);
+    public Task<IEnumerable<TEntity>> GetAllAsync();
+
+    public Task<TEntity?> GetByIdAsync(TKey id);
+    public Task AddAsync(TEntity entity);
+
+    public void Update(TEntity entity);
+
+    public void Remove(TEntity entity);
+
+
+    #region region With specification
+    public Task<TEntity?> GetByIdAsync(ISpecifications<TEntity, TKey> specifications);
+
+    public Task<IEnumerable<TEntity>> GetAllAsync(ISpecifications<TEntity, TKey> specifications);
+
+
+    public Task<int> GetCountSpecificationAsync(ISpecifications<TEntity, TKey> specifications);
+
+    #endregion
+
+    public Task AddRangeAsync(IEnumerable<TEntity> entities);
+
 }

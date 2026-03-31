@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Validators
+namespace Amigo.Application.Validators.Authentication
 {
-    public class ResendConfirmEmailRequestDTOValidator:AbstractValidator<ResendConfrimEmailRequestDTO>
+    public class ConfrimEmailRequestDTOValidator : AbstractValidator<ConfirmEmailRequestDTO>
     {
-        public ResendConfirmEmailRequestDTOValidator()
+        public ConfrimEmailRequestDTOValidator()
         {
 
             RuleFor(x => x.Email)
@@ -17,7 +17,9 @@ namespace Amigo.Application.Validators
                 .EmailAddress()
                 .WithMessage("Email must be a valid email address.");
 
-           
+            RuleFor(x => x.Token)
+               .NotEmpty()
+               .WithMessage("Token is required.");
         }
     }
 }

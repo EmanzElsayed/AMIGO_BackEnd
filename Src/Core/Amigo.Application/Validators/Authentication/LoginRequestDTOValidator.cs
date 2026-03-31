@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Validators
+namespace Amigo.Application.Validators.Authentication
 {
     public class LoginRequestDTOValidator : AbstractValidator<LoginRequestDTO>
     {

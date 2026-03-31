@@ -6,6 +6,8 @@ public class Destination : BaseEntity<Guid>
 {
     public CountryCode CountryCode { get; set; }
     public bool IsActive { get; set; }
-    public string? Image {  get; set; }
+    public string? ImageUrl {  get; set; }
     public ICollection<Tour> Tours { get; set; } = new List<Tour>();
+
+    public ICollection<DestinationTranslation> Translations { get; set; } = new List<DestinationTranslation>();
 }

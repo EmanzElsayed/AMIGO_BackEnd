@@ -1,7 +1,10 @@
 ﻿using Amigo.Application.Abstraction;
+using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Authentication;
+using Amigo.Application.Mapping;
 using Amigo.Application.Services;
+using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.Extension;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -14,13 +17,19 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationDependencyInjection(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddScoped<IUserMapping, UserMapping>();
+        services.AddScoped<IDestinationMapping, DestinationMapping>();
+
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailService, GoogleEmailService>();
-
         services.AddScoped<IEnumService, EnumService>();
+        services.AddScoped<IDestinationService , DestinationService>();
+
+
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddScoped<IValidationService, ValidationService>();
         services.AddValidatorsFromAssemblyContaining<RegisterRequestDTO>();
@@ -29,6 +38,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<ResendConfrimEmailRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<ForgetPasswordRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<ResetPasswordRequestDTO>();
+
+        services.AddValidatorsFromAssemblyContaining<CreateDestinationRequestDTO>();
 
 
         return services;

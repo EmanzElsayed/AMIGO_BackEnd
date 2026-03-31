@@ -1,11 +1,61 @@
-﻿using Amigo.Domain.Abstraction.Repositories;
+﻿using Amigo.Domain.Abstraction;
+using Amigo.Domain.Abstraction.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Amigo.Persistence.Repositories;
 
-public class GenericRepo(AmigoDbContext dbContext) : IGenericRepo
+public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext) 
+    : IGenericRepo<TEntity, TKey> where TEntity : BaseEntity<TKey>
 {
-    public async Task SaveChanges(CancellationToken cancellationToken)
+    //public async Task SaveChanges(CancellationToken cancellationToken)
+    //{
+    //    await dbContext.SaveChangesAsync(cancellationToken);
+    //}
+
+    public async Task AddAsync(TEntity entity)
+           => await _dbContext.Set<TEntity>().AddAsync(entity);
+
+
+    public async Task<IEnumerable<TEntity>> GetAllAsync()
+        => await _dbContext.Set<TEntity>().ToListAsync();
+
+
+
+
+    public async Task<TEntity?> GetByIdAsync(TKey id)
+        => await _dbContext.Set<TEntity>().FindAsync(id);
+
+
+
+
+    public void Remove(TEntity entity)
+        => _dbContext.Set<TEntity>().Remove(entity);
+
+
+    public void Update(TEntity entity)
+        => _dbContext.Set<TEntity>().Update(entity);
+
+
+    #region Specifications
+
+    public async Task<IEnumerable<TEntity>> GetAllAsync(ISpecifications<TEntity, TKey> specifications)
     {
-        await dbContext.SaveChangesAsync(cancellationToken);
+        return await SpeceficationEvaluator.CreateQuery<TEntity, TKey>(_dbContext.Set<TEntity>(), specifications).ToListAsync();
+    }
+    public async Task<TEntity?> GetByIdAsync(ISpecifications<TEntity, TKey> specifications)
+    {
+        return await SpeceficationEvaluator.CreateQuery<TEntity, TKey>(_dbContext.Set<TEntity>(), specifications).FirstOrDefaultAsync();
+    }
+
+    public async Task<int> GetCountSpecificationAsync(ISpecifications<TEntity, TKey> specifications)
+    {
+        return await SpeceficationEvaluator.CreateQuery<TEntity, TKey>(_dbContext.Set<TEntity>(), specifications).CountAsync();
+    }
+    #endregion
+
+    public async Task AddRangeAsync(IEnumerable<TEntity> entities)
+    {
+
+        await _dbContext.Set<TEntity>().AddRangeAsync(entities);
     }
 }

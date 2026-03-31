@@ -4,7 +4,7 @@ public abstract class BaseEntity<T> : IBaseEntity
 {
     [Key]
     [Column(Order = 1)]
-    public T Id { get; private set; }
+    public T Id { get;  set; }
 
     [Column(Order = 2)]
     public int? CreatedBy { get; private set; }
