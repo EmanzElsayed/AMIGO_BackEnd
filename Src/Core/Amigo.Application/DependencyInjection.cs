@@ -5,6 +5,7 @@ using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Domain.DTO.Destination;
+using Amigo.Domain.DTO.Images;
 using Amigo.Domain.Extension;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +27,10 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, GoogleEmailService>();
         services.AddScoped<IEnumService, EnumService>();
         services.AddScoped<IDestinationService , DestinationService>();
+        services.AddScoped<IImageService, ImageService>();
 
+        services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+        services.AddSingleton<ImageCloudService>();
 
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
@@ -40,6 +44,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<ResetPasswordRequestDTO>();
 
         services.AddValidatorsFromAssemblyContaining<CreateDestinationRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<UploadImageRequestDTO>();
 
 
         return services;

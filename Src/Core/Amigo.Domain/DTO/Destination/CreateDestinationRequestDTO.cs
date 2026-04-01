@@ -7,6 +7,7 @@ namespace Amigo.Domain.DTO.Destination
     public record CreateDestinationRequestDTO
     (
         string? ImageUrl ,
+        string? PublicId,
         string CountryCode,
         string Name ,
         string Language,

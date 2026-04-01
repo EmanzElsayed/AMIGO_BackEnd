@@ -17,6 +17,7 @@ namespace Amigo.Application.Mapping
             {
                 Id = Guid.NewGuid(),
                 ImageUrl = requestDTO.ImageUrl,
+                ImagePublicId = requestDTO.PublicId,
                 IsActive = requestDTO.IsActive,
                 CountryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode),
             };
