@@ -1,6 +1,7 @@
 ﻿using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.DTO.Destination;
 using Amigo.SharedKernal.QueryParams;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,15 +12,44 @@ namespace Amigo.Presentation.Controllers
     public class DestinationController(IDestinationService _destinationService):BaseController
     {
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IResultBase> CreateDestination([FromBody] CreateDestinationRequestDTO requestDTO)
         {
             return await _destinationService.CreateDestinationAsync(requestDTO);
 
         }
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IResultBase> GetAllDestination([FromQuery] GetAllDestinationQuery requestQuery)
         {
-            return await _destinationService.GetAllDestinationAsync(requestQuery);
+            var isAdmin = User.IsInRole("Admin");
+            return await _destinationService.GetAllDestinationAsync(requestQuery,isAdmin);
+
+        }
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IResultBase> GetDestinationById(string id)
+        {
+            var isAdmin = User.IsInRole("Admin");
+            return await _destinationService.GetDestinationByIdAsync(id,isAdmin);
+
+        }
+
+        [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IResultBase> UpdateDestinaion(string id , [FromBody] UpdateDestinationRequestDTO requestDTO)
+        {
+            
+            return await _destinationService.UpdateDestination(requestDTO,id);
+
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IResultBase> DeleteDestinaion(string id)
+        {
+
+            return await _destinationService.DeleteDestination(id);
 
         }
     }

@@ -1,15 +1,18 @@
 ﻿using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Mapping;
-using Amigo.Application.Specifications.Destination;
+using Amigo.Application.Specifications.DestinationSpecification;
+using Amigo.Application.Validation.Common.Rules;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
+using Amigo.Domain.Errors;
 using Amigo.SharedKernal.DTOs.Destination;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,7 +21,8 @@ namespace Amigo.Application.Services
 {
     public class DestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork ,
-                                    IDestinationMapping _destinationMapping) : IDestinationService
+                                    IDestinationMapping _destinationMapping ,
+                                    ImageCloudService _imageCloud) : IDestinationService
     {
         public async Task<Result> CreateDestinationAsync(CreateDestinationRequestDTO requestDTO)
         {
@@ -31,7 +35,6 @@ namespace Amigo.Application.Services
 
             var destinationTranslation = _destinationMapping.DestinationTranslationToEntity(requestDTO,destination);
 
-            destination.Translations.Add(destinationTranslation);
 
 
             var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -59,22 +62,25 @@ namespace Amigo.Application.Services
             });
         }
 
-        public async Task<Result<PaginatedResponse<GetTranslationDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery)
+        
+
+        public async Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery, bool isAdmin)
         {
             var validationResult = await _validationService.ValidateAsync(requestQuery);
             if (!validationResult.IsSuccess)
             {
                 return validationResult;
             }
-            var destinationRepo = _unitOfWork.GetRepository<DestinationTranslation, Guid>();
-            var destinationSpecification = new GetAllDestinationSpecification(requestQuery);
+            var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
+
+            var destinationSpecification = new GetAllDestinationSpecification(requestQuery,isAdmin);
             var destinationData = await destinationRepo.GetAllAsync(destinationSpecification);
 
-            var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery);
+            var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery , isAdmin);
             var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification);
 
-            var mappedDestinationData = _destinationMapping.EntityToDestination(destinationData);
-            var paginatedResult = new PaginatedResponse<GetTranslationDestinationResponseDTO>
+            var mappedDestinationData = _destinationMapping.EntitiesToDestinations(destinationData);
+            var paginatedResult = new PaginatedResponse<GetDestinationResponseDTO>
             {
                 Data = mappedDestinationData,
                 PageNumber = requestQuery.PageNumber,
@@ -82,6 +88,131 @@ namespace Amigo.Application.Services
                 TotalItems = countDestinationData
             };
             return Result.Ok(paginatedResult);
+        }
+
+        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id, bool isAdmin)
+        {
+
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+          
+            Guid destinationId = guid;
+
+            var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
+            var destinationSpecification = new GetDestinationByIdSpecification(destinationId, isAdmin);
+
+            var destinationData = await destinationRepo.GetByIdAsync(destinationSpecification);
+            if (destinationData is null)
+            {
+                return Result.Fail(new NotFoundError($"This Destination Not Dound"));
+            }
+            var mappedDestinationData = _destinationMapping.EntityToDestination(destinationData);
+            return Result.Ok(mappedDestinationData);
+        }
+
+        public async Task<Result> UpdateDestination(UpdateDestinationRequestDTO requestDTO , string Id)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestDTO);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
+
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid destinationId = guid;
+
+            var _destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
+            var _bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
+
+
+            var destination = await _destinationRepo.GetByIdAsync(new GetDestinationWithTranslationsSpecification( destinationId));
+
+            if (destination is null)
+            {
+                return Result.Fail(new NotFoundError("This Destination Not Found"));
+            }
+            DestinationTranslation? translation = null;
+            Language? languageEnum = null ;
+
+            if (requestDTO.Language is not null)
+            { 
+                languageEnum = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+                translation = destination.Translations
+                             .FirstOrDefault(t => t.Language == languageEnum);
+            }
+
+
+            var hasBookings = await _bookingRepo.AnyAsync(
+                                 new ActiveBookingsForDestinationSpecification(destinationId)
+                            );
+
+            if (hasBookings)
+            {
+
+
+                if (
+                    requestDTO.CountryCode != destination.CountryCode.ToString()
+                    || (requestDTO.Language is not null && requestDTO.Name is not null && translation is not null ))
+                {
+                    return Result.Fail(new ConfilctError("Cannot update destination (Name, Language, Country) with active bookings"));
+                }
+
+            }
+
+
+            _destinationMapping.UpdateDestination(requestDTO, destination, translation, languageEnum);
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return Result.Ok()
+                               .WithSuccess(new Success("Destination Updated Successfully"));
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+
+            }
+
+        }
+
+
+        public async Task<Result> DeleteDestination(string Id)
+        {
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid destinationId = guid;
+
+            var _destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
+
+            var destination = await _destinationRepo.GetByIdAsync(destinationId);
+
+            if (destination is null)
+            {
+                return Result.Fail(new NotFoundError("This Destination Not Found"));
+            }
+
+            _destinationRepo.Remove(destination);
+            
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+                bool isDeleted = false;
+                if (destination.ImagePublicId is not null)
+                { 
+                          isDeleted =  _imageCloud.DeleteImage(destination.ImagePublicId);
+                }
+                return Result.Ok()
+                               .WithSuccess(new Success($"Destination Deleted Successfully is image deleted {isDeleted}"));
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+
+            }
         }
     }
 }

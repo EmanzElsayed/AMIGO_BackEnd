@@ -1,4 +1,5 @@
 ﻿using Amigo.Domain.DTO.Destination;
+using Amigo.Domain.Entities;
 using Amigo.SharedKernal.DTOs.Destination;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.QueryParams;
@@ -11,6 +12,11 @@ namespace Amigo.Application.Abstraction.Services
     public interface IDestinationService
     {
         Task<Result> CreateDestinationAsync(CreateDestinationRequestDTO requestDTO);
-        Task<Result<PaginatedResponse<GetTranslationDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery);
+        Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery , bool isAdmin);
+        Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string destinationId , bool isAdmin);
+
+        Task<Result> UpdateDestination(UpdateDestinationRequestDTO requestDTO,string Id);
+        Task<Result> DeleteDestination( string Id);
+
     }
 }

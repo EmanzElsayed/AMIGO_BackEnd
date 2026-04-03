@@ -9,7 +9,7 @@ namespace Amigo.Application.Abstraction.Services
     public interface IImageService
     {
         Task<Result<UploadImageResponseDTO>> UploadImage(UploadImageRequestDTO requestDTO);
-        Task<Result<string>> DeleteImage(string publicId);
+        //Task<Result<string>> DeleteImage(string publicId);
 
     }
 }

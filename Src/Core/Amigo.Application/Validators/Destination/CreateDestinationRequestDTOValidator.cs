@@ -18,7 +18,7 @@ namespace Amigo.Application.Validators.Destination
                .WithMessage("Length Of Name Must Be Less Than 300");
 
             RuleFor(x => x.IsActive)
-              .NotEmpty()
+              .NotNull()
               .WithMessage("Active Status Is Required");
               
 
@@ -34,6 +34,15 @@ namespace Amigo.Application.Validators.Destination
                 .Must(BusinessRules.BeAValidLanguage)
                 .WithMessage("Invalid Language Code Must be (English, Spanish, SpanishLatinAmerica, French, Italian, PortuguesePortugal, PortugueseBrazil)");
 
+            RuleFor(x => x.PublicId)
+                .NotEmpty()
+                .When(x => !string.IsNullOrEmpty(x.ImageUrl))
+                .WithMessage("PublicId is required when ImageUrl is provided");
+
+            RuleFor(x => x.PublicId)
+            .NotEmpty()
+            .When(x => !string.IsNullOrEmpty(x.ImageUrl))
+            .WithMessage("PublicId is required when ImageUrl is provided");
         }
        
     }

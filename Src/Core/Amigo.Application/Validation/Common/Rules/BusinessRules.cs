@@ -16,5 +16,20 @@ namespace Amigo.Application.Validation.Common.Rules
         {
             return Enum.TryParse(typeof(Language), languageCode, true, out _);
         }
+
+        public static bool TryCleanGuid(string input, out Guid guid)
+        {
+            guid = Guid.Empty;
+
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            string candidate = input.Trim().Trim('"'); 
+
+            if (candidate.Length > 36)
+                candidate = candidate.Substring(0, 36);
+
+            return Guid.TryParse(candidate, out guid);
+        }
     }
 }

@@ -8,9 +8,9 @@ namespace Amigo.Domain.DTO.Destination
     (
         string? ImageUrl ,
         string? PublicId,
+        bool? IsActive, 
         string CountryCode,
         string Name ,
-        string Language,
-        bool IsActive
+        string Language
     );
 }

@@ -21,6 +21,10 @@ public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
 
     public Task<int> GetCountSpecificationAsync(ISpecifications<TEntity, TKey> specifications);
 
+
+    public Task<bool> AnyAsync(ISpecifications<TEntity, TKey> spec);
+
+
     #endregion
 
     public Task AddRangeAsync(IEnumerable<TEntity> entities);

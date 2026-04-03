@@ -9,7 +9,8 @@ namespace Amigo.SharedKernal.DTOs.Destination
         Guid DestinationId,
         string CountryCode,
         bool IsActive,
-        string? ImageUrl
-
+        string? ImageUrl,
+        IEnumerable<GetTranslationDestinationResponseDTO> DestinationTranslation 
+        
     );
 }

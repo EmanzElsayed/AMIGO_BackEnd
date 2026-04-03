@@ -7,5 +7,6 @@ public enum ErrorCode
     NotFoundError = 4,
     Unauthorized = 5,
     Forbidden = 6,
-    InvalidEndPoint = 7
+    InvalidEndPoint = 7,
+    ConflictError = 8
 }

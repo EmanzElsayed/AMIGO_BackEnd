@@ -37,10 +37,10 @@ public class ImageCloudService
         }
         return null;
     }
-    public string DeleteImage(string publicId)
+    public bool DeleteImage(string publicId)
     {
         var deletionParams = new DeletionParams(publicId) { ResourceType = ResourceType.Image };
         var result = _cloudinary.Destroy(deletionParams);
-        return result.Result;
+        return result.Result == "ok";
     }
 }

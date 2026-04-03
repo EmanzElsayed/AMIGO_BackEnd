@@ -15,10 +15,10 @@ namespace Amigo.Presentation.Controllers
            return await _imageService.UploadImage(requestDTO);
 
         }
-        [HttpDelete("delete/{publicId}")]
-        public async Task<IResultBase> DeleteImage(string publicId)
-        {
-            return await _imageService.DeleteImage(publicId);
-        }
+        //[HttpDelete("delete/{publicId}")]
+        //public async Task<IResultBase> DeleteImage(string publicId)
+        //{
+        //    return await _imageService.DeleteImage(publicId);
+        //}
     }
 }

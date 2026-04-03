@@ -14,7 +14,7 @@ namespace Amigo.Application.Services
             var validationResult = await _validationService.ValidateAsync(requestDTO);
             if (!validationResult.IsSuccess)
             {
-                return validationResult;
+                return validationResult;    
             }
             var uploadResult = _imageCloudService.UploadImage(requestDTO.Image, "Destination");
             if (uploadResult is null)
@@ -25,21 +25,22 @@ namespace Amigo.Application.Services
             var url = uploadResult.SecureUrl.ToString();
             var publicId = uploadResult.PublicId;
 
+
             var result = new UploadImageResponseDTO(url,publicId);
             return Result.Ok(result);
         }
-        public Task<Result<string>> DeleteImage(string publicId)
-        {
-            if (string.IsNullOrEmpty(publicId))
-                return Task.FromResult(Result.Fail<string>("PublicId is required"));
+        //public Task<Result<string>> DeleteImage(string publicId)
+        //{
+        //    if (string.IsNullOrEmpty(publicId))
+        //        return Task.FromResult(Result.Fail<string>("PublicId is required"));
 
-            var result = _imageCloudService.DeleteImage(publicId);
+        //    var result = _imageCloudService.DeleteImage(publicId);
 
-            return result == "ok"
-                ? Task.FromResult(Result.Ok("Image deleted successfully"))
-                : result == "not found"
-                    ? Task.FromResult(Result.Fail<string>("Image not found"))
-                    : Task.FromResult(Result.Fail<string>($"Deletion failed: {result}"));
-        }
+        //    return result == "ok"
+        //        ? Task.FromResult(Result.Ok("Image deleted successfully"))
+        //        : result == "not found"
+        //            ? Task.FromResult(Result.Fail<string>("Image not found"))
+        //            : Task.FromResult(Result.Fail<string>($"Deletion failed: {result}"));
+        //}
     }
 }

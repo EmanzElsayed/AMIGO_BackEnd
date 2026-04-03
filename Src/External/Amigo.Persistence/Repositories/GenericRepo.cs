@@ -51,6 +51,13 @@ public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext)
     {
         return await SpeceficationEvaluator.CreateQuery<TEntity, TKey>(_dbContext.Set<TEntity>(), specifications).CountAsync();
     }
+
+    public async Task<bool> AnyAsync(ISpecifications<TEntity, TKey> spec)
+    {
+        return await SpeceficationEvaluator
+            .CreateQuery(_dbContext.Set<TEntity>(), spec)
+            .AnyAsync();
+    }
     #endregion
 
     public async Task AddRangeAsync(IEnumerable<TEntity> entities)

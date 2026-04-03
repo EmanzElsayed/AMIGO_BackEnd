@@ -155,7 +155,14 @@ namespace Amigo.Presentation.Filters
 
             if (errors.OfType<ForbiddenError>().Any())
                 return (int)HttpStatusCode.Forbidden;
-            
+
+            if (errors.OfType<NotFoundError>().Any())
+                return (int)HttpStatusCode.NotFound;
+
+            if (errors.OfType<ConfilctError>().Any())
+                return (int)HttpStatusCode.Conflict;
+
+
             return (int)HttpStatusCode.BadRequest;
         }
 
