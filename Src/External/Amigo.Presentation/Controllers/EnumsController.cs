@@ -29,5 +29,14 @@ namespace Amigo.Presentation.Controllers
             
 
         }
+
+        [HttpGet("Country")]
+        public IResultBase GetCountry()
+        {
+            return _enumService.GetEnum<CountryCode>();
+
+
+
+        }
     }
 }

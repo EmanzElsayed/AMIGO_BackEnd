@@ -18,5 +18,7 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result> UpdateDestination(UpdateDestinationRequestDTO requestDTO,string Id);
         Task<Result> DeleteDestination( string Id);
 
+        Task<Result> UpdateActivationDestinaion(UpdateActivationDestinationRequestDTO requestDTO,string Id);
+
     }
 }

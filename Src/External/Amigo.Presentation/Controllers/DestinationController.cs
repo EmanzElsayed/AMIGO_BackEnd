@@ -43,7 +43,14 @@ namespace Amigo.Presentation.Controllers
             return await _destinationService.UpdateDestination(requestDTO,id);
 
         }
+        [HttpPatch("{id}/toggle")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IResultBase> UpdateActivationDestinaion(string id, [FromBody] UpdateActivationDestinationRequestDTO requestDTO)
+        {
 
+            return await _destinationService.UpdateActivationDestinaion(requestDTO, id);
+
+        }
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IResultBase> DeleteDestinaion(string id)

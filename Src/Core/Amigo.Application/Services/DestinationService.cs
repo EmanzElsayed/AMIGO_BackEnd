@@ -177,7 +177,42 @@ namespace Amigo.Application.Services
             }
 
         }
+        public async Task<Result> UpdateActivationDestinaion(UpdateActivationDestinationRequestDTO requestDTO, string Id)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestDTO);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
 
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid destinationId = guid;
+
+            var _destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
+
+            var destination = await _destinationRepo.GetByIdAsync(destinationId);
+
+            if (destination is null)
+            {
+                return Result.Fail(new NotFoundError("This Destination Not Found"));
+            }
+
+            destination.IsActive = requestDTO.IsActive;
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return Result.Ok()
+                               .WithSuccess(new Success("Activation Status Updated Successfully"));
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+
+            }
+        }
 
         public async Task<Result> DeleteDestination(string Id)
         {
@@ -189,6 +224,8 @@ namespace Amigo.Application.Services
             var _destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
 
             var destination = await _destinationRepo.GetByIdAsync(destinationId);
+
+            //is booked by people can't removed
 
             if (destination is null)
             {
@@ -214,5 +251,7 @@ namespace Amigo.Application.Services
 
             }
         }
+
+       
     }
 }

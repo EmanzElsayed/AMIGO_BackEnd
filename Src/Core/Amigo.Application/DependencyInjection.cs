@@ -7,6 +7,7 @@ using Amigo.Application.Services;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.Extension;
+using Amigo.SharedKernal.QueryParams;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,10 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssemblyContaining<CreateDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<UploadImageRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<GetAllDestinationQuery>();
+
+        services.AddValidatorsFromAssemblyContaining<UpdateActivationDestinationRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<UpdateDestinationRequestDTO>();
 
 
         return services;

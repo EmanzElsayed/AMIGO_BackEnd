@@ -58,7 +58,7 @@ public class AuthService(
                 Email: requestDTO.Email,
                 Token: await GenerateToken(user),
                 Role: role
-            );
+            );  
 
             return Result.Ok(data)
                  .WithSuccess(new Success("Welcome To Amigo Arabe Tours"));
