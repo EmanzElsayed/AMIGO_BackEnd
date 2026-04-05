@@ -4,9 +4,10 @@ public enum Language
 {
     English = 1,          // en
     Spanish = 2,          // es
-    SpanishLatinAmerica = 3, // es-AR / es-MX group
-    French = 4,           // fr
-    Italian = 5,          // it
-    PortuguesePortugal = 6, // pt-PT
-    PortugueseBrazil = 7    // pt-BR
+    French = 3,           // fr
+    Italian = 4,          // it
+    [Display(Name = "Portuguese (Portugal)")]
+    Portuguese_Portugal = 5, // pt-PT
+    [Display(Name = "Portuguese (Brazil)")]
+    Portuguese = 6    // pt-BR
 }

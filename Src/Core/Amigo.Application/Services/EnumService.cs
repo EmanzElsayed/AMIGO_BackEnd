@@ -1,5 +1,8 @@
 ﻿
 
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+
 namespace Amigo.Application.Services
 {
     public class EnumService : IEnumService
@@ -11,7 +14,7 @@ namespace Amigo.Application.Services
                     .Select(e => new GetEnumResponseDTO(
 
                         Id: Convert.ToInt32(e)
-                        , Name: e.ToString()
+                        , Name: GetDisplayName(e)
 
 
                     )
@@ -23,6 +26,15 @@ namespace Amigo.Application.Services
 
 
 
+        }
+
+        private static string GetDisplayName(Enum value)
+        {
+            var member = value.GetType().GetMember(value.ToString()).FirstOrDefault();
+
+            var displayAttr = member?.GetCustomAttribute<DisplayAttribute>();
+
+            return displayAttr?.Name ?? value.ToString();
         }
     }
 }
