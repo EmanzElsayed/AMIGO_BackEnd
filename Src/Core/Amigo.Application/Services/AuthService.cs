@@ -54,6 +54,7 @@ public class AuthService(
             string role = await GetRole(user);
             var data = new LoginResponseDTO
             (
+                FullName : user.FullName?? user.UserName,
                 Email: requestDTO.Email,
                 Token: await GenerateToken(user),
                 Role: role
