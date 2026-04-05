@@ -50,6 +50,7 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssemblyContaining<UpdateActivationDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<UpdateDestinationRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<GetDestinationByIdQuery>();
 
 
         return services;

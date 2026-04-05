@@ -55,12 +55,14 @@ namespace Amigo.Application.Mapping
         }
         public GetDestinationResponseDTO EntityToDestination(Destination destination)
         {
-           
+
+            bool isFullyTranslated = destination.Translations.Count == Enum.GetValues<Language>().Length? true:false;  
               return  new GetDestinationResponseDTO(
                    DestinationId: destination.Id,
                    CountryCode: destination.CountryCode.ToString(),
                    IsActive: destination.IsActive,
                     ImageUrl: destination.ImageUrl,
+                    IsFullyTranslated: isFullyTranslated,
                 DestinationTranslation: destination.Translations.Select(translation =>
                     new GetTranslationDestinationResponseDTO(
                         TranslationId: translation.Id,

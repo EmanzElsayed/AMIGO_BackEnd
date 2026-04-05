@@ -13,12 +13,15 @@ namespace Amigo.Application.Abstraction.Services
     {
         Task<Result> CreateDestinationAsync(CreateDestinationRequestDTO requestDTO);
         Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery , bool isAdmin);
-        Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string destinationId , bool isAdmin);
+        Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string destinationId , bool isAdmin , GetDestinationByIdQuery requestQuery);
+
 
         Task<Result> UpdateDestination(UpdateDestinationRequestDTO requestDTO,string Id);
         Task<Result> DeleteDestination( string Id);
 
         Task<Result> UpdateActivationDestinaion(UpdateActivationDestinationRequestDTO requestDTO,string Id);
+
+
 
     }
 }

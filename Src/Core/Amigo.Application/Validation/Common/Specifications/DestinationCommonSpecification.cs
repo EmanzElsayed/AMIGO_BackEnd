@@ -11,13 +11,12 @@ using System.Xml.Linq;
 
 namespace Amigo.Application.Validation.Common.Specifications
 {
-    public static class DestinationCommonSpecification
+    public static class DestinationCommonSpecification 
     {
         public static Expression<Func<Destination, bool>> BuildCriteria(
        GetAllDestinationQuery requestQuery, bool isAdmin)
         {
-            var language = requestQuery.Language is not null?
-                EnumsMapping.ToLanguageEnum(requestQuery.Language) :(Language?) null;
+                      
             return d =>
 
                     (
@@ -25,8 +24,7 @@ namespace Amigo.Application.Validation.Common.Specifications
                         (string.IsNullOrWhiteSpace(requestQuery.Name) ||
                         t.Name.ToLower().Contains(requestQuery.Name.ToLower())
                         )
-                         &&
-                        (language == null || language == t.Language )
+                         
                         )
                     )
 
@@ -39,5 +37,9 @@ namespace Amigo.Application.Validation.Common.Specifications
                 && (isAdmin || d.IsActive);
                 
         }
+
+
+
+       
     }
 }

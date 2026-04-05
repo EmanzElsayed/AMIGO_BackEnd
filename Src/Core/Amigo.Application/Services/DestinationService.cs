@@ -90,25 +90,31 @@ namespace Amigo.Application.Services
             return Result.Ok(paginatedResult);
         }
 
-        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id, bool isAdmin)
+        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id, bool isAdmin, GetDestinationByIdQuery requestQuery)
         {
-
+            var validationResult = await _validationService.ValidateAsync(requestQuery);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
             if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
                 return Result.Fail("Invalid UUID");
           
             Guid destinationId = guid;
 
             var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
-            var destinationSpecification = new GetDestinationByIdSpecification(destinationId, isAdmin);
+            var destinationSpecification = new GetDestinationByIdSpecification(destinationId, isAdmin , requestQuery);
 
             var destinationData = await destinationRepo.GetByIdAsync(destinationSpecification);
             if (destinationData is null)
             {
-                return Result.Fail(new NotFoundError($"This Destination Not Dound"));
+                return Result.Fail(new NotFoundError($"This Destination Not Found"));
             }
             var mappedDestinationData = _destinationMapping.EntityToDestination(destinationData);
             return Result.Ok(mappedDestinationData);
         }
+
+      
 
         public async Task<Result> UpdateDestination(UpdateDestinationRequestDTO requestDTO , string Id)
         {
@@ -252,6 +258,6 @@ namespace Amigo.Application.Services
             }
         }
 
-       
+        
     }
 }

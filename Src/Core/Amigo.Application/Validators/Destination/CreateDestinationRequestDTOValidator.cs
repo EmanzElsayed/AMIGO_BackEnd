@@ -32,7 +32,7 @@ namespace Amigo.Application.Validators.Destination
                 .NotEmpty()
                 .WithMessage("Language Is Required")
                 .Must(BusinessRules.BeAValidLanguage)
-                .WithMessage("Invalid Language Code Must be (English, Spanish, SpanishLatinAmerica, French, Italian, PortuguesePortugal, PortugueseBrazil)");
+                .WithMessage("Invalid Language Code Must be (English, Spanish, French, Italian, Portuguese (Portugal), Portuguese (Brazil) )");
 
             RuleFor(x => x.PublicId)
                 .NotEmpty()

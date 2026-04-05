@@ -10,7 +10,8 @@ namespace Amigo.SharedKernal.DTOs.Destination
         string CountryCode,
         bool IsActive,
         string? ImageUrl,
-        IEnumerable<GetTranslationDestinationResponseDTO> DestinationTranslation 
+        IEnumerable<GetTranslationDestinationResponseDTO> DestinationTranslation ,
+        bool IsFullyTranslated = false
         
     );
 }

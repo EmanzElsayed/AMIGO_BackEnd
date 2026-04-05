@@ -28,12 +28,14 @@ namespace Amigo.Presentation.Controllers
         }
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<IResultBase> GetDestinationById(string id)
+        public async Task<IResultBase> GetDestinationById(string id, [FromQuery] GetDestinationByIdQuery requestQuery)
         {
             var isAdmin = User.IsInRole("Admin");
-            return await _destinationService.GetDestinationByIdAsync(id,isAdmin);
+            return await _destinationService.GetDestinationByIdAsync(id,isAdmin,requestQuery);
 
         }
+
+       
 
         [HttpPatch("{id}")]
         [Authorize(Roles = "Admin")]

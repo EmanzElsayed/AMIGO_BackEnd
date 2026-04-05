@@ -12,14 +12,27 @@ namespace Amigo.Application.Specifications.DestinationSpecification
 {
     public class GetAllDestinationSpecification : BaseSpecification<Destination, Guid>
     {
+        
         public GetAllDestinationSpecification(GetAllDestinationQuery requestQuery , bool isAdmin)
             : base( 
                   DestinationCommonSpecification.BuildCriteria(requestQuery,isAdmin)
 
             )
         {
+            if (requestQuery.Language is not null)
+            {
+                var language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
+
+                AddInclude(d => d.Translations
+                    .OrderByDescending(t => t.Language == language) // اللغة المطلوبة أول
+                    .Take(1) // لو مش موجودة، هايجيب أول ترجمة متاحة
+                );
+            }
+            else
+            {
+                AddInclude(d => d.Translations);
+            }
             ApplyPagination(requestQuery.PageSize, requestQuery.PageNumber);
-            AddInclude(d => d.Translations);
         }
     }
 }
