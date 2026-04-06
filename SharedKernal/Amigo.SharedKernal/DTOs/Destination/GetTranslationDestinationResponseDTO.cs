@@ -6,8 +6,8 @@ namespace Amigo.SharedKernal.DTOs.Destination
 {
    public record GetTranslationDestinationResponseDTO
     (
-        Guid TranslationId,
-        string Name,
-        string Language
+        Guid? TranslationId,
+        string? Name,
+        string? Language
      );
 }

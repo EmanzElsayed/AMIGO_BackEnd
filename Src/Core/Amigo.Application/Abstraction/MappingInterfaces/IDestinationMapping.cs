@@ -14,8 +14,8 @@ namespace Amigo.Application.Abstraction.MappingInterfaces
         Destination DestinationToEntity(CreateDestinationRequestDTO requestDTO);
         DestinationTranslation DestinationTranslationToEntity(CreateDestinationRequestDTO requestDTO , Destination destination);
 
-        IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable< Destination> destination);
-        GetDestinationResponseDTO EntityToDestination(Destination destination);
+        IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable< Destination> destination,string? language);
+        GetDestinationResponseDTO EntityToDestination(Destination destination, string? language);
 
         void UpdateDestination(
                     UpdateDestinationRequestDTO requestDTO,

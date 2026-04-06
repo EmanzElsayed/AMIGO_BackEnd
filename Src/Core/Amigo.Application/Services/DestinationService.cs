@@ -79,7 +79,7 @@ namespace Amigo.Application.Services
             var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery , isAdmin);
             var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification);
 
-            var mappedDestinationData = _destinationMapping.EntitiesToDestinations(destinationData);
+            var mappedDestinationData = _destinationMapping.EntitiesToDestinations(destinationData,requestQuery.Language);
             var paginatedResult = new PaginatedResponse<GetDestinationResponseDTO>
             {
                 Data = mappedDestinationData,
@@ -110,7 +110,7 @@ namespace Amigo.Application.Services
             {
                 return Result.Fail(new NotFoundError($"This Destination Not Found"));
             }
-            var mappedDestinationData = _destinationMapping.EntityToDestination(destinationData);
+            var mappedDestinationData = _destinationMapping.EntityToDestination(destinationData , requestQuery.Language);
             return Result.Ok(mappedDestinationData);
         }
 

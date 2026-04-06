@@ -25,10 +25,22 @@ namespace Amigo.Application.Specifications.DestinationSpecification
             {
                 var language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
 
-                AddInclude(d => d.Translations
-                    .OrderByDescending(t => t.Language == language) // اللغة المطلوبة أول
-                    .Take(1) // لو مش موجودة، هايجيب أول ترجمة متاحة
-                );
+
+                if (isAdmin)
+                {
+                    // Admin: يرجع فقط اللغة المطلوبة أو null لو مش موجودة
+                    AddInclude(d => d.Translations
+                        .Where(t => t.Language == language)
+                    );
+                }
+                else
+                {
+                    // User: يرجع اللغة المطلوبة لو موجودة، أو أي ترجمة واحدة متاحة
+                    AddInclude(d => d.Translations
+                        .OrderByDescending(t => t.Language == language)
+                        .Take(1)
+                    );
+                }
             }
             else
             {
