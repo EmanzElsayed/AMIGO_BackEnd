@@ -19,7 +19,7 @@ namespace Amigo.Application.Validators.Destination
             RuleFor(x => x.Language)
                
                 .Must(BusinessRules.BeAValidLanguage)
-                .WithMessage("Invalid Language Code Must be (English, Spanish, SpanishLatinAmerica, French, Italian, PortuguesePortugal, PortugueseBrazil)")
+                .WithMessage("Invalid Language Code Must be (English, Spanish, French, Italian, Portuguese (Portugal), Portuguese (Brazil) )")
                 .When(x => x.Language is not null);
 
         }
