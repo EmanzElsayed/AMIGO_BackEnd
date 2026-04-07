@@ -322,6 +322,7 @@ public class AuthService(
             var encodedToken = WebUtility.UrlEncode(token);
             var confirmLink =
                 $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?confirmemail={user.Email}&token={encodedToken}";
+            Console.WriteLine("confirm link: " + confirmLink);
             await _emailService.SendEmailAsync(
                 user.Email,
                 "Confirm your email",

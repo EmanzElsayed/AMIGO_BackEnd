@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace Amigo.Application.Specifications.DestinationSpecification
+namespace Amigo.Application.Specifications.DestinationSpecification.Admin
 {
     public class GetDestinationWithTranslationsSpecification : BaseSpecification<Destination, Guid>
     {

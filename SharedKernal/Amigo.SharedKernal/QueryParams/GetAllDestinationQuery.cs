@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Text;
 
 namespace Amigo.SharedKernal.QueryParams
@@ -8,7 +9,7 @@ namespace Amigo.SharedKernal.QueryParams
     {
         public string? Name { get; set; }
         public string? CountryCode { get; set; }
-        public string? Language { get; set; }
+        public string? Language { get; set; } 
 
 
 

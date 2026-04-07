@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Specifications.DestinationSpecification
+namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
     public class CountGetAllDestinationSpecification : BaseSpecification<Destination, Guid>
     {

@@ -4,6 +4,7 @@ using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Mapping;
 using Amigo.Application.Services;
+using Amigo.Application.Services.Admin;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.Extension;
@@ -28,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, GoogleEmailService>();
         services.AddScoped<IEnumService, EnumService>();
         services.AddScoped<IDestinationService , DestinationService>();
+        services.AddScoped<IAdminDestinationService, AdminDestinationService>();
+
         services.AddScoped<IImageService, ImageService>();
 
         services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));

@@ -37,32 +37,30 @@ namespace Amigo.Application.Mapping
             };
         }
 
-        public IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable<Destination> destinations ,string? language)
+        public IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable<Destination> destinations)
         {
+             int numberOfLanguage = Enum.GetValues<Language>().Length;
+
             return destinations.Select(destination => new GetDestinationResponseDTO(
+
                 DestinationId: destination.Id,
                 CountryCode: destination.CountryCode.ToString(),
                 IsActive: destination.IsActive,
                 ImageUrl: destination.ImageUrl,
-                DestinationTranslation: destination.Translations.Any() ? destination.Translations.Select(translation =>
+                IsFullyTranslated : (destination.Translations.Count == numberOfLanguage ?true : false ) ,
+
+                DestinationTranslation: destination.Translations.Select(translation =>
                     new GetTranslationDestinationResponseDTO(
                         TranslationId: translation.Id,
                         Name: translation.Name,
                         Language: translation.Language.ToString()
                     )
                     
-                ) : new List<GetTranslationDestinationResponseDTO> { 
-                
-                    new GetTranslationDestinationResponseDTO(
-                            TranslationId: (Guid?)null,
-                            Name: "",
-                            Language: language
-                        )
-                }
+                ) 
                 
             ));
         }
-        public GetDestinationResponseDTO EntityToDestination(Destination destination ,  string? language)
+        public GetDestinationResponseDTO EntityToAdminDestination(Destination destination ,  string? language)
         {
 
             bool isFullyTranslated = destination.Translations.Count == Enum.GetValues<Language>().Length? true:false;  
@@ -88,6 +86,30 @@ namespace Amigo.Application.Mapping
                  }
               );
            
+
+
+        }
+
+
+        public GetDestinationResponseDTO EntityToDestination(Destination destination, string? language)
+        {
+
+            bool isFullyTranslated = destination.Translations.Count == Enum.GetValues<Language>().Length ? true : false;
+            return new GetDestinationResponseDTO(
+                 DestinationId: destination.Id,
+                 CountryCode: destination.CountryCode.ToString(),
+                 IsActive: destination.IsActive,
+                  ImageUrl: destination.ImageUrl,
+                  IsFullyTranslated: isFullyTranslated,
+              DestinationTranslation:  destination.Translations.Select(translation =>
+                  new GetTranslationDestinationResponseDTO(
+                      TranslationId: translation.Id,
+                      Name: translation.Name,
+                      Language: translation.Language.ToString()
+                  )
+               ) 
+            );
+
 
 
         }
