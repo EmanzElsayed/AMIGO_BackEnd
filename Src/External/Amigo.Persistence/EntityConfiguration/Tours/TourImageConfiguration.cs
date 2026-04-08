@@ -14,7 +14,11 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
         {
             base.Configure(builder);
 
-            builder.Property(x => x.Image)
+            builder.Property(x => x.ImageUrl)
+                   .IsRequired()
+                   .HasMaxLength(500);
+
+            builder.Property(x => x.ImagePublicId)
                    .IsRequired()
                    .HasMaxLength(500);
 

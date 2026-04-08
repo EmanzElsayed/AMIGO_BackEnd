@@ -39,10 +39,7 @@ namespace Amigo.Application.Validators.Destination
                 .When(x => !string.IsNullOrEmpty(x.ImageUrl))
                 .WithMessage("PublicId is required when ImageUrl is provided");
 
-            RuleFor(x => x.PublicId)
-            .NotEmpty()
-            .When(x => !string.IsNullOrEmpty(x.ImageUrl))
-            .WithMessage("PublicId is required when ImageUrl is provided");
+           
         }
        
     }

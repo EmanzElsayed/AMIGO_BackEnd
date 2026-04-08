@@ -28,7 +28,7 @@ namespace Amigo.Persistence.EntityConfiguration.Translation
                    .IsUnique();
 
             builder.HasOne(t => t.Tour)
-                   .WithMany()
+                   .WithMany(x => x.Translations)
                    .HasForeignKey(t => t.TourId);
         }
     }

@@ -7,6 +7,7 @@ using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Images;
+using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.Extension;
 using Amigo.SharedKernal.QueryParams;
 using FluentValidation;
@@ -23,13 +24,15 @@ public static class DependencyInjection
 
         services.AddScoped<IUserMapping, UserMapping>();
         services.AddScoped<IDestinationMapping, DestinationMapping>();
-
+        services.AddScoped<ITourMapping, TourMapping>();
+        services.AddScoped<IImageMapping, ImageMapping>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEmailService, GoogleEmailService>();
         services.AddScoped<IEnumService, EnumService>();
         services.AddScoped<IDestinationService , DestinationService>();
         services.AddScoped<IAdminDestinationService, AdminDestinationService>();
+        services.AddScoped<IAdminTourService, AdminTourService>();
 
         services.AddScoped<IImageService, ImageService>();
 
@@ -49,11 +52,16 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssemblyContaining<CreateDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<UploadImageRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<UploadMultiImagesRequestDTO>();
+
         services.AddValidatorsFromAssemblyContaining<GetAllDestinationQuery>();
 
         services.AddValidatorsFromAssemblyContaining<UpdateActivationDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<UpdateDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<GetDestinationByIdQuery>();
+
+        services.AddValidatorsFromAssemblyContaining<CreateTourRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<ImageUrlsRequestDTO>();
 
 
         return services;

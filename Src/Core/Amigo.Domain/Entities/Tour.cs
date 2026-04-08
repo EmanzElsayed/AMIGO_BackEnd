@@ -4,11 +4,13 @@
 
 public class Tour: BaseEntity<Guid>
 {
+    
+    public Currency CurrencyCode { get; set; }
     public TimeSpan Duration { get; set; }
 
     public decimal Discount { get; set; }
 
-    public Language GuideLanguage { get; set; }
+    public Language? GuideLanguage { get; set; }
 
     public string? MeetingPoint { get; set; }
     
@@ -16,11 +18,20 @@ public class Tour: BaseEntity<Guid>
 
     public bool IsWheelchairAvailable { get; set; }
 
+    public bool IsVip {  get; set; } 
+
+    public bool IsPublic { get; set; }
+
     // Destination 
     public Guid DestinationId { get; set; }
 
     [Required]
     public Destination Destination { get; set; } = null!;
+
+
+    public ICollection<TourTranslation> Translations { get; set; } = new List<TourTranslation>();
+
+
 
 
 
@@ -35,12 +46,11 @@ public class Tour: BaseEntity<Guid>
     //tourImage
     //tourIncluded
     //tourNotIncluded
+    public ICollection<TourImage> Images { get; set; } = new List<TourImage>();
 
-    public ICollection<TourTranslation> Translations { get; set; } = new List<TourTranslation>();
 
     public ICollection<Price> Prices { get; set; } = new List<Price>();
 
-    public ICollection<TourImage> Images { get; set; } = new List<TourImage>();
 
     public ICollection<TourIncluded> Included { get; set; } = new List<TourIncluded>();
 

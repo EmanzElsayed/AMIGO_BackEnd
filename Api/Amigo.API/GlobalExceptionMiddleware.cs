@@ -39,6 +39,22 @@ namespace Amigo.API
 
                     #endregion
                 }
+                //if (context.Response.StatusCode == StatusCodes.Status400BadRequest)
+                //{
+                //    #region Response Body
+                    
+                //    var Body = new ApiResponse<string>()
+                //    {
+                //        StatusCode = context.Response.StatusCode,
+                      
+                //        Message = $"Body {context.Request.Body} Is Null",
+                //        ErrorCode = ErrorCode.Forbidden.ToString()
+
+                //    };
+                //    await context.Response.WriteAsJsonAsync(Body);
+
+                //    #endregion
+                //}
             }
             catch (Exception ex)
             {

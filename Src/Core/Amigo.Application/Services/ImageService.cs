@@ -29,6 +29,38 @@ namespace Amigo.Application.Services
             var result = new UploadImageResponseDTO(url,publicId);
             return Result.Ok(result);
         }
+
+        public async Task<Result<List<UploadImageResponseDTO>>> UploadMultiImages(UploadMultiImagesRequestDTO requestDTO)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestDTO);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
+
+            if (requestDTO.Images is null || !requestDTO.Images.Any())
+            {
+                return Result.Fail("No images provided");
+            }
+
+            var uploadedImages = new List<UploadImageResponseDTO>();
+
+            foreach (var image in requestDTO.Images)
+            {
+                var uploadResult = _imageCloudService.UploadImage(image, "Tour");
+
+                if (uploadResult is null)
+                    continue; 
+
+                uploadedImages.Add(new UploadImageResponseDTO(
+                    uploadResult.SecureUrl.ToString(),
+                    uploadResult.PublicId
+                ));
+            }
+
+            return Result.Ok(uploadedImages);
+
+        }
         //public Task<Result<string>> DeleteImage(string publicId)
         //{
         //    if (string.IsNullOrEmpty(publicId))

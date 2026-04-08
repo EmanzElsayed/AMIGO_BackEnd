@@ -15,6 +15,16 @@ namespace Amigo.Presentation.Controllers
            return await _imageService.UploadImage(requestDTO);
 
         }
+        [HttpPost("upload-multi")]
+        public async Task<IResultBase> UploadMultiImage([FromForm] UploadMultiImagesRequestDTO requestDTO)
+        {
+            return await _imageService.UploadMultiImages(requestDTO);
+        }
+
+
+
+
+
         //[HttpDelete("delete/{publicId}")]
         //public async Task<IResultBase> DeleteImage(string publicId)
         //{

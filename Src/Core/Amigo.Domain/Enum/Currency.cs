@@ -1,12 +1,14 @@
 ﻿namespace Amigo.Domain.Enum;
 public enum Currency
 {
-    [Display(Name = " (£) Chilean peso")]
-    ChileanPeson  = 1,
+    BRL = 1,
+    CLP = 2,
+    ARS = 3,
+    COP = 4,
+    MXN = 5,
+    PEN = 6,
 
-    [Display(Name = "")]
-    ChileanIcon = 1,
-    
-    EUR = 2,
-    SAR = 3
+    USD = 7,
+    EUR = 8,
+    SAR = 9
 }

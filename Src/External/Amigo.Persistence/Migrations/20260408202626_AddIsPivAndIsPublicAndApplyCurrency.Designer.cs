@@ -3,6 +3,7 @@ using System;
 using Amigo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    partial class AmigoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408202626_AddIsPivAndIsPublicAndApplyCurrency")]
+    partial class AddIsPivAndIsPublicAndApplyCurrency
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1514,7 +1517,12 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("TourId1")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TourId1");
 
                     b.HasIndex("TourId", "Language")
                         .IsUnique();
@@ -1992,10 +2000,14 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.TourTranslation", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
-                        .WithMany("Translations")
+                        .WithMany()
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Amigo.Domain.Entities.Tour", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("TourId1");
 
                     b.Navigation("Tour");
                 });

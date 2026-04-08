@@ -13,7 +13,11 @@ namespace Amigo.Application.Validation.Common.Rules
         {
             return Enum.TryParse(typeof(CountryCode), countryCode, true, out _);
         }
+        public static bool BeAValidCurrency(string currencyCode)
+        {
+            return Enum.TryParse(typeof(Currency), currencyCode, true, out _);
 
+        }
         public static bool BeAValidLanguage(string languageCode)
         {
             //return Enum.TryParse(typeof(Language), languageCode, true, out _);
@@ -49,6 +53,15 @@ namespace Amigo.Application.Validation.Common.Rules
                 candidate = candidate.Substring(0, 36);
 
             return Guid.TryParse(candidate, out guid);
+        }
+
+        public static bool BeAValidGoogleMapsUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+                   (uri.Host.Contains("google.com") || uri.Host.Contains("goo.gl"));
         }
     }
 }

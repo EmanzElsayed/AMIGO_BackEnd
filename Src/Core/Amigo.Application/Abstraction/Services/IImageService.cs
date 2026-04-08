@@ -11,5 +11,6 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result<UploadImageResponseDTO>> UploadImage(UploadImageRequestDTO requestDTO);
         //Task<Result<string>> DeleteImage(string publicId);
 
+        Task<Result<List<UploadImageResponseDTO>>> UploadMultiImages(UploadMultiImagesRequestDTO requestDTO);
     }
 }

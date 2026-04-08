@@ -8,6 +8,8 @@ public class TourImage: BaseEntity<Guid>
     [Required]
     public Tour Tour { get; set; } = null!;
     [Required]
-    public string Image { get; set; } = null!;
+    public string ImageUrl { get; set; } = null!;
+    [Required]
 
+    public string ImagePublicId { get; set; } = null!;
 }
