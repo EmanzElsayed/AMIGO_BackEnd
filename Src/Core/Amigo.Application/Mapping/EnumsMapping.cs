@@ -19,5 +19,10 @@ namespace Amigo.Application.Mapping
             Enum.TryParse<Language>(language, true, out var lang);
             return lang;
         }
+        public static AvailableDateTimeStatus ToAvailableSheduleStatus(string availableStatus)
+        {
+            Enum.TryParse<AvailableDateTimeStatus>(availableStatus, true, out var status);
+            return status;
+        }
     }
 }

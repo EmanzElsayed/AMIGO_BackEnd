@@ -13,6 +13,10 @@ namespace Amigo.Application.Validation.Common.Rules
         {
             return Enum.TryParse(typeof(CountryCode), countryCode, true, out _);
         }
+        public static bool BeAValidDateStatus(string availableDateStatus)
+        {
+            return Enum.TryParse(typeof(AvailableDateTimeStatus), availableDateStatus, true, out _);
+        }
         public static bool BeAValidCurrency(string currencyCode)
         {
             return Enum.TryParse(typeof(Currency), currencyCode, true, out _);

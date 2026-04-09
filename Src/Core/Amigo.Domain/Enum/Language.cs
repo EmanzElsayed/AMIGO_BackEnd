@@ -3,15 +3,15 @@ namespace Amigo.Domain.Enum;
 public enum Language
 {
     English = 1,
-    // en
+
     [Display(Name = "Español")]
-    Espanol = 2,          // es
+    Espanol = 2,         
     [Display(Name = "Français")]
 
-    Francais = 3,           // fr
-    Italiano = 4,          // it
+    Francais = 3,          
+    Italiano = 4,          
     [Display(Name = "Português (PT)")]
-    Portuguese_Portugal = 5, // pt-PT
+    Portuguese_Portugal = 5, 
     [Display(Name = "Português (BR)")]
-    Portuguese = 6    // pt-BR
+    Portuguese = 6    
 }

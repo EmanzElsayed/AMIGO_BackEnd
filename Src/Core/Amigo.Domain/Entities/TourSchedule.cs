@@ -10,5 +10,8 @@ public class TourSchedule: BaseEntity<Guid>
     public DateOnly StartDate {  get; set; }
     public DateOnly EndDate { get; set; }
 
-    public AvailableDateTimeStatus AvailableDateStatus { get; set; }
+    public AvailableDateTimeStatus AvailableDateStatus { get; set; } = AvailableDateTimeStatus.Available;
+
+    public ICollection<AvailableSlots> AvailableSlots { get; set; } = new List<AvailableSlots>();
+
 }

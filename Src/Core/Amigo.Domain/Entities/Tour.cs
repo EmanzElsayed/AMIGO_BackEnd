@@ -8,7 +8,7 @@ public class Tour: BaseEntity<Guid>
     public Currency CurrencyCode { get; set; }
     public TimeSpan Duration { get; set; }
 
-    public decimal Discount { get; set; }
+    public decimal? Discount { get; set; }
 
     public Language? GuideLanguage { get; set; }
 
@@ -33,23 +33,25 @@ public class Tour: BaseEntity<Guid>
 
 
 
+    public ICollection<TourImage> Images { get; set; } = new List<TourImage>();
+
+
+    public ICollection<Price> Prices { get; set; } = new List<Price>();
+
+
+    //Available Time 
+    public ICollection<TourSchedule> AvailableTimes { get; set; } = new List<TourSchedule>();
 
 
     // cancelation one to one relation
     public Cancellation Cancellation { get; set; } = null!;
-    //Available Time 
-    public ICollection<TourSchedule> AvailableTimes { get; set; } = new List<TourSchedule>();
-
 
     //Price 
     //people booking
     //tourImage
     //tourIncluded
     //tourNotIncluded
-    public ICollection<TourImage> Images { get; set; } = new List<TourImage>();
-
-
-    public ICollection<Price> Prices { get; set; } = new List<Price>();
+  
 
 
     public ICollection<TourIncluded> Included { get; set; } = new List<TourIncluded>();

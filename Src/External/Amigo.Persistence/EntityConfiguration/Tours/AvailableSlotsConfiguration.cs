@@ -33,6 +33,9 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
 
             builder.HasIndex(a => new { a.StartTime, a.EndTime });
 
+            builder.HasOne(a => a.TourSchedule)
+                .WithMany(t => t.AvailableSlots)
+                .HasForeignKey(a => a.TourScheduleId);
 
         }
     }
