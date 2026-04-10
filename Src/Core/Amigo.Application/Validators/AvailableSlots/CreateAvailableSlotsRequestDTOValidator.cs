@@ -10,9 +10,7 @@ namespace Amigo.Application.Validators.AvailableSlots
         public CreateAvailableSlotsRequestDTOValidator()
         {
 
-            RuleFor(x => x.TourScheduleId)
-               .NotEmpty()
-               .WithMessage("TourScheduleId is required");
+           
 
             RuleFor(x => x.StartTime)
                 .NotEmpty()
@@ -20,13 +18,13 @@ namespace Amigo.Application.Validators.AvailableSlots
                  .Must(t => t != default)
                 .WithMessage("StartTime must be a valid time in HH:mm format");
 
-            RuleFor(x => x.EndTime)
-                .NotEmpty()
-                .WithMessage("EndTime is required")
-                .Must(t => t != default)
-                .WithMessage("EndTime must be a valid time in HH:mm format")
-                .GreaterThan(x => x.StartTime)
-                .WithMessage("EndTime must be after StartTime");
+            //RuleFor(x => x.EndTime)
+            //    .NotEmpty()
+            //    .WithMessage("EndTime is required")
+            //    .Must(t => t != default)
+            //    .WithMessage("EndTime must be a valid time in HH:mm format")
+            //    .GreaterThan(x => x.StartTime)
+            //    .WithMessage("EndTime must be after StartTime");
 
             RuleFor(x => x.MaxCapacity)
                 .GreaterThan(0)

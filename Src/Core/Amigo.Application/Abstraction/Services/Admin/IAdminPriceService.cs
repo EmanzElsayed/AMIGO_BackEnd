@@ -10,7 +10,7 @@ namespace Amigo.Application.Abstraction.Services.Admin
 {
     public interface IAdminPriceService
     {
-        Task<Result<CreatePriceResponseDTO>> CreatePriceAsync(CreatePriceRequestDTO requestDTO);
+        //Task<Result<CreatePriceResponseDTO>> CreatePriceAsync(CreatePriceRequestDTO requestDTO);
 
     }
 }

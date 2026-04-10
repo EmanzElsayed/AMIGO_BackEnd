@@ -18,10 +18,8 @@ public class Tour: BaseEntity<Guid>
 
     public bool IsWheelchairAvailable { get; set; }
 
-    public bool IsVip {  get; set; } 
-
-    public bool IsPublic { get; set; }
-
+    public UserType UserType { get; set; }
+    
     // Destination 
     public Guid DestinationId { get; set; }
 

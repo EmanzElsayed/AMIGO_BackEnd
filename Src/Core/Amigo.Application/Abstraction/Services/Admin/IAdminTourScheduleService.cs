@@ -10,7 +10,7 @@ namespace Amigo.Application.Abstraction.Services.Admin
 {
     public interface IAdminTourScheduleService
     {
-        Task<Result<CreateTourScheduleResponseDTO>> CreateTourScheduleAsync(CreateTourScheduleRequestDTO requestDTO);
+        //Task<Result<CreateTourScheduleResponseDTO>> CreateTourScheduleAsync(CreateTourScheduleRequestDTO requestDTO);
 
     }
 }

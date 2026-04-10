@@ -7,6 +7,7 @@ namespace Amigo.Application.Abstraction.MappingInterfaces
 {
     public interface ITourScheduleMapping
     {
-        TourSchedule TourScheduleDTOToEntity(CreateTourScheduleRequestDTO requestDTO, Tour tour);
+        List<TourSchedule> TourSchedulesDTOToEntity(List<CreateTourScheduleRequestDTO> requestDTO, Tour tour);
+        
     }
 }

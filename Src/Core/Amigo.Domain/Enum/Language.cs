@@ -1,7 +1,9 @@
 namespace Amigo.Domain.Enum;
 
+[Flags]
 public enum Language
 {
+    None = 0,
     English = 1,
 
     [Display(Name = "Español")]

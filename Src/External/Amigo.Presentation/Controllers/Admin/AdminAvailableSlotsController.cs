@@ -12,12 +12,12 @@ namespace Amigo.Presentation.Controllers.Admin
     [Authorize(Roles = "Admin")]
     public class AdminAvailableSlotsController(IAdminAvailableSlotsService _adminAvailableSlotsService) : BaseController
     {
-        [HttpPost]
-        public async Task<IResultBase> CreateAvailableSlots([FromBody] CreateAvailableSlotsRequestDTO requestDTO)
-        {
+        //[HttpPost]
+        //public async Task<IResultBase> CreateAvailableSlots([FromBody] CreateAvailableSlotsRequestDTO requestDTO)
+        //{
 
-            return await _adminAvailableSlotsService.CreateAvailableSlotsAsync(requestDTO);
+        //    return await _adminAvailableSlotsService.CreateAvailableSlotsAsync(requestDTO);
 
-        }
+        //}
     }
 }

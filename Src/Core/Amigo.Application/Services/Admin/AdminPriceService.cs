@@ -11,37 +11,37 @@ namespace Amigo.Application.Services.Admin
                                     IUnitOfWork _unitOfWork,
                                     IPriceMapping _priceMapping) : IAdminPriceService
     {
-        public async Task<Result<CreatePriceResponseDTO>> CreatePriceAsync(CreatePriceRequestDTO requestDTO)
-        {
-            var validationResult = await _validationService.ValidateAsync(requestDTO);
-            if (!validationResult.IsSuccess)
-            {
-                return validationResult;
-            }
+        //public async Task<Result<CreatePriceResponseDTO>> CreatePriceAsync(CreatePriceRequestDTO requestDTO)
+        //{
+        //    var validationResult = await _validationService.ValidateAsync(requestDTO);
+        //    if (!validationResult.IsSuccess)
+        //    {
+        //        return validationResult;
+        //    }
 
-            var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(requestDTO.TourId);
-            if (tour is null)
-            {
-                return Result.Fail(new NotFoundError("This Tour Not Found"));
+        //    var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(requestDTO.TourId);
+        //    if (tour is null)
+        //    {
+        //        return Result.Fail(new NotFoundError("This Tour Not Found"));
 
-            }
+        //    }
 
-            var price = _priceMapping.PriceDTOToEntity(requestDTO, tour);
+        //    var price = _priceMapping.PriceDTOToEntity(requestDTO, tour);
 
-            try { 
-                await _unitOfWork.GetRepository<Price,Guid>().AddAsync(price);
-                await _unitOfWork.SaveChangesAsync();
+        //    try { 
+        //        await _unitOfWork.GetRepository<Price,Guid>().AddAsync(price);
+        //        await _unitOfWork.SaveChangesAsync();
 
-                return Result.Ok(new CreatePriceResponseDTO(price.RetailPrice))
-                            .WithSuccess(new Success("Price Created Successfully")
-                            .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
-            }
-            catch (Exception ex)
-            {
+        //        return Result.Ok(new CreatePriceResponseDTO(price.RetailPrice))
+        //                    .WithSuccess(new Success("Price Created Successfully")
+        //                    .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
+        //    }
+        //    catch (Exception ex)
+        //    {
 
-                return FluentValidationExtension.FromException(details: ex.Message);
+        //        return FluentValidationExtension.FromException(details: ex.Message);
 
-            }
-        }
+        //    }
+        //}
     }
 }

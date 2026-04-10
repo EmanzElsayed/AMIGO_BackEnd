@@ -7,23 +7,32 @@ namespace Amigo.Application.Mapping
 {
     public class TourScheduleMapping : ITourScheduleMapping
     {
-        public TourSchedule TourScheduleDTOToEntity(CreateTourScheduleRequestDTO requestDTO, Tour tour)
+        public List<TourSchedule> TourSchedulesDTOToEntity(List<CreateTourScheduleRequestDTO> requestDTO, Tour tour)
         {
-           
-            var shedule = new TourSchedule()
+
+            return requestDTO.Select(requestDTO => new TourSchedule
             {
+
                 Id = Guid.NewGuid(),
                 StartDate = requestDTO.StartDate,
-                EndDate = requestDTO.EndDate,
+
                 Tour = tour,
-                TourId =  tour.Id,
-               
-            };
-            if (requestDTO.AvailableDateStatus is not null)
-            {
-                shedule.AvailableDateStatus = EnumsMapping.ToAvailableSheduleStatus(requestDTO.AvailableDateStatus);
-            }
-            return shedule;
+                TourId = tour.Id,
+                AvailableDateStatus = EnumsMapping.ToEnum<AvailableDateTimeStatus>
+                (requestDTO.AvailableDateStatus, false),
+                AvailableSlots =  
+                requestDTO.availableSlots
+                .Select(availableSlotsDTO => new AvailableSlots {
+
+                    Id = Guid.NewGuid(),
+                    StartTime = availableSlotsDTO.StartTime,
+                    MaxCapacity = availableSlotsDTO.MaxCapacity,
+                    AvailableTimeStatus = EnumsMapping.ToEnum<AvailableDateTimeStatus>
+                    (availableSlotsDTO.AvailableTimeStatus, false)
+                }).ToList()
+            }).ToList();
+            
+           
         }
     }
 }

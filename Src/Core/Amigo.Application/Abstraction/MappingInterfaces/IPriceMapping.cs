@@ -7,6 +7,8 @@ namespace Amigo.Application.Abstraction.MappingInterfaces
 {
     public interface IPriceMapping
     {
-        Price PriceDTOToEntity(CreatePriceRequestDTO requestDTO , Tour tour);
+        List<Price> PricesDTOToEntity(List<CreatePriceRequestDTO> requestDTO , Tour tour ,string language);
+
+        //List<PriceTranslation> pricesTranslationToEntity(List<CreateDestinationRequestDTO>requestDTOs ,  )
     }
 }

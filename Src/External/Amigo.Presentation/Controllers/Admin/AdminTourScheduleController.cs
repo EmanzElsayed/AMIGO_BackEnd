@@ -13,12 +13,12 @@ namespace Amigo.Presentation.Controllers.Admin
     [Authorize(Roles = "Admin")]
     public class AdminTourScheduleController(IAdminTourScheduleService _adminTourScheduleService) : BaseController
     {
-        [HttpPost]
-        public async Task<IResultBase> CreateTourSchedule([FromBody] CreateTourScheduleRequestDTO requestDTO)
-        {
+        //[HttpPost]
+        //public async Task<IResultBase> CreateTourSchedule([FromBody] CreateTourScheduleRequestDTO requestDTO)
+        //{
 
-            return await _adminTourScheduleService.CreateTourScheduleAsync(requestDTO);
+        //    return await _adminTourScheduleService.CreateTourScheduleAsync(requestDTO);
 
-        }
+        //}
     }
 }

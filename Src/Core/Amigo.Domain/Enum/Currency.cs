@@ -1,6 +1,7 @@
 ﻿namespace Amigo.Domain.Enum;
 public enum Currency
 {
+    None = 0,
     BRL = 1,
     CLP = 2,
     ARS = 3,

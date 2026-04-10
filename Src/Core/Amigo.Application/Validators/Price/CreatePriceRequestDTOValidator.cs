@@ -9,9 +9,7 @@ namespace Amigo.Application.Validators.Price
     {
         public CreatePriceRequestDTOValidator()
         {
-            RuleFor(x => x.TourId)
-               .NotEmpty()
-               .WithMessage("TourId Is Required");
+           
 
             RuleFor(x => x.Discount)
                .InclusiveBetween(0, 100)
@@ -25,7 +23,13 @@ namespace Amigo.Application.Validators.Price
 
             RuleFor(x => x.Type)
                 .NotEmpty()
-                .WithMessage("Language Is Required");
+                .WithMessage("Type Is Required");
+
+            RuleFor(x => x.UserType)
+               .NotEmpty()
+               .WithMessage("User Type Is Required")
+               .Must(BusinessRules.IsValidFlagsEnum)
+               .WithMessage("User Type Code (VIP, Public)");
         }
     }
 }

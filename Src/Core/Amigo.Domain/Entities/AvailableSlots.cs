@@ -10,7 +10,7 @@ public class AvailableSlots:BaseEntity<Guid>
     public TourSchedule TourSchedule { get; set; } = null!;
 
     public TimeOnly StartTime { get; set; }
-    public TimeOnly EndTime { get; set; }
+    public TimeOnly? EndTime { get; set; }
 
     public AvailableDateTimeStatus AvailableTimeStatus { get; set; }
 

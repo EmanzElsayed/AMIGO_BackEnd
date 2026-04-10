@@ -12,12 +12,12 @@ namespace Amigo.Presentation.Controllers.Admin
     [Authorize(Roles = "Admin")]
     public class AdminPriceController(IAdminPriceService _adminPriceService) : BaseController
     {
-        [HttpPost]
-        public async Task<IResultBase> CreatePrice([FromBody] CreatePriceRequestDTO requestDTO)
-        {
+        //[HttpPost]
+        //public async Task<IResultBase> CreatePrice([FromBody] CreatePriceRequestDTO requestDTO)
+        //{
 
-            return await _adminPriceService.CreatePriceAsync(requestDTO);
+        //    return await _adminPriceService.CreatePriceAsync(requestDTO);
 
-        }
+        //}
     }
 }

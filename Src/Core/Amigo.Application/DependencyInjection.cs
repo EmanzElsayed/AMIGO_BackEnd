@@ -6,10 +6,12 @@ using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
 using Amigo.Domain.DTO.AvailableSlots;
+using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.DTO.Price;
 using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.DTO.TourSchedule;
 using Amigo.Domain.Extension;
 using Amigo.SharedKernal.QueryParams;
 using FluentValidation;
@@ -32,7 +34,8 @@ public static class DependencyInjection
         services.AddScoped<IPriceMapping, PriceMapping>();
         services.AddScoped<ITourScheduleMapping, TourScheduleMapping>();
         services.AddScoped<IAvailableSlotsMapping, AvailableSlotsMapping>();
-
+        services.AddScoped<IIncludeMapping, IncludeMapping>();
+        services.AddScoped<INotIncludedMapping, NotIncludedMapping>();
 
 
         //Services
@@ -84,8 +87,9 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreatePriceRequestDTO>();
 
 
-        services.AddValidatorsFromAssemblyContaining<CreateTourRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<CreateTourScheduleRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<CreateAvailableSlotsRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
 
 

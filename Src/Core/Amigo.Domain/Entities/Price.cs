@@ -6,14 +6,16 @@ public class Price : BaseEntity<Guid>
 {
     public Guid TourId { get; set; }
     public Tour Tour { get; set; } = null!;
-    public string Type { get; set; } = null!;
+   
     public decimal Cost { get; set; }
 
 
-    public bool IsVip { get; set; }
-
-    public bool IsPublic { get; set; }
+    public UserType UserType { get; set; } 
 
     public decimal Discount { get; set; } = 0;
     public decimal RetailPrice => Cost * (1 - Discount  / 100);
+
+
+    public ICollection<PriceTranslation> Translations { get; set; } = new List<PriceTranslation>();
+
 }

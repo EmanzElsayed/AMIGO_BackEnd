@@ -9,23 +9,23 @@ namespace Amigo.Application.Mapping
     {
         public Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination)
         {
-            Language? guideLanguage = null;
-            if (requestDTO.GuideLanguage is not null)
-            { 
-                guideLanguage = EnumsMapping.ToLanguageEnum(requestDTO.GuideLanguage);
+            //Language? guideLanguage = null;
+            //if (requestDTO.GuideLanguage is not null)
+            //{ 
+            //    guideLanguage = EnumsMapping.ToLanguageEnum(requestDTO.GuideLanguage);
             
-            }
+            //}
             return new Tour()
             {
                 Id = Guid.NewGuid(),
-                Discount = requestDTO.Discount ?? 0,
-                GuideLanguage = guideLanguage,
+                GuideLanguage = requestDTO.GuideLanguage,
                 MeetingPoint = requestDTO.MeetingPoint,
                 Duration = requestDTO.Duration,
                 IsPitsAllowed = requestDTO.IsPitsAllowed,
                 IsWheelchairAvailable = requestDTO.IsWheelchairAvailable,
                 DestinationId = destination.Id,
-                Destination = destination
+                Destination = destination,
+                UserType = requestDTO.UserType,
 
             };
         }

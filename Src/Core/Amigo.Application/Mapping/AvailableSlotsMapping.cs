@@ -13,7 +13,6 @@ namespace Amigo.Application.Mapping
             {
                 Id = Guid.NewGuid(),
                 StartTime = requestDTO.StartTime,
-                EndTime = requestDTO.EndTime,
                 MaxCapacity = requestDTO.MaxCapacity,
                 TourSchedule = tourSchedule,
                 TourScheduleId = tourSchedule.Id,

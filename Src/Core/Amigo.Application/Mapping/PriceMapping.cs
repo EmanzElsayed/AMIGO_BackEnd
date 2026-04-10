@@ -1,25 +1,49 @@
 ﻿using Amigo.Domain.DTO.Price;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class PriceMapping : IPriceMapping
+    public  class PriceMapping : IPriceMapping
     {
-        public Price PriceDTOToEntity(CreatePriceRequestDTO requestDTO, Tour tour)
+        public  List<Price> PricesDTOToEntity(List<CreatePriceRequestDTO> requestDTO, Tour tour,string language)
         {
-            return new Price()
+            Language mappedlanguage = EnumsMapping.ToLanguageEnum(language);
+            return
+                requestDTO.Select(priceDTO => new Price
             {
+
                 Id = Guid.NewGuid(),
                 Tour = tour,
                 TourId = tour.Id,
-                Cost = requestDTO.Cost,
-                Type = requestDTO.Type,
-                Discount = requestDTO.Discount ?? 0,
-                IsVip = tour.IsVip,
-                IsPublic = tour.IsPublic
-            };
+                Cost = priceDTO.Cost,
+                Discount = priceDTO.Discount ?? 0,
+                UserType = priceDTO.UserType,
+
+                Translations =  new List<PriceTranslation> 
+                {
+                    new PriceTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Language = mappedlanguage,
+                        Type = priceDTO.Type
+                    }
+                }
+            }).ToList();
+
+
+            
+
+
+            
+
+          
+           
         }
+
+       
     }
 }

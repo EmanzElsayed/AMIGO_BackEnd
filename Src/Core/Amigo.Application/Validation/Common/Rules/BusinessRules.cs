@@ -13,6 +13,11 @@ namespace Amigo.Application.Validation.Common.Rules
         {
             return Enum.TryParse(typeof(CountryCode), countryCode, true, out _);
         }
+        public static bool BeAValidCancellation(string cancellationCode)
+        {
+            return Enum.TryParse(typeof(CancelationPolicyType), cancellationCode, true, out _);
+        }
+
         public static bool BeAValidDateStatus(string availableDateStatus)
         {
             return Enum.TryParse(typeof(AvailableDateTimeStatus), availableDateStatus, true, out _);
@@ -66,6 +71,28 @@ namespace Amigo.Application.Validation.Common.Rules
 
             return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
                    (uri.Host.Contains("google.com") || uri.Host.Contains("goo.gl"));
+        }
+
+
+        public static bool IsValidFlagsEnum<T>(T value) where T : Enum
+        {
+            var allValues = Enum.GetValues(typeof(T))
+                                .Cast<int>()
+                                .Aggregate((a, b) => a | b);
+
+            return ((int)(object)value & ~allValues) == 0;
+        }
+
+        public static bool IsValidFlagsEnumNullable<T>(T? value) where T :struct,  Enum
+        {
+            if (!value.HasValue)
+                return true;
+
+            var allValues = Enum.GetValues(typeof(T))
+                                .Cast<int>()
+                                .Aggregate((a, b) => a | b);
+
+            return ((int)(object)value & ~allValues) == 0;
         }
     }
 }

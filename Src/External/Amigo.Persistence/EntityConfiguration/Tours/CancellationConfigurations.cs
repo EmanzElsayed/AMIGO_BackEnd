@@ -25,10 +25,11 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
                    .IsRequired()
                    .HasConversion<int>();
 
-            
-            builder.Property(x => x.HoursBefore)
-                   .HasColumnType("time")
-                   .IsRequired();
+
+            builder.Property(x => x.CancellationBefore)
+                 .HasColumnType("interval")
+                 .IsRequired();
+                   
 
           
             builder.Property(x => x.RefundPercentage)

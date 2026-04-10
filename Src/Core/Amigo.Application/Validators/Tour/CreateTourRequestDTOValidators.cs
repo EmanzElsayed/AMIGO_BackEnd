@@ -1,5 +1,10 @@
-﻿using Amigo.Application.Validators.Images;
+﻿using Amigo.Application.Validators.Cancellation;
+using Amigo.Application.Validators.Images;
+using Amigo.Application.Validators.Price;
+using Amigo.Application.Validators.TourSchedule;
 using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.DTO.TourSchedule;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -38,8 +43,8 @@ namespace Amigo.Application.Validators.Tour
 
             // Guide Language
             RuleFor(x => x.GuideLanguage)
-                .Must(BusinessRules.BeAValidLanguage)
-                .When(x => !string.IsNullOrEmpty(x.GuideLanguage))
+                .Must(BusinessRules.IsValidFlagsEnumNullable)
+                .When(x => x.GuideLanguage is not null)
                 .WithMessage("Invalid Guide Language Code");
 
             // Meeting Point
@@ -59,19 +64,30 @@ namespace Amigo.Application.Validators.Tour
                 .NotEmpty()
                 .WithMessage("Destination Is Required");
 
-            // Discount
-            RuleFor(x => x.Discount)
-                .InclusiveBetween(0, 100)
-                .When(x => x.Discount.HasValue)
-                .WithMessage("Discount Must Be Between 0 and 100");
+
+            RuleFor(x => x.UserType)
+                .NotEmpty()
+                .WithMessage("User Type Is Required")
+                .Must(BusinessRules.IsValidFlagsEnum)
+                .WithMessage("User Type Code (VIP, Public)");
 
             RuleForEach(x => x.Images)
                 .SetValidator(new ImageUrlsRequestDTOValidator())
                 .When(x => x.Images != null);
 
-            RuleFor(x => x)
-                .Must(x => x.IsVip || x.IsPublic)
-                .WithMessage("At least one of VIP Activity or Public Activity must be true");
+
+            RuleForEach(x => x.Schedule)
+              .SetValidator(new CreateTourScheduleRequestDTOValidator())
+              .When(x => x.Schedule != null);
+
+            RuleForEach(x => x.Prices)
+           .SetValidator(new CreatePriceRequestDTOValidator())
+           .When(x => x.Prices != null);
+
+
+            RuleFor(x => x.Cancellation)
+          .SetValidator(new CreateCancellationRequestDTOValidator())
+          .When(x => x.Cancellation != null);
         }
     }
 }

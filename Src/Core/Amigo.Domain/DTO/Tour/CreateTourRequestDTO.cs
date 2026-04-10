@@ -1,4 +1,7 @@
-﻿using Amigo.Domain.DTO.Images;
+﻿using Amigo.Domain.DTO.Cancellation;
+using Amigo.Domain.DTO.Images;
+using Amigo.Domain.DTO.Price;
+using Amigo.Domain.DTO.TourSchedule;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,8 +10,7 @@ namespace Amigo.Domain.DTO.Tour
 {
     public record CreateTourRequestDTO
     (
-        decimal? Discount, // we should make discount for vip and public
-        string? GuideLanguage,
+        Language? GuideLanguage,
         string? MeetingPoint,
         string? Description,
 
@@ -21,10 +23,16 @@ namespace Amigo.Domain.DTO.Tour
         string Language,
         string Currency,
 
-        bool IsPitsAllowed = false, // ask for default
-        bool IsWheelchairAvailable = false, // ask for default
-        bool IsVip = false,
-        bool IsPublic = false
+        CreateCancellationRequestDTO Cancellation,
+
+        List<string>? Includes,
+        List<string>? NotIncludes,
+        UserType UserType,
+        List<CreatePriceRequestDTO> Prices,
+        List<CreateTourScheduleRequestDTO> Schedule,
+
+        bool IsPitsAllowed = false, 
+        bool IsWheelchairAvailable = false 
 
     );
     

@@ -33,16 +33,14 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
                     .IsRequired()
                     .HasDefaultValue(false);
 
-            builder.Property(t => t.IsVip)
-                  
-                  .HasDefaultValue(false);
+           
 
             builder.Property(t => t.CurrencyCode)
                   .HasConversion<int>();
 
-            builder.Property(t => t.IsPublic)
+            builder.Property(t => t.UserType)
+                  .HasConversion<int>();
 
-                  .HasDefaultValue(false);
 
             builder.Property(t => t.IsWheelchairAvailable)
                     .IsRequired()
