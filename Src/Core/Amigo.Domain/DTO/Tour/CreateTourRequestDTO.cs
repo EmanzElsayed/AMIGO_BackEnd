@@ -22,14 +22,15 @@ namespace Amigo.Domain.DTO.Tour
         string Title,
         string Language,
         string Currency,
+        UserType UserType,
 
-        CreateCancellationRequestDTO Cancellation,
 
+        CreateCancellationRequestDTO? Cancellation,
         List<string>? Includes,
         List<string>? NotIncludes,
-        UserType UserType,
         List<CreatePriceRequestDTO> Prices,
         List<CreateTourScheduleRequestDTO> Schedule,
+
 
         bool IsPitsAllowed = false, 
         bool IsWheelchairAvailable = false 

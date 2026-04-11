@@ -13,8 +13,9 @@ namespace Amigo.Application.Mapping
             //if (requestDTO.GuideLanguage is not null)
             //{ 
             //    guideLanguage = EnumsMapping.ToLanguageEnum(requestDTO.GuideLanguage);
-            
+
             //}
+            Currency currency = EnumsMapping.ToEnum<Currency>(requestDTO.Currency, false);
             return new Tour()
             {
                 Id = Guid.NewGuid(),
@@ -26,6 +27,7 @@ namespace Amigo.Application.Mapping
                 DestinationId = destination.Id,
                 Destination = destination,
                 UserType = requestDTO.UserType,
+                CurrencyCode = currency
 
             };
         }

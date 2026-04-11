@@ -28,14 +28,14 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
 
             builder.HasIndex(p => p.TourId);
 
-            builder.HasIndex(p => new { p.TourId, p.UserType })
-                   .IsUnique();
+            builder.HasIndex(p => new { p.TourId, p.UserType });
 
 
 
             builder.HasOne(p => p.Tour)
                 .WithMany(x => x.Prices)
-                .HasForeignKey(p => p.TourId);
+                .HasForeignKey(p => p.TourId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

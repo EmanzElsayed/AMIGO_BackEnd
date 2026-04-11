@@ -14,7 +14,8 @@ namespace Amigo.Application.Services.Admin
                                     IPriceMapping _priceMapping,
                                     ITourScheduleMapping _tourScheduleMapping,
                                     INotIncludedMapping _notIncludedMapping,
-                                    IIncludeMapping _includeMapping) 
+                                    IIncludeMapping _includeMapping,
+                                    ICancellationMapping _cancellationMapping) 
                                 : IAdminTourService
     {
         public async Task<Result<CreateTourResponseDTO>> CreateTourAsync(CreateTourRequestDTO requestDTO)
@@ -41,14 +42,30 @@ namespace Amigo.Application.Services.Admin
                                 ? _imageMapping.ImagesToEntity(requestDTO.Images, tour).ToList()
                                 : new List<TourImage>();
 
-            var tourPrices = _priceMapping.PricesDTOToEntity(requestDTO.Prices, tour,requestDTO.Language);
+             
+             var tourPrices = requestDTO.Prices is not null && requestDTO.Prices.Any()
+                              ? _priceMapping.PricesDTOToEntity(requestDTO.Prices, tour,requestDTO.Language)
+                              :new List<Price>();
+            
+            var tourSchedule = requestDTO.Schedule is not null && requestDTO.Schedule.Any()
+                                ?_tourScheduleMapping.TourSchedulesDTOToEntity(requestDTO.Schedule, tour)
+                                :new List<TourSchedule>();
+                
+            var tourIncludes = requestDTO.Includes is not null && requestDTO.Includes.Any()
+                                ? _includeMapping.TourIncludesToEntity(requestDTO.Includes, tour, requestDTO.Language)
+                                :new List<TourIncluded>();
 
-            var tourSchedule = _tourScheduleMapping.TourSchedulesDTOToEntity(requestDTO.Schedule, tour);
+            var tourNotIncludes = requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any()
+                                  ? _notIncludedMapping.TourNotIncludesToEntity(requestDTO.NotIncludes, tour, requestDTO.Language)
+                                  :new List<TourNotIncluded>();
 
-            var tourIncludes = _includeMapping.TourIncludesToEntity(requestDTO.Includes, tour, requestDTO.Language);
+            var cancellation = requestDTO.Cancellation is not null ?
+                                    _cancellationMapping.CancellationToEntity(requestDTO.Cancellation, tour,requestDTO.Language)
+                                    :new Cancellation();
 
-            var tourNotIncludes = _notIncludedMapping.TourNotIncludesToEntity(requestDTO.NotIncludes, tour, requestDTO.Language);
-
+            //var cancellationTranslation = requestDTO.Cancellation is not null && string.IsNullOrWhiteSpace(requestDTO.Cancellation.Description) ?
+            //                            _cancellationMapping.CancellationTranslationToEntity(requestDTO.Cancellation, cancellation, requestDTO.Language)
+            //                            :new CancellationTranslation();
 
 
             var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -70,8 +87,8 @@ namespace Amigo.Application.Services.Admin
                     }
 
                     if (tourSchedule.Any())
-                    { 
-                        await _unitOfWork.GetRepository<TourSchedule,Guid>().AddRangeAsync(tourSchedule);
+                    {
+                        await _unitOfWork.GetRepository<TourSchedule, Guid>().AddRangeAsync(tourSchedule);
 
                     }
 
@@ -84,6 +101,14 @@ namespace Amigo.Application.Services.Admin
                     {
                         await _unitOfWork.GetRepository<TourNotIncluded, Guid>().AddRangeAsync(tourNotIncludes);
                     }
+                    if (cancellation is not null)
+                    {
+                        await _unitOfWork.GetRepository<Cancellation, Guid>().AddAsync(cancellation);
+                    }
+                    //if (cancellationTranslation is not null)
+                    //{ 
+                    //    await _unitOfWork.GetRepository<CancellationTranslation,Guid>().AddAsync(cancellationTranslation);
+                    //}
 
                     await _unitOfWork.SaveChangesAsync();
 
@@ -96,6 +121,7 @@ namespace Amigo.Application.Services.Admin
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
+
                     return FluentValidationExtension.FromException(details: ex.Message);
                 }
             });

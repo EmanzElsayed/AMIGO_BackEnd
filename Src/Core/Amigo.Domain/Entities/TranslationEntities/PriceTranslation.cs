@@ -8,7 +8,7 @@ namespace Amigo.Domain.Entities.TranslationEntities;
 
 public class PriceTranslation : BaseEntity<Guid>
 {
-
+                                               
     public Price Price { get; set; } = null!;
     public Guid PriceId { get; set; }
     

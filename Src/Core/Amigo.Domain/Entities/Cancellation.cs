@@ -10,5 +10,6 @@ public class Cancellation:BaseEntity<Guid>
     public CancelationPolicyType CancelationPolicyType { get; set; }
     public TimeSpan CancellationBefore  { get; set; }
     public decimal RefundPercentage { get; set; }
+    public ICollection<CancellationTranslation> Translations { get; set; } = new List<CancellationTranslation>();
 
 }

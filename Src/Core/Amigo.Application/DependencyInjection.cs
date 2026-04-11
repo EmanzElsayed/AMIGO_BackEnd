@@ -36,7 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IAvailableSlotsMapping, AvailableSlotsMapping>();
         services.AddScoped<IIncludeMapping, IncludeMapping>();
         services.AddScoped<INotIncludedMapping, NotIncludedMapping>();
-
+        services.AddScoped<ICancellationMapping, CancellationMapping>();
 
         //Services
 
