@@ -14,9 +14,6 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery );
         Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string destinationId ,GetDestinationByIdQuery requestQuery);
 
-
-       
-
-
+        Task<Result<IReadOnlyList<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery);
     }
 }

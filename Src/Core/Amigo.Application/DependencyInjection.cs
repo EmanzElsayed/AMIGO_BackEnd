@@ -5,6 +5,8 @@ using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
+using Amigo.Application.Validators.Checkout;
+using Amigo.Application.Validators.Tour;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Destination;
@@ -44,6 +46,9 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, GoogleEmailService>();
         services.AddScoped<IEnumService, EnumService>();
         services.AddScoped<IDestinationService , DestinationService>();
+        services.AddScoped<IUserTourCatalogService, UserTourCatalogService>();
+        services.AddScoped<ICheckoutQuoteService, CheckoutQuoteService>();
+        services.AddScoped<IUserTourReviewService, UserTourReviewService>();
         
         services.AddScoped<IAdminDestinationService, AdminDestinationService>();
         services.AddScoped<IAdminTourService, AdminTourService>();
@@ -79,6 +84,10 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<UpdateActivationDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<UpdateDestinationRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<GetDestinationByIdQuery>();
+        services.AddValidatorsFromAssemblyContaining<GetTopDestinationsQuery>();
+        services.AddValidatorsFromAssemblyContaining<GetUserToursQuery>();
+        services.AddValidatorsFromAssemblyContaining<CreateUserTourReviewRequestDtoValidator>();
+        services.AddValidatorsFromAssemblyContaining<CheckoutQuoteRequestDtoValidator>();
 
         services.AddValidatorsFromAssemblyContaining<CreateTourRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<ImageUrlsRequestDTO>();

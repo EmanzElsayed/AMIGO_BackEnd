@@ -34,6 +34,13 @@ namespace Amigo.Application.Services.Admin
 
             }
 
+            if (requestDTO.Prices is not null && requestDTO.Prices.Any(p =>
+                    p.UserType == UserType.None
+                    || (p.UserType & requestDTO.UserType) != p.UserType))
+            {
+                return Result.Fail("Invalid pricing tiers: tier user type must match selected tour audience.");
+            }
+
             var tour = _tourMapping.TourToEntity(requestDTO, destination);
 
             var tourTranslation = _tourMapping.TourTranslationToEntity(requestDTO, tour);

@@ -1,6 +1,8 @@
+using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Persistence.Repositories;
+using Amigo.Persistence.Services;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +57,9 @@ public static class DependencyInjection
 
         services.AddScoped<IDataSeeding, DataSeeding>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+        services.AddScoped<IDestinationSlugResolver, DestinationSlugResolver>();
+        services.AddScoped<ITourReviewEligibilityReader, TourReviewEligibilityReader>();
 
         return services;
     }

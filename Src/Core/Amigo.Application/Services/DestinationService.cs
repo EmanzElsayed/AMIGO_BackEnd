@@ -1,13 +1,13 @@
-﻿
-namespace Amigo.Application.Services
+﻿namespace Amigo.Application.Services
 {
     public class DestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork ,
                                     IDestinationMapping _destinationMapping ,
-                                    ImageCloudService _imageCloud) : IDestinationService
+                                    ImageCloudService _imageCloud,
+                                    ITopDestinationsReader _topDestinationsReader) : IDestinationService
     {
 
-        
+    
 
         public async Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery)
         {
@@ -59,8 +59,16 @@ namespace Amigo.Application.Services
             return Result.Ok(mappedDestinationData);
         }
 
-      
+        public async Task<Result<IReadOnlyList<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestQuery);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
 
-        
+            var data = await _topDestinationsReader.GetTopAsync(requestQuery);
+            return Result.Ok(data).WithSuccess(new Success("Top destinations loaded successfully."));
+        }
     }
 }

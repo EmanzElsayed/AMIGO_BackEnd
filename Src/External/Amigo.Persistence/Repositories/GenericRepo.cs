@@ -1,6 +1,7 @@
 ﻿using Amigo.Domain.Abstraction;
 using Amigo.Domain.Abstraction.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Amigo.Persistence.Repositories;
 
@@ -57,6 +58,14 @@ public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext)
         return await SpeceficationEvaluator
             .CreateQuery(_dbContext.Set<TEntity>(), spec)
             .AnyAsync();
+    }
+
+    public async Task<double?> MaxAsync(ISpecifications<TEntity, TKey> specifications, Expression<Func<TEntity, double>> selector)
+    {
+        var q = SpeceficationEvaluator.CreateQuery(_dbContext.Set<TEntity>(), specifications);
+        if (!await q.AnyAsync())
+            return null;
+        return await q.MaxAsync(selector);
     }
     #endregion
 
