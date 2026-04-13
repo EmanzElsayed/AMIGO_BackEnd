@@ -4,32 +4,34 @@ using System.Text;
 
 namespace Amigo.Persistence.EntityConfiguration.Bookings
 {
-    
-        public class PeopleBookingConfiguration : BaseEntityConfigurations<PeopleBooking, Guid>
+
+    public class PeopleBookingConfiguration : BaseEntityConfigurations<PeopleBooking, Guid>
+    {
+        public override void Configure(EntityTypeBuilder<PeopleBooking> builder)
         {
-            public override void Configure(EntityTypeBuilder<PeopleBooking> builder)
-            {
-                base.Configure(builder);
+            base.Configure(builder);
 
-                // Number of people
-                builder.Property(x => x.NoOfPeopleBooking)
-                       .IsRequired();
+            builder.Property(x => x.NoOfPeopleBooking)
+                   .IsRequired();
 
-                // Relationships
-                builder.HasOne(x => x.Booking)
-                       .WithMany(z => z.PeopleBookings)
-                       .HasForeignKey(x => x.BookingId)
-                       .OnDelete(DeleteBehavior.Restrict);
+            // ✅ Snapshot
+            builder.Property(x => x.PriceAtBooking)
+                   .HasColumnType("decimal(18,2)")
+                   .IsRequired();
 
-                builder.HasOne(x => x.Price)
-                       .WithMany()
-                       .HasForeignKey(x => x.PriceId)
-                       .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.PriceType)
+                   .HasMaxLength(100)
+                   .IsRequired();
 
-                // Indexes
-                builder.HasIndex(x => x.BookingId);
-                builder.HasIndex(x => x.PriceId);
-            }
+            // Relationships
+            builder.HasOne(x => x.Booking)
+                   .WithMany(z => z.PeopleBookings)
+                   .HasForeignKey(x => x.BookingId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            builder.HasIndex(x => x.BookingId);
         }
-    
+    }
+
 }

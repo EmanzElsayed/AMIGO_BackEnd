@@ -1,4 +1,5 @@
 ﻿using Amigo.Domain.DTO.Images;
+using Amigo.Domain.Entities;
 using Amigo.SharedKernal.DTOs.Images;
 using System;
 using System.Collections.Generic;
@@ -60,6 +61,57 @@ namespace Amigo.Application.Services
 
             return Result.Ok(uploadedImages);
 
+        }
+
+        public Task UpdateImagesAsync(
+            Tour tour,
+            List<ImageUrlsRequestDTO>? imagesDto)
+        {
+            if (imagesDto is null)
+                return Task.CompletedTask;
+
+            //  normalize input
+            var validDtos = imagesDto
+                .Where(x => !string.IsNullOrWhiteSpace(x.PublicId) &&
+                            !string.IsNullOrWhiteSpace(x.ImageUrl))
+                .ToList();
+
+            var requestPublicIds = validDtos
+                .Select(x => x.PublicId!)
+                .ToHashSet();
+
+            //  1. Remove images not in request
+            var imagesToRemove = tour.Images
+                .Where(img => !requestPublicIds.Contains(img.ImagePublicId))
+                .ToList();
+
+            foreach (var img in imagesToRemove)
+            {
+                tour.Images.Remove(img);
+
+
+                _imageCloudService.DeleteImage(img.ImagePublicId);
+            }
+
+            // 2. Add new images
+            var existingPublicIds = tour.Images
+                .Select(i => i.ImagePublicId)
+                .ToHashSet();
+
+            foreach (var dto in validDtos)
+            {
+                if (existingPublicIds.Contains(dto.PublicId!))
+                    continue;
+
+                tour.Images.Add(new TourImage
+                {
+                    ImageUrl = dto.ImageUrl!,
+                    ImagePublicId = dto.PublicId!,
+                    TourId = tour.Id
+                });
+            }
+
+            return Task.CompletedTask;
         }
         //public Task<Result<string>> DeleteImage(string publicId)
         //{

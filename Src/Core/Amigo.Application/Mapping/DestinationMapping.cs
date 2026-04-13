@@ -140,7 +140,7 @@ namespace Amigo.Application.Mapping
                     });
                 }
                 else
-                {
+                {   
                     //  update existing language
                     translation.Name = requestDTO.Name;
                 }

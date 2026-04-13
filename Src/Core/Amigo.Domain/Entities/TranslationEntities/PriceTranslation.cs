@@ -16,6 +16,6 @@ public class PriceTranslation : BaseEntity<Guid>
     public string Type { get; set; } = null!;
 
     public Language Language { get; set; }
-
+    
 }
 

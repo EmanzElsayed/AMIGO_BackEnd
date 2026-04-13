@@ -4,41 +4,47 @@ using System.Text;
 
 namespace Amigo.Persistence.EntityConfiguration.Bookings
 {
-    
-    
-        public class BookingConfiguration : BaseEntityConfigurations<Booking, Guid>
+
+
+    public class BookingConfiguration : BaseEntityConfigurations<Booking, Guid>
+    {
+        public override void Configure(EntityTypeBuilder<Booking> builder)
         {
-            public override void Configure(EntityTypeBuilder<Booking> builder)
-            {
-                base.Configure(builder);
+            base.Configure(builder);
 
-                
-                builder.Property(x => x.Status)
-                       .HasConversion<int>()
-                       .IsRequired();
+            builder.Property(x => x.Status)
+                   .HasConversion<int>()
+                   .IsRequired();
 
-                
-                builder.Property(x => x.BookingDate)
-                       .HasColumnType("timestamp");
+            builder.Property(x => x.BookingDate)
+                   .HasColumnType("timestamp")
+                   .IsRequired();
 
-                // Relationships
-                builder.HasOne(x => x.Order)
-                       .WithMany()
-                       .HasForeignKey(x => x.OrderId)
-                       .OnDelete(DeleteBehavior.Cascade);
+            // ✅ Snapshot fields
+            builder.Property(x => x.Date)
+                   .IsRequired();
 
-                builder.HasOne(x => x.AvailableSlots)
-                       .WithMany()
-                       .HasForeignKey(x => x.AvailableSlotsId)
-                       .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Time)
+                   .IsRequired();
 
-                // Indexes for fast queries
-                builder.HasIndex(x => x.OrderId);
-                builder.HasIndex(x => x.AvailableSlotsId);
-                builder.HasIndex(x => x.Status);
+            // Relationships
+            builder.HasOne(x => x.Order)
+                   .WithMany()
+                   .HasForeignKey(x => x.OrderId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
-                
-            }
+            builder.HasOne(x => x.AvailableSlots)
+                   .WithMany()
+                   .HasForeignKey(x => x.AvailableSlotsId)
+                   .OnDelete(DeleteBehavior.SetNull); // 🔥 مهم
+
+            // Indexes
+            builder.HasIndex(x => x.OrderId);
+            builder.HasIndex(x => x.AvailableSlotsId);
+            builder.HasIndex(x => x.Status);
+
+            // 🔥 useful query index
+            builder.HasIndex(x => new { x.Date, x.Time });
         }
-    
+    }
 }

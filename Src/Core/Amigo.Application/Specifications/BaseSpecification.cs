@@ -1,5 +1,6 @@
 ﻿using Amigo.Domain.Abstraction;
 using Amigo.SharedKernal.Entities;
+using Microsoft.EntityFrameworkCore.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -19,10 +20,20 @@ namespace Amigo.Application.Specifications
         #region Include
         public List<Expression<Func<TEntity, object>>> IncludeExpressions { get; } = [];
 
-
-        protected void AddInclude(Expression<Func<TEntity, object>> includeExpressions)
+        protected void AddInclude(
+            Expression<Func<TEntity, object>> includeExpressions
+            )
         {
             IncludeExpressions.Add(includeExpressions);
+        }
+
+        public List<Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>> Includes { get; }
+        = new();
+
+        protected void AddInclude(
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includeExpression)
+        {
+            Includes.Add(includeExpression);
         }
         #endregion
 

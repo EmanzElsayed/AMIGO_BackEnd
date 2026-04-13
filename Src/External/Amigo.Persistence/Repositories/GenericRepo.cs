@@ -1,6 +1,7 @@
 ﻿using Amigo.Domain.Abstraction;
 using Amigo.Domain.Abstraction.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Amigo.Persistence.Repositories;
 
@@ -64,5 +65,13 @@ public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext)
     {
 
         await _dbContext.Set<TEntity>().AddRangeAsync(entities);
+    }
+    public async Task RemoveWhereAsync(Expression<Func<TEntity, bool>> predicate)
+    {
+        var entities = await _dbContext.Set<TEntity>()
+            .Where(predicate)
+            .ToListAsync();
+
+        _dbContext.Set<TEntity>().RemoveRange(entities);
     }
 }

@@ -1,8 +1,10 @@
-﻿namespace Amigo.Domain.Entities;
+﻿using Amigo.Domain.Abstraction;
+
+namespace Amigo.Domain.Entities;
 
 [Table($"{nameof(Destination)}", Schema = SchemaConstants.auth_schema)]
 
-public class Destination : BaseEntity<Guid>
+public class Destination : BaseEntity<Guid>, ITranslatable<DestinationTranslation>
 {
     public CountryCode CountryCode { get; set; }
     public bool IsActive { get; set; }

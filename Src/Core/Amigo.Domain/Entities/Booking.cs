@@ -6,9 +6,15 @@ public class Booking:BaseEntity<Guid>
 {
     public Guid OrderId { get; set; }
     public Order Order { get; set; } = null!;
-    public Guid AvailableSlotsId { get; set; }
-    public AvailableSlots AvailableSlots { get; set; } = null!;
+    public Guid? AvailableSlotsId { get; set; }
+    public AvailableSlots? AvailableSlots { get; set; }
+
+    // ✅ snapshot
+    public DateOnly Date { get; set; }
+    public TimeSpan Time { get; set; }
+
     public BookingStatus Status { get; set; }
     public DateTime? BookingDate { get; set; }
+
     public ICollection<PeopleBooking> PeopleBookings { get; set; } = new List<PeopleBooking>(); 
 }

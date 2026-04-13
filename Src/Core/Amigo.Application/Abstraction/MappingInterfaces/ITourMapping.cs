@@ -10,5 +10,10 @@ namespace Amigo.Application.Abstraction.MappingInterfaces
         Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination);
         TourTranslation TourTranslationToEntity(CreateTourRequestDTO requestDTO, Tour tour);
 
+        void UpdateTour(
+                        UpdateTourRequestDTO requestDTO,
+                        Tour tour,
+                        TourTranslation? translation,
+                        Language? language);
     }
 }

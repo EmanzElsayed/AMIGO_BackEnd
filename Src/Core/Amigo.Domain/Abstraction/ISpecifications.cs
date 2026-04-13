@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Query;
+using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
@@ -9,6 +10,7 @@ namespace Amigo.Domain.Abstraction
     {
         public Expression<Func<TEntity, bool>>? Criteria { get; }
         public List<Expression<Func<TEntity, object>>> IncludeExpressions { get; }
+        public List<Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>> Includes { get; }
         public Expression<Func<TEntity, object>> OrderBY { get; }
         public Expression<Func<TEntity, object>> OrderBYDescending { get; }
         public int Skip { get; }

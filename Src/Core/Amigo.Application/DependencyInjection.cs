@@ -5,6 +5,7 @@ using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
+using Amigo.Application.Services.Translation;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Destination;
@@ -50,11 +51,17 @@ public static class DependencyInjection
         services.AddScoped<IAdminPriceService, AdminPriceService>();
         services.AddScoped<IAdminAvailableSlotsService, AdminAvailableSlotsService>();
         services.AddScoped<IAdminTourScheduleService, AdminTourScheduleService>();
+        services.AddScoped<IAdminTourIncludesService, AdminTourIncludesService>();
+        services.AddScoped<IAdminTourNotIncludesService, AdminTourNotIncludesService>();
+        services.AddScoped<IAdminTourCancellationService, AdminTourCancellationService>();
+
 
 
 
         services.AddScoped<IImageService, ImageService>();
-
+        services.AddScoped<TranslationService>();
+        services.AddHttpClient<TranslationService>();
+        services.AddScoped<TranslationEngine>();
 
         services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
         services.AddSingleton<ImageCloudService>();

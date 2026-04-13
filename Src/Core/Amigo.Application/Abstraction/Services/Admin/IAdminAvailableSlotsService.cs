@@ -10,6 +10,11 @@ namespace Amigo.Application.Abstraction.Services.Admin
     public interface IAdminAvailableSlotsService
     {
         //Task<Result> CreateAvailableSlotsAsync(CreateAvailableSlotsRequestDTO requestDTO);
-
+        void UpdateAvailableSlots(
+           TourSchedule schedule,
+           List<UpdateAvailableSlotsRequestDTO>? slotsDto);
+        public void AddAvailableSlots(
+           TourSchedule schedule,
+           List<UpdateAvailableSlotsRequestDTO>? slotsDto);
     }
 }
