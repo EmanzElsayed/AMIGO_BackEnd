@@ -1,4 +1,6 @@
-﻿namespace Amigo.Domain.Abstraction.Repositories;
+﻿using System.Linq.Expressions;
+
+namespace Amigo.Domain.Abstraction.Repositories;
 
 public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
 {
@@ -24,6 +26,7 @@ public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
 
     public Task<bool> AnyAsync(ISpecifications<TEntity, TKey> spec);
 
+    Task<double?> MaxAsync(ISpecifications<TEntity, TKey> specifications, Expression<Func<TEntity, double>> selector);
 
     #endregion
 

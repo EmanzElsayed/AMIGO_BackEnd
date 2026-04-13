@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text;
 
 namespace Amigo.Application.Mapping
@@ -16,8 +18,23 @@ namespace Amigo.Application.Mapping
 
         public static Language ToLanguageEnum(string language)
         {
-            Enum.TryParse<Language>(language, true, out var lang);
-            return lang;
+            if (string.IsNullOrWhiteSpace(language))
+                return Language.English;
+
+            if (Enum.TryParse<Language>(language, true, out var parsed) && parsed != Language.None)
+                return parsed;
+
+            foreach (var field in typeof(Language).GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (field.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
+                    return (Language)field.GetValue(null)!;
+
+                var display = field.GetCustomAttribute<DisplayAttribute>();
+                if (display?.Name != null && display.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
+                    return (Language)field.GetValue(null)!;
+            }
+
+            return Language.English;
         }
         public static AvailableDateTimeStatus ToAvailableSheduleStatus(string? availableStatus)
         {

@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Amigo.Application\Amigo.Application.csproj" />
     <ProjectReference Include="..\..\Core\Amigo.Domain\Amigo.Domain.csproj" />
+    <ProjectReference Include="..\..\External\Amigo.Persistence\Amigo.Persistence.csproj" />
   </ItemGroup>
 
 </Project>
