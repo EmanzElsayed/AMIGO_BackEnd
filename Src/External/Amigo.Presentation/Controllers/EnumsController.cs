@@ -19,9 +19,9 @@ namespace Amigo.Presentation.Controllers
         IConfiguration _configuration) : BaseController
     {
         [HttpGet("languages")]
-        public  IResultBase GetLanguages()
+        public IResultBase GetLanguages()
         {
-           return _enumService.GetEnum<Language>() ;
+            return _enumService.GetEnum<Language>();
 
          
 
@@ -30,7 +30,7 @@ namespace Amigo.Presentation.Controllers
         [HttpGet("Currency")]
         public IResultBase GetCurrency()
         {
-           return _enumService.GetEnum<Currency>();
+            return _enumService.GetEnum<Currency>();
 
             
 
@@ -99,11 +99,12 @@ namespace Amigo.Presentation.Controllers
             }
             rates["USD"] = 1m;
 
-            return Result.Ok(new
+            var result = Result.Ok(new
             {
                 @base = baseCurrency,
                 rates
             });
+            return result;
         }
     }
 }

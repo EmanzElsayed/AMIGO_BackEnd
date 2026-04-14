@@ -23,12 +23,20 @@ public static class UserTourCatalogMapper
         var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType);
         var days = MapScheduleDays(schedules, todayUtc);
         var recent = MapRecentReviews(reviews, reviewTranslations);
+        var travelerPhotos = MapTravelerPhotos(reviews);
+        var imageUrls = tour.Images
+            .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.ImageUrl))
+            .OrderBy(i => i.Id)
+            .Select(i => i.ImageUrl.Trim())
+            .Distinct()
+            .ToList();
 
         return new UserTourDetailDto(
             TourId: baseItem.TourId,
             Title: baseItem.Title,
             Description: baseItem.Description,
             HeroImageUrl: baseItem.HeroImageUrl,
+            ImageUrls: imageUrls,
             AverageRating: baseItem.AverageRating,
             ReviewCount: baseItem.ReviewCount,
             FreeCancellation: baseItem.FreeCancellation,
@@ -44,6 +52,7 @@ public static class UserTourCatalogMapper
             PriceTiers: tiers,
             ScheduleDays: days,
             RecentReviews: recent,
+            TravelerPhotos: travelerPhotos,
             MeetingPoint: string.IsNullOrWhiteSpace(tour.MeetingPoint) ? null : tour.MeetingPoint.Trim(),
             Included: MapIncludedLines(tour, listingLanguage),
             NotIncluded: MapNotIncludedLines(tour, listingLanguage),
@@ -195,13 +204,44 @@ public static class UserTourCatalogMapper
                 var tr = translations.FirstOrDefault(t => t.ReviewId == r.Id);
                 var comment = tr?.Comment;
                 var author = r.User?.UserName ?? r.User?.Email;
+                var imageUrls = r.Images
+                    .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.Image))
+                    .OrderBy(i => i.Id)
+                    .Select(i => i.Image.Trim())
+                    .Distinct()
+                    .ToList();
                 return new UserTourReviewItemDto(
                     r.Rate,
                     comment,
                     string.IsNullOrWhiteSpace(author) ? null : author,
-                    r.Date.ToString("yyyy-MM-dd"));
+                    r.Date.ToString("yyyy-MM-dd"),
+                    imageUrls);
             })
             .ToList();
+    }
+
+    private static IReadOnlyList<UserTourTravelerPhotoDto> MapTravelerPhotos(
+        IReadOnlyList<Review> reviews)
+    {
+        var rows = reviews
+            .Where(r => !r.IsDeleted)
+            .OrderByDescending(r => r.Date)
+            .SelectMany(r =>
+            {
+                var author = r.User?.UserName ?? r.User?.Email;
+                return r.Images
+                    .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.Image))
+                    .Select(i => new UserTourTravelerPhotoDto(
+                        i.Image.Trim(),
+                        r.Date.ToString("yyyy-MM-dd"),
+                        string.IsNullOrWhiteSpace(author) ? null : author));
+            })
+            .GroupBy(x => x.ImageUrl, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .Take(120)
+            .ToList();
+
+        return rows;
     }
 
     public static UserTourListItemDto ToListItem(Tour tour, Language listingLanguage)

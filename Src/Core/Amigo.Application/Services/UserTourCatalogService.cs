@@ -38,11 +38,13 @@ public class UserTourCatalogService(
         if (!string.IsNullOrWhiteSpace(query.CountryCode)
             && Enum.TryParse<CountryCode>(query.CountryCode, true, out var cc)
             && cc != CountryCode.None)
-            country = cc; // use enum mapping 
+
+            country = cc;
         
         Currency? currencyFilter = null;
 
-        UserType? userType = ParseUserType(query.UserType); // make mapping 
+        UserType? userType = ParseUserType(query.UserType); 
+
 
         DateOnly? availabilityDate = null;
         if (!string.IsNullOrWhiteSpace(query.AvailabilityDate)
@@ -103,6 +105,12 @@ public class UserTourCatalogService(
             : EnumsMapping.ToLanguageEnum(language!);
 
         var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
+]        var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
+
+        var preferred = rows
+            .SelectMany(x => x.Translations)
+            .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
 
         var inclusions = await _unitOfWork
             .GetRepository<TourInclusion, Guid>()
@@ -118,15 +126,20 @@ public class UserTourCatalogService(
         if (primary.Count > 0)
             return Result.Ok<IEnumerable<string>>(primary.OrderBy(x => x));
 
-        var fallback = inclusions
-            .SelectMany(i => i.Translations)
-            .Where(t => !string.IsNullOrWhiteSpace(t.Text))
-            .Select(t => t.Text.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(x => x)
-            .ToList();
 
-        return Result.Ok<IEnumerable<string>>(fallback);
+
+        var distinct = preferred.Count > 0
+            ? preferred
+            : rows
+                .SelectMany(x => x.Translations)
+                .Where(t => !string.IsNullOrWhiteSpace(t.Text))
+                .Select(t => t.Text.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
+
+        return Result.Ok<IEnumerable<string>>(distinct);
+
     }
 
     public async Task<Result<MaxDurationHoursResponseDto>> GetMaxDurationHoursForDestinationAsync(Guid destinationId)
@@ -161,6 +174,8 @@ public class UserTourCatalogService(
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
 
         var requestSlug = SlugHelper.ToUrlSlug(query.TourSlug);
+        var normalizedRequestSlug = SlugHelper.Normalize(query.TourSlug);
+
 
         var spec = new TourCatalogForSlugResolutionSpecification(destId.Value);
 
@@ -170,14 +185,25 @@ public class UserTourCatalogService(
         Tour? match = null;
         foreach (var t in tours)
         {
-            var tr = t.Translations.FirstOrDefault(x => x.Language == listingLang)
-                     ?? t.Translations.FirstOrDefault();
-            var title = tr?.Title ?? string.Empty;
-            if (SlugHelper.ToUrlSlug(title) == requestSlug)
-            {
-                match = t;
-                break;
-            }
+            var candidateTitles = t.Translations
+                .Where(x => !string.IsNullOrWhiteSpace(x.Title))
+                .OrderByDescending(x => x.Language == listingLang)
+                .Select(x => x.Title!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (candidateTitles.Count == 0)
+                continue;
+
+            var isMatch = candidateTitles.Any(title =>
+                SlugHelper.ToUrlSlug(title) == requestSlug
+                || SlugHelper.Normalize(title) == normalizedRequestSlug);
+
+            if (!isMatch)
+                continue;
+
+            match = t;
+            break;
         }
 
         if (match is null)

@@ -22,8 +22,18 @@ public record UserTourReviewItemDto(
     decimal Rating,
     string? Comment,
     string? AuthorLabel,
-    string Date);
+    string Date,
+    IReadOnlyList<string> ImageUrls);
 
+public record UserTourTravelerPhotoDto(
+    string ImageUrl,
+    string Date,
+    string? AuthorLabel);
+
+
+public record ImageDTO(
+    string url
+    );
 
 public record ImageDTO(
     string url
@@ -33,8 +43,9 @@ public record UserTourDetailDto(
     Guid TourId,
     string Title,
     string? Description,
-    //List<ImageDTO>? Images,
-    string? HeroImageUrl, 
+    string? HeroImageUrl,
+    IReadOnlyList<string> ImageUrls,
+
     decimal? AverageRating,
     int ReviewCount,
     bool FreeCancellation,
@@ -51,7 +62,8 @@ public record UserTourDetailDto(
     IReadOnlyList<UserTourPriceTierDto> PriceTiers,
     IReadOnlyList<UserTourScheduleDayDto> ScheduleDays,
     IReadOnlyList<UserTourReviewItemDto> RecentReviews,
-    
+    IReadOnlyList<UserTourTravelerPhotoDto> TravelerPhotos,
+
     string? MeetingPoint,
     
     IReadOnlyList<string> Included,

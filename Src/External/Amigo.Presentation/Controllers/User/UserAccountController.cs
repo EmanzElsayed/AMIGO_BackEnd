@@ -44,7 +44,8 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
         {
             fullName = user.fullName,
             email = user.email,
-            userType
+            userType,
+            emailConfirmed = appUser?.EmailConfirmed ?? false
         });
     }
 
@@ -213,6 +214,40 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
                 .ToListAsync();
             if (existingSlotIds.Count != slotIds.Count)
                 return Result.Fail("One or more selected slots are no longer available.");
+
+            var requestedBySlot = body.Lines
+                .GroupBy(x => x.SlotId)
+                .ToDictionary(g => g.Key, g => g.Sum(x => Math.Max(1, x.Quantity)));
+
+            var slotCapacities = await db.AvailableSlots.AsNoTracking()
+                .Where(s => slotIds.Contains(s.Id) && !s.IsDeleted)
+                .Select(s => new { s.Id, s.MaxCapacity })
+                .ToDictionaryAsync(x => x.Id, x => x.MaxCapacity);
+
+            var bookedBySlot = await (
+                from item in db.OrderItems.AsNoTracking()
+                join paidOrder in db.Orders.AsNoTracking() on item.OrderId equals paidOrder.Id
+                where !item.IsDeleted
+                    && !paidOrder.IsDeleted
+                    && paidOrder.Status == OrderStatus.Paid
+                    && slotIds.Contains(item.AvailableSlotsId)
+                group item by item.AvailableSlotsId into g
+                select new { SlotId = g.Key, Qty = g.Sum(x => x.Quantity) }
+            ).ToDictionaryAsync(x => x.SlotId, x => x.Qty);
+
+            foreach (var slotId in slotIds)
+            {
+                if (!slotCapacities.TryGetValue(slotId, out var maxCapacity) || maxCapacity <= 0)
+                    return Result.Fail("Selected slot is not open for booking.");
+
+                var alreadyBooked = bookedBySlot.TryGetValue(slotId, out var bq) ? bq : 0;
+                var requestedQty = requestedBySlot.TryGetValue(slotId, out var rq) ? rq : 0;
+                if (alreadyBooked + requestedQty > maxCapacity)
+                {
+                    var remaining = Math.Max(0, maxCapacity - alreadyBooked);
+                    return Result.Fail($"Selected slot capacity exceeded. Remaining seats: {remaining}.");
+                }
+            }
 
             var currency = Enum.TryParse<Currency>(body.CurrencyCode, true, out var parsedCurrency)
                 ? parsedCurrency

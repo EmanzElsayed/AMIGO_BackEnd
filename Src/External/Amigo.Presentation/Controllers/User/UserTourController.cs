@@ -17,7 +17,8 @@ public class UserTourController(
     [HttpGet]
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
     {
-        query.UserType = await ResolveEffectiveUserTypeAsync();
+        var userType = await ResolveEffectiveUserTypeAsync();
+        query.UserType = userType;
         return await _catalog.GetToursAsync(query);
     }
 
@@ -69,4 +70,5 @@ public class UserTourController(
         var isVip = await _userManager.IsInRoleAsync(user, "VIP");
         return isVip ? "VIP" : "Public";
     }
+
 }
