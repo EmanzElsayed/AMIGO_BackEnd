@@ -5,7 +5,8 @@ public record RegisterRequestDTO(
     string Password,
     string ConfirmPassword,
     string FullName,   
-    bool TermsAccepted
+    bool TermsAccepted,
+    string? ReturnUrl
     
 );
 

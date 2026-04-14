@@ -6,6 +6,7 @@ namespace Amigo.Domain.DTO.Authentication
 {
     public record ResendConfrimEmailRequestDTO
     (
-        string Email
+        string Email,
+        string? ReturnUrl
         );
 }
