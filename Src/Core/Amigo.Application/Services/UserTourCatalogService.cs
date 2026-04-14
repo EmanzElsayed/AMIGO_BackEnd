@@ -105,12 +105,14 @@ public class UserTourCatalogService(
             : EnumsMapping.ToLanguageEnum(language!);
 
         var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
-]        var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
+        var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
 
         var preferred = rows
             .SelectMany(x => x.Translations)
             .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
             .Select(t => t.Text.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         var inclusions = await _unitOfWork
             .GetRepository<TourInclusion, Guid>()
