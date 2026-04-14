@@ -35,10 +35,6 @@ public record ImageDTO(
     string url
     );
 
-public record ImageDTO(
-    string url
-    );
-
 public record UserTourDetailDto(
     Guid TourId,
     string Title,
