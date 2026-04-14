@@ -35,12 +35,17 @@ public record ImageDTO(
     string url
     );
 
+public record ImageDTO(
+    string url
+    );
+
 public record UserTourDetailDto(
     Guid TourId,
     string Title,
     string? Description,
     string? HeroImageUrl,
     IReadOnlyList<string> ImageUrls,
+
     decimal? AverageRating,
     int ReviewCount,
     bool FreeCancellation,
@@ -58,6 +63,7 @@ public record UserTourDetailDto(
     IReadOnlyList<UserTourScheduleDayDto> ScheduleDays,
     IReadOnlyList<UserTourReviewItemDto> RecentReviews,
     IReadOnlyList<UserTourTravelerPhotoDto> TravelerPhotos,
+
     string? MeetingPoint,
     
     IReadOnlyList<string> Included,

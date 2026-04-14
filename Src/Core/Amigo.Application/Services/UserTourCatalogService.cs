@@ -38,16 +38,18 @@ public class UserTourCatalogService(
         if (!string.IsNullOrWhiteSpace(query.CountryCode)
             && Enum.TryParse<CountryCode>(query.CountryCode, true, out var cc)
             && cc != CountryCode.None)
+
             country = cc;
         
         Currency? currencyFilter = null;
 
         UserType? userType = ParseUserType(query.UserType); 
 
+
         DateOnly? availabilityDate = null;
         if (!string.IsNullOrWhiteSpace(query.AvailabilityDate)
             && DateOnly.TryParse(query.AvailabilityDate, out var ad))
-            availabilityDate = ad;
+            availabilityDate = ad; // use mapping
 
         var destId = query.DestinationId;
 
@@ -103,15 +105,28 @@ public class UserTourCatalogService(
             : EnumsMapping.ToLanguageEnum(language!);
 
         var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
-        var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
+]        var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
 
         var preferred = rows
             .SelectMany(x => x.Translations)
             .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
             .Select(t => t.Text.Trim())
+
+        var inclusions = await _unitOfWork
+            .GetRepository<TourInclusion, Guid>()
+            .GetAllAsync(spec);
+
+        var primary = inclusions
+            .SelectMany(i => i.Translations)
+            .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(x => x)
             .ToList();
+
+        if (primary.Count > 0)
+            return Result.Ok<IEnumerable<string>>(primary.OrderBy(x => x));
+
+
 
         var distinct = preferred.Count > 0
             ? preferred
@@ -124,6 +139,7 @@ public class UserTourCatalogService(
                 .ToList();
 
         return Result.Ok<IEnumerable<string>>(distinct);
+
     }
 
     public async Task<Result<MaxDurationHoursResponseDto>> GetMaxDurationHoursForDestinationAsync(Guid destinationId)
@@ -159,6 +175,7 @@ public class UserTourCatalogService(
 
         var requestSlug = SlugHelper.ToUrlSlug(query.TourSlug);
         var normalizedRequestSlug = SlugHelper.Normalize(query.TourSlug);
+
 
         var spec = new TourCatalogForSlugResolutionSpecification(destId.Value);
 
