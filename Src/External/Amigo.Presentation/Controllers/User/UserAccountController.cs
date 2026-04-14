@@ -184,79 +184,100 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
     [HttpPost("bookings/pay-now")]
     public async Task<IResultBase> PayNow([FromBody] PayNowRequest body)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-            return Result.Fail(new UnauthorizedError("Not authenticated"));
-        if (body is null || body.Lines is null || body.Lines.Count == 0)
-            return Result.Fail("At least one booking line is required.");
-
-        var currency = Enum.TryParse<Currency>(body.CurrencyCode, true, out var parsedCurrency)
-            ? parsedCurrency
-            : Currency.USD;
-
-        var nowUtc = DateTime.UtcNow;
-        var nowForTimestampWithoutTz = DateTime.SpecifyKind(nowUtc, DateTimeKind.Unspecified);
-
-        var order = new Order
+        try
         {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Currency = currency,
-            Status = OrderStatus.Paid,
-            OrderDate = nowForTimestampWithoutTz,
-            TotalAmount = body.TotalAmount
-        };
-        await db.Orders.AddAsync(order);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+                return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-        var validLineCount = 0;
-        foreach (var line in body.Lines)
-        {
-            var slotId = line.SlotId;
-            var slot = await db.AvailableSlots.AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Id == slotId && !s.IsDeleted);
-            if (slot is null)
-                continue;
+            var currentUser = await userManager.FindByIdAsync(userId);
+            if (currentUser is null)
+                return Result.Fail(new UnauthorizedError("Not authenticated"));
+            if (!currentUser.EmailConfirmed)
+                return Result.Fail(new ForbiddenError("Please confirm your email before booking."));
 
-            var orderItem = new OrderItem
+            if (body is null || body.Lines is null || body.Lines.Count == 0)
+                return Result.Fail("At least one booking line is required.");
+
+            if (body.Lines.Any(x => x.SlotId == Guid.Empty))
+                return Result.Fail("Each booking line must include a valid slotId.");
+            if (body.Lines.Any(x => x.Quantity < 1))
+                return Result.Fail("Each booking line must have quantity >= 1.");
+            if (body.Lines.Any(x => x.LineTotal < 0))
+                return Result.Fail("Each booking line must have a non-negative lineTotal.");
+
+            var slotIds = body.Lines.Select(x => x.SlotId).Distinct().ToList();
+            var existingSlotIds = await db.AvailableSlots.AsNoTracking()
+                .Where(s => slotIds.Contains(s.Id) && !s.IsDeleted)
+                .Select(s => s.Id)
+                .ToListAsync();
+            if (existingSlotIds.Count != slotIds.Count)
+                return Result.Fail("One or more selected slots are no longer available.");
+
+            var currency = Enum.TryParse<Currency>(body.CurrencyCode, true, out var parsedCurrency)
+                ? parsedCurrency
+                : Currency.USD;
+
+            var nowUtc = DateTime.UtcNow;
+            var nowNoTz = DateTime.SpecifyKind(nowUtc, DateTimeKind.Unspecified);
+            var totalAmount = body.TotalAmount > 0
+                ? body.TotalAmount
+                : body.Lines.Sum(x => Math.Max(0, x.LineTotal));
+
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Currency = currency,
+                Status = OrderStatus.Paid,
+                OrderDate = nowUtc,
+                TotalAmount = totalAmount
+            };
+            await db.Orders.AddAsync(order);
+
+            foreach (var line in body.Lines)
+            {
+                var orderItem = new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    AvailableSlotsId = line.SlotId,
+                    Price = Math.Max(0, line.LineTotal),
+                    Quantity = Math.Max(1, line.Quantity)
+                };
+                await db.OrderItems.AddAsync(orderItem);
+
+                var booking = new Booking
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order.Id,
+                    AvailableSlotsId = line.SlotId,
+                    Status = BookingStatus.Confirmed,
+                    BookingDate = nowNoTz
+                };
+                await db.Bookings.AddAsync(booking);
+            }
+
+            var payment = new Payment
             {
                 Id = Guid.NewGuid(),
                 OrderId = order.Id,
-                AvailableSlotsId = slotId,
-                Price = line.LineTotal,
-                Quantity = Math.Max(1, line.Quantity)
+                TotalAmount = totalAmount,
+                PaymentMethod = PaymentMethod.Card,
+                Currency = currency,
+                PaidAt = nowUtc,
+                Status = PaymentStatus.Completed,
+                TransactionId = $"SIM-{DateTime.UtcNow:yyyyMMddHHmmssfff}"
             };
-            await db.OrderItems.AddAsync(orderItem);
+            await db.Payments.AddAsync(payment);
 
-            var booking = new Booking
-            {
-                Id = Guid.NewGuid(),
-                OrderId = order.Id,
-                AvailableSlotsId = slotId,
-                Status = BookingStatus.Confirmed,
-                BookingDate = nowForTimestampWithoutTz
-            };
-            await db.Bookings.AddAsync(booking);
-            validLineCount++;
+            await db.SaveChangesAsync();
+            return Result.Ok(new { orderId = order.Id, paymentStatus = "Completed" });
         }
-
-        if (validLineCount == 0)
-            return Result.Fail("No valid slots were found for this booking.");
-
-        var payment = new Payment
+        catch (DbUpdateException ex)
         {
-            Id = Guid.NewGuid(),
-            OrderId = order.Id,
-            TotalAmount = body.TotalAmount,
-            PaymentMethod = PaymentMethod.Card,
-            Currency = currency,
-            PaidAt = nowUtc,
-            Status = PaymentStatus.Completed,
-            TransactionId = $"SIM-{DateTime.UtcNow:yyyyMMddHHmmssfff}"
-        };
-        await db.Payments.AddAsync(payment);
-
-        await db.SaveChangesAsync();
-        return Result.Ok(new { orderId = order.Id, paymentStatus = "Completed" });
+            return Result.Fail($"Checkout save failed: {ex.InnerException?.Message ?? ex.Message}");
+        }
     }
 }
 
@@ -269,6 +290,9 @@ public class PayNowRequest
 {
     public string CurrencyCode { get; set; } = "USD";
     public decimal TotalAmount { get; set; }
+    public string FullName { get; set; } = "";
+    public string Email { get; set; } = "";
+    public string PhoneNumber { get; set; } = "";
     public List<PayNowLine> Lines { get; set; } = new();
 }
 

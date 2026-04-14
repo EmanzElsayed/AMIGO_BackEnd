@@ -1,4 +1,4 @@
 ﻿namespace Amigo.Domain.DTO.Authentication;
 
 public record LoginRequestDTO
-(string Email , string Password);
+(string Email , string Password, string? ReturnUrl);

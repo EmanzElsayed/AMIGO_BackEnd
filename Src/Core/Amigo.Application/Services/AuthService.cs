@@ -31,17 +31,17 @@ public class AuthService(
 
         }
 
-        if (!user.EmailConfirmed)
-        {
-            var SendEmailResult = await SendConfirmEmail(user);
-            if (!SendEmailResult.IsSuccess)
-            {
-                return SendEmailResult;
-            }
-            return Result.Fail(new ForbiddenError("Please Confirm Your Email First"));
+        //if (!user.EmailConfirmed)
+        //{
+        //    var SendEmailResult = await SendConfirmEmail(user, requestDTO.ReturnUrl);
+        //    if (!SendEmailResult.IsSuccess)
+        //    {
+        //        return SendEmailResult;
+        //    }
+        //    return Result.Fail(new ForbiddenError("Please Confirm Your Email First"));
 
 
-        }
+        //}
         // after sms 
         //if (!user.PhoneNumberConfirmed)
         //{
@@ -160,7 +160,7 @@ public class AuthService(
 
         #region Check Exist Email And It is not Confirmed And Resing Email
 
-        var ExistEmailAndNotConfirmedResponse =  await IsEmailExistAndNotConfirmedAndResingEmail(existingUser);
+        var ExistEmailAndNotConfirmedResponse =  await IsEmailExistAndNotConfirmedAndResingEmail(existingUser, requestDTO.ReturnUrl);
         if (ExistEmailAndNotConfirmedResponse is not null)
         {
             return ExistEmailAndNotConfirmedResponse;
@@ -180,7 +180,7 @@ public class AuthService(
        
        
 
-        var SendEmailResult =   await SendConfirmEmail(user);
+        var SendEmailResult =   await SendConfirmEmail(user, requestDTO.ReturnUrl);
         if (!SendEmailResult.IsSuccess)
         { 
             return SendEmailResult;
@@ -266,7 +266,7 @@ public class AuthService(
 
         if (user is not null && !user.EmailConfirmed)
         {
-            var SendEmailResult = await SendConfirmEmail(user);
+            var SendEmailResult = await SendConfirmEmail(user, requestDTO.ReturnUrl);
             if (!SendEmailResult.IsSuccess)
             {
                 return SendEmailResult;
@@ -296,13 +296,13 @@ public class AuthService(
         return primaryRole;
 
     }
-    private async Task<Result?> IsEmailExistAndNotConfirmedAndResingEmail(ApplicationUser? existingUser)
+    private async Task<Result?> IsEmailExistAndNotConfirmedAndResingEmail(ApplicationUser? existingUser, string? returnUrl = null)
     {
         if (existingUser is null) return null;
 
         if (existingUser is not null && !existingUser.EmailConfirmed)
         {
-            await SendConfirmEmail(existingUser);
+            await SendConfirmEmail(existingUser, returnUrl);
 
           
 
@@ -314,14 +314,17 @@ public class AuthService(
         else return null;
 
     }
-    private async Task<Result> SendConfirmEmail(ApplicationUser user)
+    private async Task<Result> SendConfirmEmail(ApplicationUser user, string? returnUrl = null)
     {
         try
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
-            var confirmLink =
-                $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?confirmemail={user.Email}&token={encodedToken}";
+            var confirmLink = $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?confirmemail={user.Email}&token={encodedToken}";
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                confirmLink += $"&returnUrl={WebUtility.UrlEncode(returnUrl)}";
+            }
             Console.WriteLine("confirm link: " + confirmLink);
             await _emailService.SendEmailAsync(
                 user.Email,
