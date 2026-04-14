@@ -9,6 +9,6 @@ namespace Amigo.Application.Abstraction.Services.Admin
     public interface IAdminTourService
     {
         Task<Result<CreateTourResponseDTO>> CreateTourAsync(CreateTourRequestDTO requestDTO);
-
+        Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string tourId);
     }
 }

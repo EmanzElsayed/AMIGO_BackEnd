@@ -20,6 +20,12 @@ namespace Amigo.Presentation.Controllers.Admin
             return await _adminTourService.CreateTourAsync(requestDTO);
 
         }
+        [HttpPatch("{id}")]
+        public async Task<IResultBase> UpdateTour([FromBody] UpdateTourRequestDTO requestDTO, string id)
+        {
 
+            return await _adminTourService.UpdateTourAsync(requestDTO, id);
+
+        }
     }
 }

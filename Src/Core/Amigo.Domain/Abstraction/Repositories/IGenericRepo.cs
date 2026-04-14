@@ -32,4 +32,5 @@ public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
 
     public Task AddRangeAsync(IEnumerable<TEntity> entities);
 
+    Task RemoveWhereAsync(Expression<Func<TEntity, bool>> predicate);
 }

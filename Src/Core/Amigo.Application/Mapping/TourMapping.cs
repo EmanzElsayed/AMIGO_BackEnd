@@ -45,5 +45,60 @@ namespace Amigo.Application.Mapping
                 Tour = tour
             };
         }
+
+        public void UpdateTour(
+                UpdateTourRequestDTO requestDTO,
+                Tour tour,
+                TourTranslation? translation,
+                Language? language)
+        {
+            // basic fields
+            if (requestDTO.Duration is not null)
+                tour.Duration = requestDTO.Duration.Value;
+
+            if (requestDTO.MeetingPoint is not null)
+                tour.MeetingPoint = requestDTO.MeetingPoint;
+
+            if (requestDTO.GuideLanguage is not null)
+                tour.GuideLanguage = requestDTO.GuideLanguage;
+
+            if (requestDTO.UserType is not null)
+                tour.UserType = requestDTO.UserType.Value;
+
+            if (requestDTO.Currency is not null)
+                tour.CurrencyCode = EnumsMapping.ToEnum<Currency>(requestDTO.Currency, false);
+
+            if (requestDTO.IsPitsAllowed is not null)
+                tour.IsPitsAllowed = requestDTO.IsPitsAllowed.Value;
+
+            if (requestDTO.IsWheelchairAvailable is not null)
+                tour.IsWheelchairAvailable = requestDTO.IsWheelchairAvailable.Value;
+
+            if ((requestDTO.Title is not null || requestDTO.Description is not null)
+                && language is not null)
+            {
+                if (translation is null)
+                {
+                    //  add new language
+                    tour.Translations.Add(new TourTranslation
+                    {
+
+                        Language = language.Value,
+                        Title = requestDTO.Title,
+                        Description = requestDTO.Description,
+                        TourId = tour.Id
+                    });
+                }
+                else
+                {
+                    // update existing language
+                    if (requestDTO.Title is not null)
+                        translation.Title = requestDTO.Title;
+
+                    if (requestDTO.Description is not null)
+                        translation.Description = requestDTO.Description;
+                }
+            }
+        }
     }
 }

@@ -34,6 +34,12 @@ namespace Amigo.Persistence
                 
                 query = specifications.IncludeExpressions.Aggregate(query, (current, includeExpression) => current.Include(includeExpression));
             }
+
+            if (specifications.Includes is not null && specifications.Includes.Any())
+            {
+                query = specifications.Includes
+                    .Aggregate(query, (current, include) => include(current));
+            }
             #endregion
 
 

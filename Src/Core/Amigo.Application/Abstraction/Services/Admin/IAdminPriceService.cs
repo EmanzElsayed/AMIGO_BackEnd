@@ -11,6 +11,9 @@ namespace Amigo.Application.Abstraction.Services.Admin
     public interface IAdminPriceService
     {
         //Task<Result<CreatePriceResponseDTO>> CreatePriceAsync(CreatePriceRequestDTO requestDTO);
-
+        Task UpdatePricesAsync(
+                  Tour tour,
+                  List<UpdatePriceRequestDTO> prices,
+                  Language? language);
     }
 }

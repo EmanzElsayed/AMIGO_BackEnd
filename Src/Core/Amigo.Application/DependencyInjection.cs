@@ -1,10 +1,12 @@
 ﻿using Amigo.Application.Abstraction;
 using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
+using Amigo.Application.Services.AutoTranslation;
 using Amigo.Application.Validators.Checkout;
 using Amigo.Application.Validators.Tour;
 using Amigo.Domain.DTO.AvailableSlots;
@@ -19,6 +21,7 @@ using Amigo.SharedKernal.QueryParams;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 
 namespace Amigo.Application;
@@ -56,10 +59,32 @@ public static class DependencyInjection
         services.AddScoped<IAdminAvailableSlotsService, AdminAvailableSlotsService>();
         services.AddScoped<IAdminTourScheduleService, AdminTourScheduleService>();
 
-
+        services.AddScoped<IAdminTourIncludesService, AdminTourIncludesService>();
+        services.AddScoped<IAdminTourNotIncludesService, AdminTourNotIncludesService>();
+        services.AddScoped<IAdminTourCancellationService, AdminTourCancellationService>();
 
         services.AddScoped<IImageService, ImageService>();
 
+        services.AddScoped<TranslationService>();
+        services.AddHttpClient<TranslationService>();
+        services.AddScoped<TranslationEngine>();
+
+
+
+        //services.Configure<TranslationApiSettings>(
+        //            configuration.GetSection("TranslationApi")
+
+        //            );
+
+        //services.AddHttpClient<TranslationService>((serviceProvider, client) =>
+        //{
+        //    var settings = serviceProvider
+        //        .GetRequiredService<IOptions<TranslationApiSettings>>()
+        //        .Value;
+
+        //    client.BaseAddress = new Uri(settings.BaseUrl);
+        //    client.DefaultRequestHeaders.Add("x-api-key", settings.ApiKey);
+        //});
 
         services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
         services.AddSingleton<ImageCloudService>();
