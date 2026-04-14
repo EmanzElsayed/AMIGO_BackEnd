@@ -4,14 +4,18 @@ using Amigo.Domain.Enum;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class TourIncludedLinesForDestinationSpecification : BaseSpecification<TourIncluded, Guid>
+public class TourIncludedLinesForDestinationSpecification : BaseSpecification<TourInclusion, Guid>
 {
-    public TourIncludedLinesForDestinationSpecification(Guid destinationId, Language language)
+    public TourIncludedLinesForDestinationSpecification(Guid destinationId)
         : base(ti =>
             !ti.IsDeleted
             && !ti.Tour.IsDeleted
             && ti.Tour.DestinationId == destinationId
-            && ti.Language == language)
+            && ti.IsIncluded
+            
+            )
+            
     {
+        AddInclude(ti => ti.Translations);
     }
 }

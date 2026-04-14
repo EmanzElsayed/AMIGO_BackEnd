@@ -25,8 +25,12 @@ namespace Amigo.Application.Specifications.TourSpecification
                   .ThenInclude(t => t.Translations)
                   );
 
-            AddInclude(t => t.Included);
-            AddInclude(t => t.NotIncluded);
+            AddInclude(t => t
+                .Include(t => t.TourInclusions)
+                .ThenInclude(t => t.Translations)
+                );
+
+            
 
             AddInclude(t => t
                     .Include(t => t.Prices)

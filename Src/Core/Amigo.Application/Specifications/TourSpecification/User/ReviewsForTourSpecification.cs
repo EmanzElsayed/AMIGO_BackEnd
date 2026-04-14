@@ -10,6 +10,7 @@ public class ReviewsForTourSpecification : BaseSpecification<Review, Guid>
         : base(BuildCriteria(tourId))
     {
         AddInclude(r => r.User);
+        AddInclude(r => r.Images);
     }
 
     private static Expression<Func<Review, bool>> BuildCriteria(Guid tourId)

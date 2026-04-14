@@ -11,7 +11,8 @@ public record UserTourSlotDto(
     Guid SlotId,
     string StartTime,
     string? EndTime,
-    bool Available);
+    bool Available
+    );
 
 public record UserTourScheduleDayDto(
     string Date,
@@ -21,14 +22,25 @@ public record UserTourReviewItemDto(
     decimal Rating,
     string? Comment,
     string? AuthorLabel,
-    string Date);
+    string Date,
+    IReadOnlyList<string> ImageUrls);
 
+public record UserTourTravelerPhotoDto(
+    string ImageUrl,
+    string Date,
+    string? AuthorLabel);
+
+
+public record ImageDTO(
+    string url
+    );
 
 public record UserTourDetailDto(
     Guid TourId,
     string Title,
     string? Description,
     string? HeroImageUrl,
+    IReadOnlyList<string> ImageUrls,
     decimal? AverageRating,
     int ReviewCount,
     bool FreeCancellation,
@@ -41,10 +53,16 @@ public record UserTourDetailDto(
     string? GuideLanguage,
     string TourSlug,
     string CurrencyCode,
+    
     IReadOnlyList<UserTourPriceTierDto> PriceTiers,
     IReadOnlyList<UserTourScheduleDayDto> ScheduleDays,
     IReadOnlyList<UserTourReviewItemDto> RecentReviews,
+    IReadOnlyList<UserTourTravelerPhotoDto> TravelerPhotos,
     string? MeetingPoint,
+    
     IReadOnlyList<string> Included,
     IReadOnlyList<string> NotIncluded,
-    string? CancellationPolicyDescription);
+    
+    string? CancellationPolicyDescription
+    
+    );

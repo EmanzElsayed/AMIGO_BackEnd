@@ -1,4 +1,4 @@
-﻿
+
 
 namespace Amigo.Application.Services;
 
@@ -57,7 +57,8 @@ public class AuthService(
                 FullName : user.FullName?? user.UserName,
                 Email: requestDTO.Email,
                 Token: await GenerateToken(user),
-                Role: role
+                Role: role,
+                EmailConfirmed: user.EmailConfirmed
             );  
 
             return Result.Ok(data)

@@ -8,6 +8,7 @@ namespace Amigo.Persistence
         public DbSet<ReviewTranslation> ReviewTranslations { get; set; }
         public DbSet<CancellationTranslation> CancelationTranslations { get; set; }
         public DbSet<TourTranslation> TourTranslations { get; set; }
+        public DbSet<InclusionTranslation> InclusionTranslations { get; set; }
 
         // Core Entities
 
@@ -20,8 +21,7 @@ namespace Amigo.Persistence
         public DbSet<Price> Prices { get; set; }
 
         public DbSet<TourImage> TourImages { get; set; }
-        public DbSet<TourIncluded> TourIncluded { get; set; }
-        public DbSet<TourNotIncluded> TourNotIncluded { get; set; }
+        public DbSet<TourInclusion> TourInclusion { get; set; }
 
         public DbSet<Review> Reviews { get; set; }
         public DbSet<ReviewImage> ReviewImages

@@ -20,10 +20,14 @@ public class AmigoDbContextFactory : IDesignTimeDbContextFactory<AmigoDbContext>
         if (string.IsNullOrEmpty(connectionString))
         {
             var basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../../api/Amigo.API"));
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+                ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+                ?? "Development";
 
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
                 .AddJsonFile("appsettings.json", optional: true)
+                .AddJsonFile($"appsettings.{environment}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
 

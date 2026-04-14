@@ -9,7 +9,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification.Admin
     public class GetDestinationWithTranslationsSpecification : BaseSpecification<Destination, Guid>
     {
         public GetDestinationWithTranslationsSpecification(Guid destinationId) 
-            : base(d => d.Id == destinationId)
+            : base(d => d.Id == destinationId && !d.IsDeleted)
         {
             AddInclude(d => d.Translations);
         }

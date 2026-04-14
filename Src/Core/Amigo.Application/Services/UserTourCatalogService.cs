@@ -13,9 +13,10 @@ using Amigo.SharedKernal.QueryParams;
 namespace Amigo.Application.Services;
 
 public class UserTourCatalogService(
-    IValidationService _validationService,
-    IUnitOfWork _unitOfWork,
-    IDestinationSlugResolver _slugResolver) : IUserTourCatalogService
+            IValidationService _validationService,
+            IUnitOfWork _unitOfWork,
+            IDestinationSlugResolver _slugResolver) 
+                : IUserTourCatalogService
 {
     public async Task<Result<PaginatedResponse<UserTourListItemDto>>> GetToursAsync(GetUserToursQuery query)
     {
@@ -38,10 +39,10 @@ public class UserTourCatalogService(
             && Enum.TryParse<CountryCode>(query.CountryCode, true, out var cc)
             && cc != CountryCode.None)
             country = cc;
-
+        
         Currency? currencyFilter = null;
 
-        UserType? userType = ParseUserType(query.UserType);
+        UserType? userType = ParseUserType(query.UserType); 
 
         DateOnly? availabilityDate = null;
         if (!string.IsNullOrWhiteSpace(query.AvailabilityDate)
@@ -93,20 +94,34 @@ public class UserTourCatalogService(
         return Result.Ok(response);
     }
 
-    public async Task<Result<IEnumerable<string>>> GetTourCategoriesAsync(Guid destinationId, string? language)
+    public async Task<Result<IEnumerable<string>>> GetTourCategoriesAsync(
+     Guid destinationId,
+     string? language)
     {
-        var listingLang = string.IsNullOrWhiteSpace(language)
+        var lang = string.IsNullOrWhiteSpace(language)
             ? Language.English
             : EnumsMapping.ToLanguageEnum(language!);
 
-        var spec = new TourIncludedLinesForDestinationSpecification(destinationId, listingLang);
-        var rows = await _unitOfWork.GetRepository<TourIncluded, Guid>().GetAllAsync(spec);
-        var distinct = rows
-            .Select(x => x.Included)
-            .Where(s => !string.IsNullOrWhiteSpace(s))
+        var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
+        var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
+
+        var preferred = rows
+            .SelectMany(x => x.Translations)
+            .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x)
             .ToList();
+
+        var distinct = preferred.Count > 0
+            ? preferred
+            : rows
+                .SelectMany(x => x.Translations)
+                .Where(t => !string.IsNullOrWhiteSpace(t.Text))
+                .Select(t => t.Text.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x)
+                .ToList();
 
         return Result.Ok<IEnumerable<string>>(distinct);
     }
@@ -143,21 +158,35 @@ public class UserTourCatalogService(
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
 
         var requestSlug = SlugHelper.ToUrlSlug(query.TourSlug);
+        var normalizedRequestSlug = SlugHelper.Normalize(query.TourSlug);
+
         var spec = new TourCatalogForSlugResolutionSpecification(destId.Value);
+
         var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
         var tours = (await tourRepo.GetAllAsync(spec)).ToList();
 
         Tour? match = null;
         foreach (var t in tours)
         {
-            var tr = t.Translations.FirstOrDefault(x => x.Language == listingLang)
-                     ?? t.Translations.FirstOrDefault();
-            var title = tr?.Title ?? string.Empty;
-            if (SlugHelper.ToUrlSlug(title) == requestSlug)
-            {
-                match = t;
-                break;
-            }
+            var candidateTitles = t.Translations
+                .Where(x => !string.IsNullOrWhiteSpace(x.Title))
+                .OrderByDescending(x => x.Language == listingLang)
+                .Select(x => x.Title!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (candidateTitles.Count == 0)
+                continue;
+
+            var isMatch = candidateTitles.Any(title =>
+                SlugHelper.ToUrlSlug(title) == requestSlug
+                || SlugHelper.Normalize(title) == normalizedRequestSlug);
+
+            if (!isMatch)
+                continue;
+
+            match = t;
+            break;
         }
 
         if (match is null)
@@ -167,7 +196,9 @@ public class UserTourCatalogService(
             return Result.Fail(new NotFoundError("Tour not found for this link."));
 
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
+
         var priceRepo = _unitOfWork.GetRepository<Price, Guid>();
+
         var scheduleRepo = _unitOfWork.GetRepository<TourSchedule, Guid>();
         var reviewRepo = _unitOfWork.GetRepository<Review, Guid>();
         var reviewTrRepo = _unitOfWork.GetRepository<ReviewTranslation, Guid>();
@@ -203,7 +234,8 @@ public class UserTourCatalogService(
             reviews,
             reviewTranslations,
             todayUtc,
-            cancellationPolicyDescription);
+            cancellationPolicyDescription
+        );
 
         return Result.Ok(detail);
     }

@@ -81,9 +81,38 @@ public class AdminActivityController(AmigoDbContext db) : BaseController
                         .FirstOrDefault()
                         ?? p.Translations.Select(tr => tr.Type).FirstOrDefault())
                     .FirstOrDefault(),
-                Status = "Active",
+                TotalCapacity = db.AvailableSlots
+                    .Where(s => !s.IsDeleted && s.TourSchedule.TourId == t.Id)
+                    .Select(s => (int?)s.MaxCapacity)
+                    .Sum() ?? 0,
+                BookedSeats = (
+                    from oi in db.OrderItems
+                    join o in db.Orders on oi.OrderId equals o.Id
+                    join s in db.AvailableSlots on oi.AvailableSlotsId equals s.Id
+                    where !oi.IsDeleted
+                        && !o.IsDeleted
+                        && !s.IsDeleted
+                        && o.Status == OrderStatus.Paid
+                        && s.TourSchedule.TourId == t.Id
+                    select (int?)oi.Quantity
+                ).Sum() ?? 0,
             })
             .ToListAsync();
+
+        foreach (var item in rows)
+        {
+            if (item.TotalCapacity <= 0)
+            {
+                item.BookedPercentage = 0;
+                item.Status = "Active";
+                continue;
+            }
+
+            var ratio = (decimal)item.BookedSeats / item.TotalCapacity;
+            var pct = (int)Math.Round(ratio * 100m, MidpointRounding.AwayFromZero);
+            item.BookedPercentage = Math.Clamp(pct, 0, 100);
+            item.Status = item.BookedPercentage >= 90 ? "Low Stock" : "Active";
+        }
 
         var totalPages = ps <= 0 ? 0 : (int)Math.Ceiling(totalItems / (double)ps);
 
@@ -97,6 +126,49 @@ public class AdminActivityController(AmigoDbContext db) : BaseController
         };
 
         return Result.Ok(response);
+    }
+
+    [HttpGet("stats")]
+    public async Task<IResultBase> GetActivityStats()
+    {
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var nextMonthStart = monthStart.AddMonths(1);
+
+        var bookingsThisMonth = await db.Bookings.AsNoTracking()
+            .Where(b => !b.IsDeleted && b.BookingDate.HasValue && b.BookingDate.Value >= monthStart && b.BookingDate.Value < nextMonthStart)
+            .CountAsync();
+
+        var grossRevenue = await db.Orders.AsNoTracking()
+            .Where(o => !o.IsDeleted && o.Status == OrderStatus.Paid && o.OrderDate.HasValue && o.OrderDate.Value >= monthStart && o.OrderDate.Value < nextMonthStart)
+            .Select(o => (decimal?)o.TotalAmount)
+            .SumAsync() ?? 0m;
+
+        var totalCapacity = await db.AvailableSlots.AsNoTracking()
+            .Where(s => !s.IsDeleted)
+            .Select(s => (int?)s.MaxCapacity)
+            .SumAsync() ?? 0;
+
+        var totalBookedSeats = await (
+            from oi in db.OrderItems.AsNoTracking()
+            join o in db.Orders.AsNoTracking() on oi.OrderId equals o.Id
+            where !oi.IsDeleted && !o.IsDeleted && o.Status == OrderStatus.Paid
+            select (int?)oi.Quantity
+        ).SumAsync() ?? 0;
+
+        var avgCapacity = totalCapacity <= 0
+            ? 0
+            : Math.Clamp((int)Math.Round((decimal)totalBookedSeats * 100m / totalCapacity, MidpointRounding.AwayFromZero), 0, 100);
+
+        var status = avgCapacity >= 90 ? "Low Stock" : "Active";
+
+        return Result.Ok(new
+        {
+            bookingsThisMonth,
+            avgCapacity,
+            grossRevenue,
+            status
+        });
     }
 
     private static string EscapeLikePattern(string value)
@@ -119,5 +191,8 @@ public sealed class AdminActivityListItemDto
     public string? EntryAmountVIPLabel { get; set; }
     public decimal? EntryAmountPublic { get; set; }
     public string? EntryAmountPublicLabel { get; set; }
+    public int TotalCapacity { get; set; }
+    public int BookedSeats { get; set; }
+    public int BookedPercentage { get; set; }
     public string Status { get; set; } = "Active";
 }
