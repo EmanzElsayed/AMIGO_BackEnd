@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Amigo.Persistence.Services;
 
-public class DestinationSlugResolver(AmigoDbContext _db) : IDestinationSlugResolver
+public class DestinationSlugResolver(AmigoDbContext _db) 
+            : IDestinationSlugResolver
 {
     public async Task<Guid?> ResolveDestinationIdAsync(string slug, CancellationToken cancellationToken = default)
     {

@@ -55,7 +55,8 @@ namespace Amigo.Application.Validation.Common.Specifications
                     &&
                         (isAdmin || d.IsActive)
 
-                
+                    &&!d.IsDeleted
+
                   );
                 
         }
@@ -76,6 +77,7 @@ namespace Amigo.Application.Validation.Common.Specifications
                     d.Id == destinationId 
                     && 
                     d.IsActive == true
+                    && !d.IsDeleted
                     &&
                      d.Translations.Any(
                             t =>

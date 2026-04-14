@@ -39,8 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IPriceMapping, PriceMapping>();
         services.AddScoped<ITourScheduleMapping, TourScheduleMapping>();
         services.AddScoped<IAvailableSlotsMapping, AvailableSlotsMapping>();
-        services.AddScoped<IIncludeMapping, IncludeMapping>();
-        services.AddScoped<INotIncludedMapping, NotIncludedMapping>();
+        services.AddScoped<IInclusionMapping, InclusionMapping>();
         services.AddScoped<ICancellationMapping, CancellationMapping>();
 
         //Services
@@ -59,8 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminAvailableSlotsService, AdminAvailableSlotsService>();
         services.AddScoped<IAdminTourScheduleService, AdminTourScheduleService>();
 
-        services.AddScoped<IAdminTourIncludesService, AdminTourIncludesService>();
-        services.AddScoped<IAdminTourNotIncludesService, AdminTourNotIncludesService>();
+        services.AddScoped<IAdminTourInclusionService, AdminTourInclusionService>();
         services.AddScoped<IAdminTourCancellationService, AdminTourCancellationService>();
 
         services.AddScoped<IImageService, ImageService>();

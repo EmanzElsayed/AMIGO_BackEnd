@@ -54,42 +54,52 @@ public static class UserTourCatalogMapper
 
     private static IReadOnlyList<string> MapIncludedLines(Tour tour, Language lang)
     {
-        var rows = tour.Included.Where(x => !x.IsDeleted).ToList();
-        if (rows.Count == 0)
+        var inclusions = tour.TourInclusions
+            .Where(i => !i.IsDeleted && i.IsIncluded) 
+            .ToList();
+
+        if (inclusions.Count == 0)
             return [];
 
-        var primary = rows
-            .Where(x => x.Language == lang)
-            .Select(x => x.Included.Trim())
-            .Where(s => s.Length > 0)
+        var primary = inclusions
+            .SelectMany(i => i.Translations)
+            .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
             .ToList();
+
         if (primary.Count > 0)
             return primary;
 
-        return rows
-            .Select(x => x.Included.Trim())
-            .Where(s => s.Length > 0)
+        return inclusions
+            .SelectMany(i => i.Translations)
+            .Where(t => !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
             .Distinct()
             .ToList();
     }
 
     private static IReadOnlyList<string> MapNotIncludedLines(Tour tour, Language lang)
     {
-        var rows = tour.NotIncluded.Where(x => !x.IsDeleted).ToList();
-        if (rows.Count == 0)
+        var inclusions = tour.TourInclusions
+           .Where(i => !i.IsDeleted && !i.IsIncluded)
+           .ToList();
+
+        if (inclusions.Count == 0)
             return [];
 
-        var primary = rows
-            .Where(x => x.Language == lang)
-            .Select(x => x.NotIncluded.Trim())
-            .Where(s => s.Length > 0)
+        var primary = inclusions
+            .SelectMany(i => i.Translations)
+            .Where(t => t.Language == lang && !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
             .ToList();
+
         if (primary.Count > 0)
             return primary;
 
-        return rows
-            .Select(x => x.NotIncluded.Trim())
-            .Where(s => s.Length > 0)
+        return inclusions
+            .SelectMany(i => i.Translations)
+            .Where(t => !string.IsNullOrWhiteSpace(t.Text))
+            .Select(t => t.Text.Trim())
             .Distinct()
             .ToList();
     }

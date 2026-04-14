@@ -14,13 +14,11 @@ namespace Amigo.Application.Services.Admin
                                     IImageMapping _imageMapping,
                                     IPriceMapping _priceMapping,
                                     ITourScheduleMapping _tourScheduleMapping,
-                                    INotIncludedMapping _notIncludedMapping,
-                                    IIncludeMapping _includeMapping,
+                                    IInclusionMapping _inclusionMapping,
                                     ICancellationMapping _cancellationMapping,
                                     IAdminPriceService _adminPriceService,
                                     IAdminTourScheduleService _adminTourScheduleService,
-                                    IAdminTourNotIncludesService _adminTourNotIncludesService,
-                                    IAdminTourIncludesService _adminTourIncludesService,
+                                    IAdminTourInclusionService _adminTourInclusionService,
                                     IAdminTourCancellationService _adminTourCancellationService,
                                     IImageService _imageService) 
                                 : IAdminTourService
@@ -34,7 +32,7 @@ namespace Amigo.Application.Services.Admin
             }
            
 
-            var destination = await _unitOfWork.GetRepository<Destination, Guid>().GetByIdAsync(requestDTO.DestinationId);
+            var destination = await _unitOfWork.GetRepository<Destination, Guid>().GetByIdAsync(new GetNotDeletedDestinationByIdSpecification( requestDTO.DestinationId));
             if (destination is null)
             {
                 return Result.Fail(new NotFoundError("This Destination Not Found"));
@@ -65,21 +63,16 @@ namespace Amigo.Application.Services.Admin
                                 ?_tourScheduleMapping.TourSchedulesDTOToEntity(requestDTO.Schedule, tour)
                                 :new List<TourSchedule>();
                 
-            var tourIncludes = requestDTO.Includes is not null && requestDTO.Includes.Any()
-                                ? _includeMapping.TourIncludesToEntity(requestDTO.Includes, tour, requestDTO.Language)
-                                :new List<TourIncluded>();
+            var tourInclusion = (requestDTO.Includes is not null && requestDTO.Includes.Any()) || (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any())
+                                ? _inclusionMapping.TourInclusionToEntity(requestDTO.Includes,requestDTO.NotIncludes ,tour, requestDTO.Language)
+                                :new List<TourInclusion>();
 
-            var tourNotIncludes = requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any()
-                                  ? _notIncludedMapping.TourNotIncludesToEntity(requestDTO.NotIncludes, tour, requestDTO.Language)
-                                  :new List<TourNotIncluded>();
-
+           
             var cancellation = requestDTO.Cancellation is not null ?
                                     _cancellationMapping.CancellationToEntity(requestDTO.Cancellation, tour,requestDTO.Language)
                                     :new Cancellation();
 
-            //var cancellationTranslation = requestDTO.Cancellation is not null && string.IsNullOrWhiteSpace(requestDTO.Cancellation.Description) ?
-            //                            _cancellationMapping.CancellationTranslationToEntity(requestDTO.Cancellation, cancellation, requestDTO.Language)
-            //                            :new CancellationTranslation();
+           
 
 
             var strategy = _unitOfWork.CreateExecutionStrategy();
@@ -106,23 +99,16 @@ namespace Amigo.Application.Services.Admin
 
                     }
 
-                    if (tourIncludes is not null && tourIncludes.Any())
+                    if ((tourInclusion is not null && tourInclusion.Any()))
                     {
-                        await _unitOfWork.GetRepository<TourIncluded, Guid>().AddRangeAsync(tourIncludes);
+                        await _unitOfWork.GetRepository<TourInclusion, Guid>().AddRangeAsync(tourInclusion);
                     }
 
-                    if (tourNotIncludes is not null && tourNotIncludes.Any())
-                    {
-                        await _unitOfWork.GetRepository<TourNotIncluded, Guid>().AddRangeAsync(tourNotIncludes);
-                    }
                     if (cancellation is not null)
                     {
                         await _unitOfWork.GetRepository<Cancellation, Guid>().AddAsync(cancellation);
                     }
-                    //if (cancellationTranslation is not null)
-                    //{ 
-                    //    await _unitOfWork.GetRepository<CancellationTranslation,Guid>().AddAsync(cancellationTranslation);
-                    //}
+                    
 
                     await _unitOfWork.SaveChangesAsync();
 
@@ -209,11 +195,9 @@ namespace Amigo.Application.Services.Admin
                     if (requestDTO.Schedule is not null && requestDTO.Schedule.Any())
                         await _adminTourScheduleService.UpdateScheduleAsync(tour, requestDTO.Schedule);
 
-                    if (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any())
-                        await _adminTourNotIncludesService.UpdateExcludesAsync(tour, requestDTO.NotIncludes, languageEnum);
 
-                    if (requestDTO.Includes is not null && requestDTO.Includes.Any())
-                        await _adminTourIncludesService.UpdateIncludesAsync(tour, requestDTO.Includes, languageEnum);
+                    if ((requestDTO.Includes is not null && requestDTO.Includes.Any()) || (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any()))
+                        await _adminTourInclusionService.UpdateInclusionAsync(tour, requestDTO.Includes,requestDTO.NotIncludes, languageEnum);
 
                     if (requestDTO.Cancellation is not null)
                         await _adminTourCancellationService.UpdateCancellationAsync(tour, requestDTO.Cancellation, languageEnum);

@@ -70,7 +70,10 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
                    .WithOne(p => p.Tour)
                    .HasForeignKey(p => p.TourId);
 
-            
+            builder.HasMany(t => t.TourInclusions)
+                .WithOne(p => p.Tour)
+                .HasForeignKey(p => p.TourId);
+
 
             builder.HasMany(t => t.Reviews)
                    .WithOne(r => r.Tour)

@@ -9,9 +9,10 @@ namespace Amigo.Presentation.Controllers.User;
 
 [Route("api/v1/user/tour")]
 public class UserTourController(
-    IUserTourCatalogService _catalog,
-    ICheckoutQuoteService _checkoutQuote,
-    UserManager<ApplicationUser> _userManager) : BaseController
+                    IUserTourCatalogService _catalog,
+                    ICheckoutQuoteService _checkoutQuote,
+                    UserManager<ApplicationUser> _userManager)
+                     : BaseController
 {
     [HttpGet]
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
@@ -19,6 +20,8 @@ public class UserTourController(
         query.UserType = await ResolveEffectiveUserTypeAsync();
         return await _catalog.GetToursAsync(query);
     }
+
+
 
     [HttpGet("by-public-path")]
     public async Task<IResultBase> GetTourByPublicPath([FromQuery] GetTourByPublicPathQuery query)

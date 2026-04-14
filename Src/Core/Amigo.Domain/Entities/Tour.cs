@@ -49,12 +49,13 @@ public class Tour: BaseEntity<Guid>
     //tourImage
     //tourIncluded
     //tourNotIncluded
-  
 
 
-    public ICollection<TourIncluded> Included { get; set; } = new List<TourIncluded>();
+    public ICollection<TourInclusion> TourInclusions { get; set; } = new List<TourInclusion>();
 
-    public ICollection<TourNotIncluded> NotIncluded { get; set; } = new List<TourNotIncluded>();
+    //public ICollection<TourIncluded> Included { get; set; } = new List<TourIncluded>();
+
+    //public ICollection<TourNotIncluded> NotIncluded { get; set; } = new List<TourNotIncluded>();
 
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

@@ -26,8 +26,10 @@ namespace Amigo.Domain.DTO.Tour
 
 
         CreateCancellationRequestDTO? Cancellation,
+
         List<string>? Includes,
         List<string>? NotIncludes,
+
         List<CreatePriceRequestDTO> Prices,
         List<CreateTourScheduleRequestDTO> Schedule,
 

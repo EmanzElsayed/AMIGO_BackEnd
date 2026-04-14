@@ -10,7 +10,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification.Admin
         public AdminGetDestinationByIdSpecification(Guid destinationId, GetDestinationByIdQuery requestQuery)
             : base(
                   d => 
-                    d.Id == destinationId
+                    d.Id == destinationId && !d.IsDeleted
             )
         {
             if (requestQuery.Language is null)
