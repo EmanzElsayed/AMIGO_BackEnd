@@ -79,9 +79,9 @@ namespace Amigo.Application.Validators.Tour
               .SetValidator(new CreateTourScheduleRequestDTOValidator())
               .When(x => x.Schedule != null);
 
-            RuleFor(x => x)
-                .Must(HaveScheduleMatchingDuration)
-                .WithMessage("Schedule date range must match the activity duration.");
+            //RuleFor(x => x)
+            //    .Must(HaveScheduleMatchingDuration)
+            //    .WithMessage("Schedule date range must match the activity duration.");
 
             RuleForEach(x => x.Prices)
            .SetValidator(new CreatePriceRequestDTOValidator())
