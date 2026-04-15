@@ -9,7 +9,7 @@ public class Payment:BaseEntity<Guid>
     public decimal TotalAmount { get; set; }
     public PaymentMethod PaymentMethod { get; set; }
     public string? Note { get; set; }
-    public Currency Currency { get; set; }
+    public CurrencyCode Currency { get; set; }
     public DateTime PaidAt { get; set; }       
     public string? TransactionId { get; set; }
     public PaymentStatus Status { get; set; }

@@ -36,9 +36,9 @@ namespace Amigo.Application.Validators.Tour
 
             RuleFor(x => x.Currency)
                .NotEmpty()
-               .WithMessage("Currency Is Required")
+               .WithMessage("CurrencyCode Is Required")
                .Must(BusinessRules.BeAValidCurrency)
-               .WithMessage("Invalid Currency Code");
+               .WithMessage("Invalid CurrencyCode Code");
 
             // Guide Language
             RuleFor(x => x.GuideLanguage)

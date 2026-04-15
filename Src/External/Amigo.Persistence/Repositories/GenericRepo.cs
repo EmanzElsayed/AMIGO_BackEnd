@@ -83,4 +83,7 @@ public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext)
 
         _dbContext.Set<TEntity>().RemoveRange(entities);
     }
+    public void RemoveRange(IEnumerable<TEntity> entities)
+        => _dbContext.Set<TEntity>().RemoveRange(entities);
+    
 }

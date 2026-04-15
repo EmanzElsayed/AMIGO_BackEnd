@@ -45,7 +45,7 @@ namespace Amigo.Application.Validators.Tour
 
             RuleFor(x => x.Currency)
                .Must(BusinessRules.BeAValidCurrency)
-               .WithMessage("Invalid Currency Code")
+               .WithMessage("Invalid CurrencyCode Code")
                .When(x => x.Currency is not null);
 
 

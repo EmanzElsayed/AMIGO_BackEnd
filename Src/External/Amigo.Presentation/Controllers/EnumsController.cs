@@ -1,8 +1,11 @@
 ﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Services;
 using Amigo.Domain.DTO.Authentication;
+using Amigo.Domain.DTO.Currency;
 using Amigo.Domain.Enum;
 using Amigo.Presentation.Filters;
 using Amigo.SharedKernal.DTOs.Authentication;
+using Amigo.SharedKernal.QueryParams;
 using FluentResults;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +18,7 @@ namespace Amigo.Presentation.Controllers
     [Route("api/v1/lookups")]
     public class EnumsController(
         IEnumService _enumService,
+        ICurrencyService _currencyService,
         IHttpClientFactory _httpClientFactory,
         IConfiguration _configuration) : BaseController
     {
@@ -24,18 +28,29 @@ namespace Amigo.Presentation.Controllers
             return _enumService.GetEnum<Language>();
 
          
-
         }
 
-        [HttpGet("Currency")]
+        [HttpGet("CurrencyCode")]
         public IResultBase GetCurrency()
         {
-            return _enumService.GetEnum<Currency>();
+            return _enumService.GetEnum<CurrencyCode>();
 
             
 
         }
 
+        [HttpGet("Currency")]
+        public async Task<IResultBase> GetAllCurrency([FromQuery]  GetAllCurrencyQuery requestQuery)
+        {
+            return await _currencyService.GetAllCurrencyAsync(requestQuery);
+
+        }
+        [HttpGet("Currency/{id}")]
+        public async Task<IResultBase> GetCurrencyById([FromQuery] GetAllCurrencyQuery requestQuery , string id)
+        {
+            return await _currencyService.GetCurrencyByIdAsync(id,requestQuery);
+
+        }
         [HttpGet("Country")]
         public IResultBase GetCountry()
         {
@@ -57,7 +72,7 @@ namespace Amigo.Presentation.Controllers
             var apiKey = _configuration["CurrencyApi:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                return Result.Fail("Currency API key is not configured.");
+                return Result.Fail("CurrencyCode API key is not configured.");
             }
 
             var providerBaseUrl = _configuration["CurrencyApi:BaseUrl"] ?? "https://currencyapi.net/api/v2";
@@ -75,7 +90,7 @@ namespace Amigo.Presentation.Controllers
             using var response = await client.SendAsync(request);
             if (!response.IsSuccessStatusCode)
             {
-                return Result.Fail($"Currency provider failed with status {(int)response.StatusCode}.");
+                return Result.Fail($"CurrencyCode provider failed with status {(int)response.StatusCode}.");
             }
 
             await using var stream = await response.Content.ReadAsStreamAsync();
@@ -84,7 +99,7 @@ namespace Amigo.Presentation.Controllers
             if (!payload.RootElement.TryGetProperty("rates", out var ratesElement) ||
                 ratesElement.ValueKind != JsonValueKind.Object)
             {
-                return Result.Fail("Currency provider returned an invalid rates payload.");
+                return Result.Fail("CurrencyCode provider returned an invalid rates payload.");
             }
 
             var rates = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);

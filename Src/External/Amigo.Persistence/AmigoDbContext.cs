@@ -9,12 +9,14 @@ namespace Amigo.Persistence
         public DbSet<CancellationTranslation> CancelationTranslations { get; set; }
         public DbSet<TourTranslation> TourTranslations { get; set; }
         public DbSet<InclusionTranslation> InclusionTranslations { get; set; }
+        public DbSet<CurrencyTranslation> CurrencyTranslations { get; set; }
 
         // Core Entities
 
         public DbSet<Tour> Tours { get; set; }
         public DbSet<Destination> Destinations { get; set; }
 
+        public DbSet<Currency> Currency { get; set; }
         public DbSet<AvailableSlots> AvailableSlots { get; set; }
         public DbSet<TourSchedule> TourSchedules { get; set; }
         public DbSet<Cancellation> Cancelations { get; set; }

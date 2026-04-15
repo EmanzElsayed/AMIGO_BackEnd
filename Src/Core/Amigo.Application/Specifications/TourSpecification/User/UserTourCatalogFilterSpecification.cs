@@ -13,7 +13,7 @@ public class UserTourCatalogFilterSpecification : BaseSpecification<Tour, Guid>
         Guid destinationId,
         Language? translationLanguage,
         Language? effectiveGuideLanguage,
-        Currency? currencyFilter,
+        CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
         DateOnly? availabilityDate)

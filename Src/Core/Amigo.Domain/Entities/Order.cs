@@ -6,7 +6,7 @@ public class Order :BaseEntity<Guid>
 {
     public string UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } = null!;
-    public Currency Currency { get; set; }
+    public CurrencyCode Currency { get; set; }
     public OrderStatus Status { get; set; }
     public DateTime? OrderDate { get; set; }
     public decimal TotalAmount { get; set; }

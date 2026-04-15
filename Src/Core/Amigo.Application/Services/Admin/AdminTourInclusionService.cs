@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Amigo.Application.Services.Admin
 {
-    public class AdminTourInclusionService : IAdminTourInclusionService
+    public class AdminTourInclusionService(IUnitOfWork _unitOfWork) : IAdminTourInclusionService
     {
-      
+
 
         public Task UpdateInclusionAsync(
             Tour tour,
@@ -42,53 +43,51 @@ namespace Amigo.Application.Services.Admin
             if (!allInputs.Any())
                 return Task.CompletedTask;
 
-            var existingInclusions = tour.TourInclusions.ToList();
+            if (includedList is not null && includedList.Any())
+            { 
+                var existingInclusions = tour.TourInclusions.Where(i => i.IsIncluded &&  i.Translations.Any(t => t.Language == lang)).ToList();
+                if (existingInclusions.Any())
+                {
+                    _unitOfWork.GetRepository<TourInclusion, Guid>().RemoveRange(existingInclusions);
+                }
+                
+            }
 
+            if (excludedList is not null && excludedList.Any())
+            {
+                var existingInclusions = tour.TourInclusions.Where(i => !i.IsIncluded && i.Translations.Any(t => t.Language == language)).ToList();
+                if (existingInclusions.Any())
+                {
+                    _unitOfWork.GetRepository<TourInclusion, Guid>().RemoveRange(existingInclusions);
+                }
+
+            }
+            List<TourInclusion> updateInclustion = new List<TourInclusion>();
             foreach (var input in allInputs)
             {
-                var inclusion = existingInclusions
-                    .FirstOrDefault(i => i.IsIncluded == input.IsIncluded);
-
-                if (inclusion is null)
+                updateInclustion.Add(
+                new TourInclusion()
                 {
-                    inclusion = new TourInclusion
-                    {
-                        Id = Guid.NewGuid(),
-                        TourId = tour.Id,
-                        Tour = tour,
-                        IsIncluded = input.IsIncluded,
-                        Translations = new List<InclusionTranslation>()
-                    };
-
-                    tour.TourInclusions.Add(inclusion);
-                    existingInclusions.Add(inclusion);
-                }
-
-                var translation = inclusion.Translations
-                    .FirstOrDefault(t => t.Language == lang && t.Text == input.Text);
-
-                if (translation is null)
-                {
-                    if (!inclusion.Translations.Any(t => t.Language == lang && t.Text == input.Text))
-                    {
-                        inclusion.Translations.Add(new InclusionTranslation
-                        {
-                            Id = Guid.NewGuid(),
-                            TourInclusion = inclusion,
-                            TourInclusionId = inclusion.Id,
-                            Text = input.Text,
-                            Language = lang
-                        });
+                    IsIncluded = input.IsIncluded,
+                    Tour = tour,
+                    TourId = tour.Id,
+                    Translations = new List<InclusionTranslation>
+                    { new InclusionTranslation
+                        { 
+                           Language = lang,
+                           Text = input.Text,
+                        }
+                    
                     }
+
                 }
-                else
-                {
-                    if (!string.IsNullOrWhiteSpace(input.Text))
-                        translation.Text = input.Text;
-                }
+                 );
+                
             }
+            tour.TourInclusions = updateInclustion;
 
             return Task.CompletedTask;
         }
+      
     }
 }

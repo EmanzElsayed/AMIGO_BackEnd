@@ -14,10 +14,10 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
         GetTopDestinationsQuery query,
         CancellationToken cancellationToken = default)
     {
-        Currency? currencyFilter = null;
+        CurrencyCode? currencyFilter = null;
         if (!string.IsNullOrWhiteSpace(query.Currency)
-            && Enum.TryParse<Currency>(query.Currency, true, out var c)
-            && c != Currency.None)
+            && Enum.TryParse<CurrencyCode>(query.Currency, true, out var c)
+            && c != CurrencyCode.None)
         {
             currencyFilter = c;
         }

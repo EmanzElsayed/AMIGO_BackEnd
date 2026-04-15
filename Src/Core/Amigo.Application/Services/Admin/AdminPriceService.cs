@@ -44,16 +44,15 @@ namespace Amigo.Application.Services.Admin
         //    }
         //}
         public Task UpdatePricesAsync(
-          Tour tour,
-          List<UpdatePriceRequestDTO> prices,
-          Language? language)
+             Tour tour,
+             List<UpdatePriceRequestDTO> prices,
+             Language? language)
         {
-            if (language is null || prices is null || prices.Count == 0)
+            if (tour == null || language is null || prices == null || prices.Count == 0)
                 return Task.CompletedTask;
 
             var lang = language.Value;
 
-            //  تحسين الأداء
             var existingPricesDict = tour.Prices
                 .Where(p => p.Id != Guid.Empty)
                 .ToDictionary(p => p.Id, p => p);
@@ -62,13 +61,11 @@ namespace Amigo.Application.Services.Admin
             {
                 Price price;
 
-                //  get or create price
-                if (dto.Id is not null &&
+                if (dto.Id.HasValue &&
                     existingPricesDict.TryGetValue(dto.Id.Value, out var existingPrice))
                 {
                     price = existingPrice;
 
-                    //  update basic fields
                     if (dto.Cost is not null)
                         price.Cost = dto.Cost.Value;
 
@@ -89,19 +86,19 @@ namespace Amigo.Application.Services.Admin
                     tour.Prices.Add(price);
                 }
 
-                //  translation handling (SAFE + IDEMPOTENT)
                 var translation = price.Translations
                     .FirstOrDefault(t => t.Language == lang);
 
-                if (translation is null)
+                if (translation == null)
                 {
-                    // double check (important with EF tracking + retry)
                     if (!price.Translations.Any(t => t.Language == lang))
                     {
                         price.Translations.Add(new PriceTranslation
                         {
+                            
                             Language = lang,
-                            Type = dto.Type
+                            Type = dto.Type ?? string.Empty,
+                            Price = price
                         });
                     }
                 }

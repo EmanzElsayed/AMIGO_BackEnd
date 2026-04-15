@@ -11,6 +11,7 @@ namespace Amigo.Application.Services
         {
             var result =  Enum.GetValues(typeof(T))
                     .Cast<T>()
+                    .Where(e => Convert.ToInt32(e) != 0)
                     .Select(e => new GetEnumResponseDTO(
 
                         Id: Convert.ToInt32(e)

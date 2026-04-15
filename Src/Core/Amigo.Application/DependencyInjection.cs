@@ -60,6 +60,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAdminTourInclusionService, AdminTourInclusionService>();
         services.AddScoped<IAdminTourCancellationService, AdminTourCancellationService>();
+        
+        services.AddScoped<ICurrencyService, CurrencyService>();
 
         services.AddScoped<IImageService, ImageService>();
 

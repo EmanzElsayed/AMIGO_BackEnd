@@ -24,7 +24,7 @@ namespace Amigo.Application.Validation.Common.Rules
         }
         public static bool BeAValidCurrency(string currencyCode)
         {
-            return Enum.TryParse(typeof(Currency), currencyCode, true, out _);
+            return Enum.TryParse(typeof(CurrencyCode), currencyCode, true, out _);
 
         }
         public static bool BeAValidLanguage(string languageCode)

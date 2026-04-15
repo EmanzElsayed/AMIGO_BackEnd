@@ -41,7 +41,7 @@ public class UserTourCatalogService(
 
             country = cc;
         
-        Currency? currencyFilter = null;
+        CurrencyCode? currencyFilter = null;
 
         UserType? userType = ParseUserType(query.UserType); 
 

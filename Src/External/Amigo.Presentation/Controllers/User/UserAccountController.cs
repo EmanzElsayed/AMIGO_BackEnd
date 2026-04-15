@@ -249,9 +249,9 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
                 }
             }
 
-            var currency = Enum.TryParse<Currency>(body.CurrencyCode, true, out var parsedCurrency)
+            var currency = Enum.TryParse<CurrencyCode>(body.CurrencyCode, true, out var parsedCurrency)
                 ? parsedCurrency
-                : Currency.USD;
+                : CurrencyCode.USD;
 
             var nowUtc = DateTime.UtcNow;
             var nowNoTz = DateTime.SpecifyKind(nowUtc, DateTimeKind.Unspecified);

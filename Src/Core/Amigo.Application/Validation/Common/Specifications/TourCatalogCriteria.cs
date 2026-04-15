@@ -12,7 +12,7 @@ public static class TourCatalogCriteria
         GetUserToursQuery q,
         Language? translationLanguage,
         Language? effectiveGuideLanguage,
-        Currency? currencyFilter,
+        CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
         DateOnly? availabilityDate)

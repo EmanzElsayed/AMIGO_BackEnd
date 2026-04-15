@@ -565,7 +565,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
-                    b.Property<int>("Currency")
+                    b.Property<int>("CurrencyCode")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
@@ -677,7 +677,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
-                    b.Property<int>("Currency")
+                    b.Property<int>("CurrencyCode")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
