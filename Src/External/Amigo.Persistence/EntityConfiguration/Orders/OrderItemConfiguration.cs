@@ -13,17 +13,35 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
         {
             base.Configure(builder);
 
+            builder.Property(x => x.TourTitle)
+                           .HasMaxLength(400)
+                           .IsRequired();
 
+            builder.Property(x => x.DestinationName)
+                   .HasMaxLength(300)
+                   .IsRequired();
 
-            builder.Property(o => o.Price)
+            builder.Property(x => x.CurrencyCode)
+                   .HasConversion<int>();
+
+            builder.Property(x => x.Language)
+                   .HasConversion<int>();
+
+            builder.Property(x => x.MeetingPoint)
+                   .HasMaxLength(500);
+
+            builder.Property(x => x.CancelationPolicyType)
+                   .HasConversion<int>();
+
+            builder.Property(x => x.RefundPercentage)
                    .HasColumnType("decimal(18,2)");
 
-            builder.HasIndex(o => o.OrderId);
-            builder.HasIndex(o => o.AvailableSlotsId);
+            builder.HasIndex(x => x.OrderId);
 
-            builder.HasOne(o => o.AvailableSlots)
-                   .WithMany()
-                   .HasForeignKey(o => o.AvailableSlotsId);
+            builder.HasMany(x => x.OrderedPrice)
+                   .WithOne(x => x.OrderItem)
+                   .HasForeignKey(x => x.OrderItemId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

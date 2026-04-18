@@ -12,32 +12,44 @@ namespace Amigo.Persistence.EntityConfiguration.Bookings
             {
                 base.Configure(builder);
 
-                
-                builder.Property(x => x.Status)
-                       .HasConversion<int>()
+
+                builder.Property(x => x.UserId)
+               .HasMaxLength(450)
+               .IsRequired();
+
+                builder.Property(x => x.CustomerName)
+                       .HasMaxLength(250)
                        .IsRequired();
 
-                
-                builder.Property(x => x.BookingDate)
-                       .HasColumnType("timestamp");
+                builder.Property(x => x.CustomerEmail)
+                       .HasMaxLength(250)
+                       .IsRequired();
 
-                // Relationships
-                builder.HasOne(x => x.Order)
-                       .WithMany()
-                       .HasForeignKey(x => x.OrderId)
-                       .OnDelete(DeleteBehavior.Cascade);
+                builder.Property(x => x.BookingNumber)
+                       .HasMaxLength(100);
 
-                builder.HasOne(x => x.AvailableSlots)
+                builder.Property(x => x.Status)
+                       .HasConversion<int>();
+
+                builder.HasIndex(x => x.OrderItemId).IsUnique();
+                builder.HasIndex(x => x.UserId);
+                builder.HasIndex(x => x.BookingNumber);
+
+                builder.HasOne(x => x.OrderItem)
                        .WithMany()
-                       .HasForeignKey(x => x.AvailableSlotsId)
+                       .HasForeignKey(x => x.OrderItemId)
                        .OnDelete(DeleteBehavior.Restrict);
 
-                // Indexes for fast queries
-                builder.HasIndex(x => x.OrderId);
-                builder.HasIndex(x => x.AvailableSlotsId);
-                builder.HasIndex(x => x.Status);
+                builder.HasOne(x => x.User)
+                       .WithMany()
+                       .HasForeignKey(x => x.UserId)
+                       .OnDelete(DeleteBehavior.Restrict);
 
-                
+                builder.HasMany(x => x.Travelers)
+                       .WithOne(x => x.Booking)
+                       .HasForeignKey(x => x.BookingId)
+                       .OnDelete(DeleteBehavior.Cascade);
+
             }
         }
     

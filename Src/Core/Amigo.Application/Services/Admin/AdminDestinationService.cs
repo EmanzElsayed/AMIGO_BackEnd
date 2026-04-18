@@ -80,22 +80,22 @@ namespace Amigo.Application.Services.Admin
             }
 
 
-            var hasBookings = await _bookingRepo.AnyAsync(
-                                 new ActiveBookingsForDestinationSpecification(destinationId)
-                            );
+            //var hasBookings = await _bookingRepo.AnyAsync(
+            //                     new ActiveBookingsForDestinationSpecification(destinationId)
+            //                );
 
-            if (hasBookings)
-            {
+            //if (hasBookings)
+            //{
 
 
-                if (
-                    requestDTO.CountryCode != destination.CountryCode.ToString()
-                    || (requestDTO.Language is not null && requestDTO.Name is not null && translation is not null))
-                {
-                    return Result.Fail(new ConfilctError("Cannot update destination (Name, Language, Country) with active bookings"));
-                }
+            //    if (
+            //        requestDTO.CountryCode != destination.CountryCode.ToString()
+            //        || (requestDTO.Language is not null && requestDTO.Name is not null && translation is not null))
+            //    {
+            //        return Result.Fail(new ConfilctError("Cannot update destination (Name, Language, Country) with active bookings"));
+            //    }
 
-            }
+            //}
 
 
             _destinationMapping.UpdateDestination(requestDTO, destination, translation, languageEnum);
@@ -174,19 +174,19 @@ namespace Amigo.Application.Services.Admin
             //is booked by people can't removed
             var _bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
 
-            var hasBookings = await _bookingRepo.AnyAsync(
-                               new ActiveBookingsForDestinationSpecification(destinationId)
-                          );
+            //var hasBookings = await _bookingRepo.AnyAsync(
+            //                   new ActiveBookingsForDestinationSpecification(destinationId)
+            //              );
 
-            if (hasBookings)
-            {
+            //if (hasBookings)
+            //{
 
 
                
-                    return Result.Fail(new ConfilctError("Cannot delete destination  with active bookings"));
+            //        return Result.Fail(new ConfilctError("Cannot delete destination  with active bookings"));
                
 
-            }
+            //}
             _destinationRepo.Remove(destination);
 
             try

@@ -57,9 +57,9 @@ public static class DependencyInjection
 
         services.AddScoped<IDataSeeding, DataSeeding>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+        //services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
         services.AddScoped<IDestinationSlugResolver, DestinationSlugResolver>();
-        services.AddScoped<ITourReviewEligibilityReader, TourReviewEligibilityReader>();
+        //services.AddScoped<ITourReviewEligibilityReader, TourReviewEligibilityReader>();
 
         return services;
     }

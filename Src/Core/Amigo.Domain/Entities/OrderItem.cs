@@ -6,9 +6,28 @@ public class OrderItem:BaseEntity<Guid>
 {
     public Guid OrderId { get; set; }
     public Order Order { get; set; } = null!;
-    public Guid AvailableSlotsId { get; set; }
-    public AvailableSlots AvailableSlots { get; set; } = null!;
-    public decimal Price { get; set; }
-    public int Quantity { get; set; }
+
+    // original refs
+    public Guid? TourId { get; set; }
+    public Guid? SlotId { get; set; }
+
+    // Snapshot Data
+
+    public string TourTitle { get; set; } = null!;
+    public string DestinationName { get; set; } = null!;
+    public DateOnly TourDate { get; set; }
+    public TimeOnly StartTime { get; set; }
+    public CurrencyCode CurrencyCode { get; set; } 
+    public Language Language { get; set; }
+    public string? MeetingPoint { get; set; }
+    public TimeSpan Duration { get; set; }
+
+    // Cancellation Info :
+    public CancelationPolicyType CancelationPolicyType { get; set; }
+    public TimeSpan CancellationBefore { get; set; }
+    public decimal RefundPercentage { get; set; }
+
+    // price
+    public ICollection<OrderedPrice> OrderedPrice = new List<OrderedPrice>(); 
 
 }

@@ -1,6 +1,6 @@
 ﻿namespace Amigo.Domain.Entities;
 
-[Table($"{nameof(Destination)}", Schema = SchemaConstants.auth_schema)]
+[Table($"{nameof(Destination)}", Schema = SchemaConstants.shared_schema)]
 
 public class Destination : BaseEntity<Guid>
 {

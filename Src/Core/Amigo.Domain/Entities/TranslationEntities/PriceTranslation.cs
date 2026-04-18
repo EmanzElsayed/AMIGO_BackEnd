@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Amigo.Domain.Entities.TranslationEntities;
-[Table($"{nameof(PriceTranslation)}", Schema = SchemaConstants.tour_schema)]
+[Table($"{nameof(PriceTranslation)}", Schema = SchemaConstants.translation_schema)]
 
 
 public class PriceTranslation : BaseEntity<Guid>, ITranslationEntity

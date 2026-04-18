@@ -3,6 +3,8 @@ public enum AvailableDateTimeStatus
 {
     None = 0,
     Available = 1,
-    SoldOut = 2,
-    Closed = 3
+    Reserved = 2,
+    Booked = 3,
+    Closed = 4,
+    SoldOut = 5
 }

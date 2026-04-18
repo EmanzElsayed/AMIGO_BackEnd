@@ -50,8 +50,10 @@ public static class DependencyInjection
         services.AddScoped<IDestinationService , DestinationService>();
         services.AddScoped<IUserTourCatalogService, UserTourCatalogService>();
         services.AddScoped<ICheckoutQuoteService, CheckoutQuoteService>();
-        services.AddScoped<IUserTourReviewService, UserTourReviewService>();
-        
+        //services.AddScoped<IUserTourReviewService, UserTourReviewService>();
+
+        //services.AddScoped<ITopDestinationsReader, Topde>();
+
         services.AddScoped<IAdminDestinationService, AdminDestinationService>();
         services.AddScoped<IAdminTourService, AdminTourService>();
         services.AddScoped<IAdminPriceService, AdminPriceService>();
@@ -69,8 +71,10 @@ public static class DependencyInjection
         services.AddHttpClient<TranslationService>();
         services.AddScoped<TranslationEngine>();
 
-
-
+        services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IBookingService, BookingService>();
         //services.Configure<TranslationApiSettings>(
         //            configuration.GetSection("TranslationApi")
 

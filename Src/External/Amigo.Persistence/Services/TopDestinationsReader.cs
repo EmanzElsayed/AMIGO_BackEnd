@@ -49,13 +49,13 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
                 AverageRating = activeTours
                     .SelectMany(t => t.Reviews.Where(r => !r.IsDeleted))
                     .Average(r => (double?)r.Rate),
-                TravelerCount = _db.Bookings
+                TravelerCount = 0/*_db.Bookings
                     .Where(b =>
                         !b.IsDeleted
                         && b.AvailableSlots.TourSchedule.Tour.DestinationId == d.Id
                         && !b.AvailableSlots.TourSchedule.Tour.IsDeleted)
                     .SelectMany(b => b.PeopleBookings.Where(pb => !pb.IsDeleted))
-                    .Sum(pb => (int?)pb.NoOfPeopleBooking) ?? 0,
+                    .Sum(pb => (int?)pb.NoOfPeopleBooking) ?? 0*/,
                 MinFromPrice = currencyFilter == null
                     ? null
                     : activeTours
@@ -110,7 +110,7 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
                 ReviewCount: x.ReviewCount,
                 TravelerCount: x.TravelerCount,
                 AverageRating: x.AverageRating
-              
+
             ))
             .ToList();
     }

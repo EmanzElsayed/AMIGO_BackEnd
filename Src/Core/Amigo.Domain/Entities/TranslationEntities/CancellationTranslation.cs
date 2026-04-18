@@ -2,7 +2,7 @@
 
 namespace Amigo.Domain.Entities.TranslationEntities;
 
-[Table($"{nameof(CancellationTranslation)}", Schema = SchemaConstants.tour_schema)]
+[Table($"{nameof(CancellationTranslation)}", Schema = SchemaConstants.translation_schema)]
 public class CancellationTranslation:BaseEntity<Guid>, ITranslationEntity
 {
     public Guid CancellationId { get; set; }

@@ -4,11 +4,21 @@
 
 public class Booking:BaseEntity<Guid>
 {
+    public Guid OrderItemId { get; set; }
+    public OrderItem OrderItem { get; set; } = null!;
     public Guid OrderId { get; set; }
-    public Order Order { get; set; } = null!;
-    public Guid AvailableSlotsId { get; set; }
-    public AvailableSlots AvailableSlots { get; set; } = null!;
+    public Guid PaymentId { get; set; }
+    public string UserId { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
+
+
+    public string CustomerName { get; set; } = null!;
+    public string CustomerEmail { get; set; } = null!;
+
+    public string? BookingNumber { get; set; }
     public BookingStatus Status { get; set; }
-    public DateTime? BookingDate { get; set; }
-    public ICollection<PeopleBooking> PeopleBookings { get; set; } = new List<PeopleBooking>(); 
+    public DateTime? ConfirmedAt { get; set; }
+    public int RequiredTravelersCount { get; set; }
+    public bool TravelersCompleted { get; set; }
+    public ICollection<Traveler> Travelers { get; set; } = new List<Traveler>(); 
 }

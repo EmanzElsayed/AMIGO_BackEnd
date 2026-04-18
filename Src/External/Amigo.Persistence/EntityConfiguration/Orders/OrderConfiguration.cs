@@ -13,22 +13,31 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
         {
             base.Configure(builder);
 
-           
+            builder.Property(x => x.UserId)
+              .HasMaxLength(450)
+              .IsRequired();
 
-            builder.Property(o => o.Currency)
+            builder.Property(x => x.Currency)
                    .HasConversion<int>();
 
-            builder.Property(o => o.Status)
+            builder.Property(x => x.Status)
                    .HasConversion<int>();
 
-            builder.Property(o => o.TotalAmount)
+            builder.Property(x => x.TotalAmount)
                    .HasColumnType("decimal(18,2)");
 
-            builder.HasIndex(o => o.UserId);
+            builder.HasIndex(x => x.UserId);
+            builder.HasIndex(x => x.Status);
 
-            builder.HasMany(o => o.OrderItems)
-                   .WithOne(oi => oi.Order)
-                   .HasForeignKey(oi => oi.OrderId);
+            builder.HasOne(x => x.User)
+                   .WithMany()
+                   .HasForeignKey(x => x.UserId)
+                   .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(x => x.OrderItems)
+                   .WithOne(x => x.Order)
+                   .HasForeignKey(x => x.OrderId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

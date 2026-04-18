@@ -18,6 +18,8 @@ namespace Amigo.Persistence
 
         public DbSet<Currency> Currency { get; set; }
         public DbSet<AvailableSlots> AvailableSlots { get; set; }
+        public DbSet<SlotReservation> SlotReservations { get; set; }
+
         public DbSet<TourSchedule> TourSchedules { get; set; }
         public DbSet<Cancellation> Cancelations { get; set; }
         public DbSet<Price> Prices { get; set; }
@@ -36,18 +38,24 @@ namespace Amigo.Persistence
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<OrderedPrice> OrderedPrices { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        public DbSet<CancellationRequest> CancellationRequests { get; set; }
+        public DbSet<Voucher> vouchers { get; set; }
+        public DbSet<Refund> Refunds { get; set; }
+
 
         public DbSet<Booking> Bookings { get; set; }
-        public DbSet<PeopleBooking> PeopleBookings { get; set; }
-        public DbSet<PeopleBookingDetails> PeopleBookingDetails { get; set; }
+        public DbSet<Traveler> Travelers { get; set; }
         public DbSet<UserRefreshToken> RefreshTokens { get; set; }
 
         // ---------------------------
-        // Basket / Favorites
+        // Cart / Favorites
         // ---------------------------
-        public DbSet<Basket> Baskets { get; set; }
-        public DbSet<BasketItem> BasketItems { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<CartPrice> CartPrices { get; set; }
+
         public DbSet<Favorites> Favorites { get; set; }
 
 

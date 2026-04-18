@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Domain.Entities.TranslationEntities
+namespace Amigo.Domain.Entities.TranslationEntities;
+[Table($"{nameof(CurrencyTranslation)}", Schema = SchemaConstants.translation_schema)]
+
+public class CurrencyTranslation:BaseEntity<Guid>
 {
-    public class CurrencyTranslation:BaseEntity<Guid>
-    {
-        [Required]
-        public Currency Currency { get; set; } = null!;
-        public Guid CurrencyId { get; set; }
+    [Required]
+    public Currency Currency { get; set; } = null!;
+    public Guid CurrencyId { get; set; }
 
-        [Required]
-        public string Name { get; set; } = null!;
+    [Required]
+    public string Name { get; set; } = null!;
 
-        public Language Language { get; set; }
-    }
+    public Language Language { get; set; }
 }

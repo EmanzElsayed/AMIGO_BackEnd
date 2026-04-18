@@ -2,7 +2,7 @@
 
 namespace Amigo.Domain.Entities.TranslationEntities;
 
-[Table($"{nameof(DestinationTranslation)}", Schema = SchemaConstants.tour_schema)]
+[Table($"{nameof(DestinationTranslation)}", Schema = SchemaConstants.translation_schema)]
 public class DestinationTranslation:BaseEntity<Guid>, ITranslationEntity
 {
     public Guid DestinationId { get; set; }

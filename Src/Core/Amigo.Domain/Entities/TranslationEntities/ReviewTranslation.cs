@@ -1,6 +1,6 @@
 ﻿namespace Amigo.Domain.Entities.TranslationEntities;
 
-[Table($"{nameof(ReviewTranslation)}", Schema = SchemaConstants.tour_schema)]
+[Table($"{nameof(ReviewTranslation)}", Schema = SchemaConstants.translation_schema)]
 public class ReviewTranslation:BaseEntity<Guid>
 {
     public Guid ReviewId { get; set; }

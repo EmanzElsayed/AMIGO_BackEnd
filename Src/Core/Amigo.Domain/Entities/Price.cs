@@ -1,6 +1,6 @@
 ﻿namespace Amigo.Domain.Entities;
 
-[Table($"{nameof(Price)}", Schema = SchemaConstants.booking_schema)]
+[Table($"{nameof(Price)}", Schema = SchemaConstants.tour_schema)]
 
 public class Price : BaseEntity<Guid>
 {

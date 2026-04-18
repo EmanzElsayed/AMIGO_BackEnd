@@ -1,4 +1,9 @@
-﻿using System.CommandLine;
+﻿
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 
 namespace Amigo.Persistence;
 
@@ -6,33 +11,26 @@ public class AmigoDbContextFactory : IDesignTimeDbContextFactory<AmigoDbContext>
 {
     public AmigoDbContext CreateDbContext(string[] args)
     {
-        var connectionOption = new Option<string>
-       (
-           name: "--connection",
-           description: "The connection string to use for the database"
-       );
+        // Try to get environment
+        var environment =
+            Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? "Development";
 
-        var rootCommand = new RootCommand { connectionOption };
+        // Build path to API project (where appsettings exists)
+        var basePath = Path.GetFullPath(
+            Path.Combine(Directory.GetCurrentDirectory(), "../../Api/Amigo.API")
+        );
 
-        var result = rootCommand.Parse(args);
-        var connectionString = result.GetValueForOption(connectionOption);
+        // Load configuration
+        var config = new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
 
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            var basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../../api/Amigo.API"));
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-                ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-                ?? "Development";
-
-            var config = new ConfigurationBuilder()
-                .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", optional: true)
-                .AddJsonFile($"appsettings.{environment}.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-            connectionString = config.GetConnectionString("DefaultConnection");
-        }
+        var connectionString = config.GetConnectionString("DefaultConnection");
 
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new InvalidOperationException("No connection string provided.");
@@ -41,6 +39,5 @@ public class AmigoDbContextFactory : IDesignTimeDbContextFactory<AmigoDbContext>
         optionsBuilder.UseNpgsql(connectionString);
 
         return new AmigoDbContext(optionsBuilder.Options);
-
     }
 }

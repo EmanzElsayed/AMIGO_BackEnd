@@ -10,6 +10,7 @@ namespace Amigo.Domain.Abstraction
     {
         public Expression<Func<TEntity, bool>>? Criteria { get; }
         public List<Expression<Func<TEntity, object>>> IncludeExpressions { get; }
+       
         public List<Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>> Includes { get; }
         public Expression<Func<TEntity, object>> OrderBY { get; }
         public Expression<Func<TEntity, object>> OrderBYDescending { get; }

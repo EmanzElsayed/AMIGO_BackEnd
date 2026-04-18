@@ -1,10 +1,12 @@
-
+﻿
 using Amigo.Application;
+using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Services;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
 using Amigo.Persistence;
+using Amigo.Persistence.Services;
 using Amigo.Presentation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,12 +34,13 @@ namespace Amigo.API
                             .AddApplicationDependencyInjection(builder.Configuration)
                             .AddPresentationDependencyInjection(builder.Configuration);
 
-
+            builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
+            StripeConfiguration.ApiKey =
+                    builder.Configuration["Stripe:SecretKey"];
 
-           
             #region AllowCors
             builder.Services.AddCors(options =>
             {
@@ -87,3 +91,16 @@ namespace Amigo.API
         }
     }
 }
+//Background Job:
+/*  1)
+ *  
+    PendingPayment older than 30 mins
+    → Expire Order
+    → Release Slots
+ 
+
+2)
+var expired = Reservations
+    .Where(x => x.Status == Pending &&
+                x.ExpiresAt < DateTime.UtcNow);
+ */
