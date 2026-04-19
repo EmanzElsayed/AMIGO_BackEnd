@@ -1,3 +1,4 @@
+using Amigo.Application.Helpers;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
 using Amigo.SharedKernal.QueryParams;
@@ -108,5 +109,67 @@ public static class TourCatalogCriteria
                     )
                 )
             );
+    }
+
+    public static Expression<Func<Tour, bool>> BuildAdminTourCatalog(
+             Guid? destinationId,
+             string? tourTitle,
+             string?language
+             //Language translationLanguage = Language.English
+
+
+
+        )
+    {
+        Language translationLanguage = Language.English;
+        if (!string.IsNullOrEmpty(language))
+        {
+            translationLanguage = EnumsMapping.ToLanguageEnum(language);
+        }
+
+        return t => !t.IsDeleted
+                &&
+
+                 (destinationId == null || t.DestinationId == destinationId)
+
+                &&
+                 (
+                    string.IsNullOrWhiteSpace(tourTitle)
+
+                    ||
+
+                (
+                    t.Translations.Any(x => x.Language == translationLanguage)
+                    &&
+                    t.Translations.Any(x =>
+                        x.Language == translationLanguage &&
+                        SlugHelper.MatchesName(tourTitle, x.Title))
+                )
+
+                ||
+
+                (
+                    !t.Translations.Any(x => x.Language == translationLanguage)
+                    &&
+                    t.Translations.Any(x =>
+                        SlugHelper.MatchesName(tourTitle, x.Title))
+                )
+            )
+
+
+              && (
+                t.Destination.Translations.Any(x =>
+                    x.Language == translationLanguage)
+
+
+             )
+             &&
+            t.Prices.Any(p => p.Translations.Any(t => t.Language == translationLanguage))
+            ;
+
+
+
+
+
     }
 }

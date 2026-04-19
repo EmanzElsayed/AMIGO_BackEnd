@@ -1,6 +1,8 @@
 ﻿using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.Enum;
+using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
@@ -25,6 +27,20 @@ namespace Amigo.Presentation.Controllers.Admin
         {
 
             return await _adminTourService.UpdateTourAsync(requestDTO, id);
+
+        }
+        [HttpGet]
+        public async Task<IResultBase> GetTours([FromQuery] GetAllAdminTourQuery requestDTO)
+        {
+
+            return await _adminTourService.GetAllToursAsync(requestDTO);
+
+        }
+        [HttpGet("{id}")]
+        public async Task<IResultBase> GetTourById(string id, [FromBody] GetTourByIdRequestDTO requestDTO)
+        {
+
+            return await _adminTourService.GetTourById(id , requestDTO);
 
         }
     }

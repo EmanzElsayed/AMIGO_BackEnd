@@ -10,6 +10,7 @@ namespace Amigo.Application.Specifications.TourSpecification
             : base(t => t.Id == tourId && t.IsDeleted == false)
         {
             AddInclude(t => t.Translations);
+            AddInclude(t => t.Images);
 
 
 

@@ -1,7 +1,16 @@
-﻿using Amigo.Application.Specifications.TourSpecification;
+﻿using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.TourSpecification;
+using Amigo.Application.Specifications.TourSpecification.User;
+using Amigo.Domain.DTO.AvailableSlots;
+using Amigo.Domain.DTO.Cancellation;
+using Amigo.Domain.DTO.Images;
+using Amigo.Domain.DTO.Price;
 using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
+using Amigo.Domain.Enum;
 using Amigo.SharedKernal.DTOs.Tour;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,7 +29,8 @@ namespace Amigo.Application.Services.Admin
                                     IAdminTourScheduleService _adminTourScheduleService,
                                     IAdminTourInclusionService _adminTourInclusionService,
                                     IAdminTourCancellationService _adminTourCancellationService,
-                                    IImageService _imageService) 
+                                    IImageService _imageService
+                                    ) 
                                 : IAdminTourService
     {
         public async Task<Result<CreateTourResponseDTO>> CreateTourAsync(CreateTourRequestDTO requestDTO)
@@ -127,6 +137,98 @@ namespace Amigo.Application.Services.Admin
             });
         }
 
+        public async Task<Result<PaginatedResponse<AdminTourListItemResponseDTO>>> GetAllToursAsync(GetAllAdminTourQuery requestQuery)
+        {
+            var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
+            var tours = await tourRepo.GetAllAsync(new GetAllToursForAdminSpecification(requestQuery));
+            Language language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
+            var bookedRepo = _unitOfWork.GetRepository<Booking, Guid>();
+            var tourIds = tours.Select(t => t.Id).ToList();
+            var bookedData = await bookedRepo.GetAllAsync(new GetBookingsByTourIdsSpecification(tourIds));
+            var bookedSeatsData = bookedData.Sum(b => b.RequiredTravelersCount);
+
+            var MappingTours = tours.Select(tour =>
+            {
+                var vipPrice = tour.Prices
+                    .FirstOrDefault(p => !p.IsDeleted && p.UserType == UserType.VIP);
+
+                var publicPrice = tour.Prices
+                    .FirstOrDefault(p => !p.IsDeleted && p.UserType == UserType.Public);
+
+                var translation = tour.Translations
+                    .FirstOrDefault(t => t.Language == language);
+
+                var destinationTranslation = tour.Destination.Translations
+                    .FirstOrDefault(t => t.Language == language);
+
+                return new AdminTourListItemResponseDTO()
+                {
+                    TourId = tour.Id,
+
+                    Title = translation?.Title ?? "",
+
+                    DestinationName = destinationTranslation?.Name ?? "",
+
+                    ImageUrl = tour.Images.FirstOrDefault()?.ImageUrl,
+
+                    EntryAmountVIP = vipPrice?.RetailPrice ?? 0,
+
+                    EntryAmountVIPLabel =
+                        vipPrice?.Translations
+                            .FirstOrDefault(t => t.Language == language)?
+                            .Type ?? "",
+
+                    EntryAmountPublic = publicPrice?.RetailPrice ?? 0,
+
+                    EntryAmountPublicLabel =
+                        publicPrice?.Translations
+                            .FirstOrDefault(t => t.Language == language)?
+                            .Type ?? "",
+
+                    TotalCapacity = tour.AvailableTimes
+                        .SelectMany(t => t.AvailableSlots)
+                        .Where(s => s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
+                        .Sum(s => s.MaxCapacity),
+
+                    BookedSeats = bookedSeatsData
+
+                };
+            });
+            var countTourData = await tourRepo.GetCountSpecificationAsync(new CountGetAllTourForAdminSpecification(requestQuery));
+            var response =  new PaginatedResponse<AdminTourListItemResponseDTO>
+            {
+                Data = MappingTours,
+
+                PageNumber = requestQuery.PageNumber,
+                PageSize = requestQuery.PageSize,
+                TotalItems = countTourData
+            };
+            return Result.Ok(response);
+        }
+
+        public async Task<Result<GetTourResponseDTO>> GetTourById(string Id, GetTourByIdRequestDTO requestDTO)
+        {
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid tourId = guid;
+
+            Language language = Language.English;
+            if (!string.IsNullOrWhiteSpace(requestDTO.Language)) language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+
+
+
+            var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
+            var tour = await tourRepo.GetByIdAsync(new GetTourByIdSpecification(tourId));
+            if (tour is null)
+            {
+                return Result.Fail(new NotFoundError("This Tour Not Found"));
+
+            }
+            var mappedTour = MapTourToResponseDTO(tour, language);
+            return Result.Ok(mappedTour);
+        }
+
         public async Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string Id)
         {
             var validationResult = await _validationService.ValidateAsync(requestDTO);
@@ -222,6 +324,115 @@ namespace Amigo.Application.Services.Admin
                 }
 
             });
+        }
+        public GetTourResponseDTO MapTourToResponseDTO(Tour tour, Language language)
+        {
+            var translation = tour.Translations
+                .FirstOrDefault(t => t.Language == language);
+
+            var destinationTranslation = tour.Destination?.Translations
+                .FirstOrDefault(t => t.Language == language);
+
+            var cancellation = tour.Cancellation;
+
+            return new GetTourResponseDTO
+            (
+                Id: tour.Id,
+                GuideLanguage: tour.GuideLanguage.ToString() ?? "",
+
+                MeetingPoint: tour.MeetingPoint,
+
+
+                Images: tour.Images?
+                    .Select(i => new GetImageUrlResponseDTO(i.Id, i.ImageUrl))
+                    .ToList(),
+
+                Duration: tour.Duration,
+
+                DestinationId: tour.DestinationId,
+
+                Title : translation?.Title ?? "",
+
+                Description : translation?.Description ?? "",   
+
+                Language: language.ToString(),
+
+                Currency: tour.CurrencyCode.ToString(),
+
+                UserType: tour.UserType.ToString(),
+
+                            Cancellation: cancellation == null
+                ? null
+                : new GetCancellationResponseDTO
+                (
+                    Id: cancellation.Id,
+                    CancelationPolicyType: cancellation.CancelationPolicyType.ToString(),
+                    CancellationBefore: cancellation.CancellationBefore,
+                    RefundPercentage: cancellation.RefundPercentage,
+
+                    Description: cancellation.Translations
+                        .FirstOrDefault(t => t.Language == language)?
+                        .Description ?? ""
+                ),
+
+                Includes: tour.TourInclusions
+                    .Where(x => x.IsIncluded)
+                    .Select(x =>
+                         x.Translations.FirstOrDefault(t => t.Language == language)?
+                                                                    .Text ?? ""
+                    )
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList(),
+
+                NotIncludes: tour.TourInclusions
+                    .Where(x => !x.IsIncluded)
+                    .Select(x =>
+                         x.Translations.FirstOrDefault(t => t.Language == language)?
+                                             .Text ?? ""
+                    )
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList(),
+
+                Prices: tour.Prices?
+                    .Select(p => new GetPriceResponseDTO
+                    (
+                        Id: p.Id,
+                        Discount: p.Discount,
+
+                        Type: p.Translations
+                            .FirstOrDefault(t => t.Language == language)?
+                            .Type ?? "",
+
+                        Cost: p.Cost,
+                        UserType: p.UserType
+                    ))
+                    .ToList(),
+
+                Schedule: tour.AvailableTimes?
+                    .Select(s => new GetTourScheduleResponseDTO
+                    (
+                        Id: s.Id,
+                        AvailableDateStatus: s.AvailableDateStatus.ToString(),
+                        StartDate: s.StartDate,
+
+                        availableSlots: s.AvailableSlots?
+                            .Select(slot => new GetAvaialbleSlotResponseDTO
+                            (
+                                slot.Id,
+                                slot.StartTime,
+                                
+                                slot.AvailableTimeStatus.ToString(),
+                                slot.MaxCapacity,
+                                slot.ReservedCount,
+                                slot.BookedCount
+                            ))
+                            .ToList()
+                    ))
+                    .ToList(),
+
+                IsPitsAllowed: tour.IsPitsAllowed,
+                IsWheelchairAvailable: tour.IsWheelchairAvailable
+            );
         }
     }
 }

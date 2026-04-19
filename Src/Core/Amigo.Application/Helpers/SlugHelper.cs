@@ -49,4 +49,6 @@ public static class SlugHelper
             return false;
         return Normalize(destinationName) == Normalize(slug);
     }
+
+
 }
