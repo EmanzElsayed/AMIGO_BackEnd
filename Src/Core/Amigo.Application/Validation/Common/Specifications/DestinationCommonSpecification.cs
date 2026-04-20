@@ -20,7 +20,7 @@ namespace Amigo.Application.Validation.Common.Specifications
             if (!string.IsNullOrWhiteSpace(requestQuery.Language))
             { 
                 language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
-            }
+            }   
 
             return d =>
 

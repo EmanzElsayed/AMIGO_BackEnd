@@ -13,6 +13,8 @@ namespace Amigo.Application.Specifications.TourSpecification
             : base(TourCatalogCriteria.BuildAdminTourCatalog(requestQuery.DestinationId,requestQuery.Name,requestQuery.Language))
             
         {
+            ApplyPagination(requestQuery.PageSize, requestQuery.PageNumber);
+
             AddOrderBYDescending(t => t.CreatedDate);
 
             AddInclude(t => t.Translations

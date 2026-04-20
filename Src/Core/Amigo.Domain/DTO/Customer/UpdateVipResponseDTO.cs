@@ -1,0 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Amigo.Domain.DTO.Customer
+{
+    public record UpdateVipResponseDTO
+    (
+        string Id,
+        bool IsVIP
+    );
+}

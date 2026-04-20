@@ -61,6 +61,42 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     await _userManager.AddToRoleAsync(admin, "Admin");
                 }
             }
+            //if (!_dbIdentityContext.Currency.Any())
+            //{
+            //    var usd = new Currency
+            //    {
+            //        Id = Guid.NewGuid(),
+            //        CurrencyCode = CurrencyCode.GBP,
+            //        Icon = "$",
+            //        Translations =
+            //    {
+            //        new CurrencyTranslation
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            Name = "Pound sterling",
+            //            Language = Language.English
+            //        },
+            //        new CurrencyTranslation
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            Name = "Sterlina",
+            //            Language = Language.Italiano
+            //        },
+            //         new CurrencyTranslation
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            Name = "Sterlina",
+            //            Language = Language.Italiano
+            //        },
+            //          new CurrencyTranslation
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            Name = "Sterlina",
+            //            Language = Language.Italiano
+            //        },
+            //    }
+                //};
+            //}
 
         }
         catch (Exception)
