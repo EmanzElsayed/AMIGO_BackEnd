@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class ReviewTranslationsForReviewsSpecification : BaseSpecification<ReviewTranslation, Guid>
+public class ReviewTranslationsForReviewsSpecification : UserBaseSpecification<ReviewTranslation, Guid>
 {
     public ReviewTranslationsForReviewsSpecification(IReadOnlyCollection<Guid> reviewIds, Language language)
         : base(BuildCriteria(reviewIds, language))

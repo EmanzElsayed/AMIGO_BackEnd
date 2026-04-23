@@ -213,7 +213,7 @@ namespace Amigo.Application.Services.Admin
 
             Guid tourId = guid;
 
-            Language language = Language.English;
+            Language language = Language.en;
             if (!string.IsNullOrWhiteSpace(requestDTO.Language)) language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
 
 

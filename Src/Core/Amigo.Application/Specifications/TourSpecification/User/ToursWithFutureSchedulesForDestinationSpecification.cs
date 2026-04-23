@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
 
-public class ToursWithFutureSchedulesForDestinationSpecification : BaseSpecification<Tour, Guid>
+public class ToursWithFutureSchedulesForDestinationSpecification : UserBaseSpecification<Tour, Guid>
 {
     public ToursWithFutureSchedulesForDestinationSpecification(Guid destinationId, DateOnly todayUtc)
         : base(BuildCriteria(destinationId, todayUtc))

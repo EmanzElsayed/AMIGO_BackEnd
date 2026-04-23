@@ -33,7 +33,7 @@ public class CheckoutQuoteService(
             return Result.Fail(new NotFoundError("Tour not found."));
 
         var listingLang = string.IsNullOrWhiteSpace(request.Language)
-            ? Language.English
+            ? Language.en
             : EnumsMapping.ToLanguageEnum(request.Language!);
         CurrencyCode? requestedCurrency = null;
         if (!string.IsNullOrWhiteSpace(request.Currency)

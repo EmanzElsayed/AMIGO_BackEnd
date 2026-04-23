@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.DestinationSpecification.Admin
 {
-    public class GetDestinationWithTranslationsSpecification : BaseSpecification<Destination, Guid>
+    public class GetDestinationWithTranslationsSpecification : UserBaseSpecification<Destination, Guid>
     {
         public GetDestinationWithTranslationsSpecification(Guid destinationId) 
             : base(d => d.Id == destinationId && !d.IsDeleted)

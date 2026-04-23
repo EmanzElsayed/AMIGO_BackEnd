@@ -20,6 +20,7 @@ namespace Amigo.Presentation.Controllers
         IEnumService _enumService,
         ICurrencyService _currencyService,
         IHttpClientFactory _httpClientFactory,
+        IPhoneCodeService _phoneCodeService,
         IConfiguration _configuration) : BaseController
     {
         [HttpGet("languages")]
@@ -120,6 +121,12 @@ namespace Amigo.Presentation.Controllers
                 rates
             });
             return result;
+        }
+
+        [HttpGet("countries-code")]
+        public  IResultBase GetAllCountriesCode([FromQuery] string? language)
+        {
+            return  _phoneCodeService.GetCountries(language);
         }
     }
 }

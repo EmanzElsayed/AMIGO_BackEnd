@@ -9,8 +9,8 @@ namespace Amigo.SharedKernal.DTOs.Authentication
         string FullName,
         string Email,
         string Token,
-        string Role,
-        bool EmailConfirmed
-        
+        bool EmailConfirmed,
+        string? Role 
+
     );
 }

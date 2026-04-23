@@ -25,7 +25,7 @@ public class UserTourCatalogService(
             return validationResult;
 
         var listingLang = string.IsNullOrWhiteSpace(query.Language)
-            ? Language.English
+            ? Language.en
             : EnumsMapping.ToLanguageEnum(query.Language!);
 
         Language? effectiveGuide = query.OnlyInUserLanguage == true
@@ -101,7 +101,7 @@ public class UserTourCatalogService(
      string? language)
     {
         var lang = string.IsNullOrWhiteSpace(language)
-            ? Language.English
+            ? Language.en
             : EnumsMapping.ToLanguageEnum(language!);
 
         var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
@@ -171,7 +171,7 @@ public class UserTourCatalogService(
             return Result.Fail(new NotFoundError("Destination not found for this link."));
 
         var listingLang = string.IsNullOrWhiteSpace(query.Language)
-            ? Language.English
+            ? Language.en
             : EnumsMapping.ToLanguageEnum(query.Language!);
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
 
@@ -274,7 +274,7 @@ public class UserTourCatalogService(
     public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 6)
     {
         var listingLang = string.IsNullOrWhiteSpace(language)
-            ? Language.English
+            ? Language.en
             : EnumsMapping.ToLanguageEnum(language!);
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
         var top = take <= 0 ? 6 : Math.Min(take, 24);

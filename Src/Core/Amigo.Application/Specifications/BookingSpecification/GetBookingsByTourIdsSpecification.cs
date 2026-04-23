@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.BookingSpecification
 {
-    public class GetBookingsByTourIdsSpecification : BaseSpecification<Booking, Guid>
+    public class GetBookingsByTourIdsSpecification : UserBaseSpecification<Booking, Guid>
     {
         public GetBookingsByTourIdsSpecification(List<Guid> tourIds)
             : base(b =>

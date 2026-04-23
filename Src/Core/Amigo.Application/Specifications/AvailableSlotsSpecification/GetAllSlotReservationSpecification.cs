@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.AvailableSlotsSpecification
 {
-    public class GetAllSlotReservationSpecification : BaseSpecification<SlotReservation, Guid>
+    public class GetAllSlotReservationSpecification : UserBaseSpecification<SlotReservation, Guid>
     {
         public GetAllSlotReservationSpecification(Guid slotId) 
             : base(r => r.SlotId == slotId && r.Status == ReservationStatus.Pending && r.ExpiresAt > DateTime.UtcNow)

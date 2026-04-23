@@ -79,7 +79,7 @@ public static class TourCatalogCriteria
             && (string.IsNullOrWhiteSpace(q.Category)
                         || t.TourInclusions.Any(i =>
                             i.Translations.Any(tr =>
-                                tr.Language == (translationLanguage ?? Language.English)
+                                tr.Language == (translationLanguage ?? Language.en)
                                 && tr.Text.ToLower().Trim().Contains(q.Category!.ToLower().Trim())
                             )
                         )
@@ -121,7 +121,7 @@ public static class TourCatalogCriteria
 
         )
     {
-        Language translationLanguage = Language.English;
+        Language translationLanguage = Language.en;
         if (!string.IsNullOrEmpty(language))
         {
             translationLanguage = EnumsMapping.ToLanguageEnum(language);

@@ -19,7 +19,7 @@ namespace Amigo.Application.Mapping
         public static Language ToLanguageEnum(string language)
         {
             if (string.IsNullOrWhiteSpace(language))
-                return Language.English;
+                return Language.en;
 
             if (Enum.TryParse<Language>(language, true, out var parsed) && parsed != Language.None)
                 return parsed;
@@ -34,7 +34,7 @@ namespace Amigo.Application.Mapping
                     return (Language)field.GetValue(null)!;
             }
 
-            return Language.English;
+            return Language.en;
         }
         public static AvailableDateTimeStatus ToAvailableSheduleStatus(string? availableStatus)
         {

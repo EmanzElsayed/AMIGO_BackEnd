@@ -4,16 +4,16 @@ namespace Amigo.Domain.Enum;
 public enum Language
 {
     None = 0,
-    English = 1,
+    en = 1,
 
-    [Display(Name = "Español")]
-    Espanol = 2,         
-    [Display(Name = "Français")]
+    es = 2,         
 
-    Francais = 3,          
-    Italiano = 4,          
-    [Display(Name = "Português (PT)")]
-    Portuguese_Portugal = 5, 
-    [Display(Name = "Português (BR)")]
-    Portuguese = 6    
+    fr = 4,
+
+    it = 8,          
+
+    
+    pt_pt = 16, 
+    
+    pt_br = 32    
 }

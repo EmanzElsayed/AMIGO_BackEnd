@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
-    public class GetDestinationByIdSpecification : BaseSpecification<Destination, Guid>
+    public class GetDestinationByIdSpecification : UserBaseSpecification<Destination, Guid>
     {
         public GetDestinationByIdSpecification(Guid destinationId,GetDestinationByIdQuery requestQuery ) 
             : base(

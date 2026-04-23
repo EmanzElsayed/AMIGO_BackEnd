@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.CartSpecification
 {
-    public class GetCartItemWithIdSpecification : BaseSpecification<CartItem, Guid>
+    public class GetCartItemWithIdSpecification : UserBaseSpecification<CartItem, Guid>
     {
         public GetCartItemWithIdSpecification(Guid id) 
             : base(c => c.Id == id )

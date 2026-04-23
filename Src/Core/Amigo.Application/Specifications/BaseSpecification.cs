@@ -8,10 +8,10 @@ using System.Text;
 
 namespace Amigo.Application.Specifications
 {
-    public abstract class BaseSpecification<TEntity, TKey>
+    public abstract class UserBaseSpecification<TEntity, TKey>
         : ISpecifications<TEntity, TKey> where TEntity : BaseEntity<TKey>
     {
-        protected BaseSpecification(Expression<Func<TEntity, bool>>? criteria)
+        protected UserBaseSpecification(Expression<Func<TEntity, bool>>? criteria)
         {
             Criteria = criteria;
         }

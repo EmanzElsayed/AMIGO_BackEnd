@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.PaymentSpecification
 {
-    public class GetAllSucceedPaymentSpecification : BaseSpecification<Payment, Guid>
+    public class GetAllSucceedPaymentSpecification : UserBaseSpecification<Payment, Guid>
     {
         public GetAllSucceedPaymentSpecification() 
             : base(p => !p.IsDeleted && p.Status == PaymentStatus.Succeeded)

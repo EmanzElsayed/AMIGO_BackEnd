@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.OrderSpecification
 {
-    public class GetOrderByIdSpecification : BaseSpecification<Order, Guid>
+    public class GetOrderByIdSpecification : UserBaseSpecification<Order, Guid>
     {
         public GetOrderByIdSpecification(Guid orderId)
             : base(o => o.Id == orderId && o.IsDeleted == false)

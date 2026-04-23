@@ -40,7 +40,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     new DateOnly(1990, 1, 1),
                     "+201111111111",
                     Gender.Female,
-                    Language.English,
+                    Language.en,
                     new Address
                     {
                         BuildingNumber = "25",

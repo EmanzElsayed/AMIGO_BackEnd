@@ -47,7 +47,7 @@ public static class SlugHelper
     {
         if (string.IsNullOrEmpty(destinationName) || string.IsNullOrEmpty(slug))
             return false;
-        return Normalize(destinationName) == Normalize(slug);
+        return string.Equals(Normalize(destinationName), Normalize(slug), StringComparison.OrdinalIgnoreCase);
     }
 
 

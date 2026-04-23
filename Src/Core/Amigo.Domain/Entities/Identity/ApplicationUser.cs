@@ -11,7 +11,7 @@ public class ApplicationUser : IdentityUser
     public string? Nationality { get; set; }
     public Language? Language { get; set; }
     public Address? Address { get; set; }
-    public DateTime LastLoginAt { get; set; }
+     public  DateTime LastLoginAt { get; set; }
     public int? CreatedBy { get; private set; }
     public DateTime CreatedDate { get; private set; }
     public int? ModifiedBy { get; private set; }

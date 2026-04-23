@@ -8,12 +8,12 @@ namespace Amigo.Application.Services.AutoTranslation
     {
         private static readonly Dictionary<Language, string> Map = new()
         {
-            { Language.English, "en" },
-            { Language.Espanol, "es" },
-            { Language.Francais, "fr" },
-            { Language.Italiano, "it" },
-            { Language.Portuguese, "pt" },
-            { Language.Portuguese_Portugal, "pt" }
+            { Language.en, "en" },
+            { Language.es, "es" },
+            { Language.fr, "fr" },
+            { Language.it, "it" },
+            { Language.pt_br, "pt" },
+            { Language.pt_pt, "pt" }
         };
 
         public static string ToCode(Language lang)

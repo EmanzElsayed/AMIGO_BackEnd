@@ -6,7 +6,7 @@ using Amigo.SharedKernal.QueryParams;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class UserTourCatalogFilterSpecification : BaseSpecification<Tour, Guid>
+public class UserTourCatalogFilterSpecification : UserBaseSpecification<Tour, Guid>
 {
     public UserTourCatalogFilterSpecification(
         GetUserToursQuery query,

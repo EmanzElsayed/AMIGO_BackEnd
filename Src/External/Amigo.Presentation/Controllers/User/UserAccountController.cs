@@ -67,7 +67,7 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
                 tourId = x.t.Id,
                 title = x.t.Translations
                     .Where(tr => !tr.IsDeleted)
-                    .OrderBy(tr => tr.Language == Language.English ? 0 : 1)
+                    .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
                     .Select(tr => tr.Title)
                     .FirstOrDefault() ?? "Tour",
                 destinationId = x.t.DestinationId,

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
-    public class GetAllDestinationSpecification : BaseSpecification<Destination, Guid>
+    public class GetAllDestinationSpecification : UserBaseSpecification<Destination, Guid>
     {
         
         public GetAllDestinationSpecification(GetAllDestinationQuery requestQuery , bool isAdmin)

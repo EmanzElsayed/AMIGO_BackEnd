@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.PaymentSpecification
 {
-    public class GetPaymentByPaymentIntentSpecification : BaseSpecification<Payment, Guid>
+    public class GetPaymentByPaymentIntentSpecification : UserBaseSpecification<Payment, Guid>
     {
         public GetPaymentByPaymentIntentSpecification(string intentId) 
             : base(p => p.ProviderPaymentIntentId == intentId)

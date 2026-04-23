@@ -5,7 +5,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Amigo.Application.Specifications.CurrencySpecification
 {
-    public class GetCurrencyWithQuerySpecification : BaseSpecification<Currency, Guid>
+    public class GetCurrencyWithQuerySpecification : UserBaseSpecification<Currency, Guid>
     {
         public GetCurrencyWithQuerySpecification(Guid currencyId, GetAllCurrencyQuery query)
             : base(c => c.Id == currencyId && !c.IsDeleted

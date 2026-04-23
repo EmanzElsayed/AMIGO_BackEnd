@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class ReviewsForTourSpecification : BaseSpecification<Review, Guid>
+public class ReviewsForTourSpecification : UserBaseSpecification<Review, Guid>
 {
     public ReviewsForTourSpecification(Guid tourId)
         : base(BuildCriteria(tourId))

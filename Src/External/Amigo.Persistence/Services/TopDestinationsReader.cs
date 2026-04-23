@@ -23,11 +23,11 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
         }
 
         var preferredLanguage = string.IsNullOrWhiteSpace(query.Language)
-            ? Language.English
+            ? Language.en
             : EnumsMapping.ToLanguageEnum(query.Language!);
 
         if (preferredLanguage == Language.None)
-            preferredLanguage = Language.English;
+            preferredLanguage = Language.en;
 
         var rankingSpec = new TopDestinationsRankingSpecification();
         var eligibleDestinations = SpeceficationEvaluator.CreateQuery(
@@ -93,7 +93,7 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
             if (!string.IsNullOrEmpty(exact))
                 return exact!;
 
-            var english = list.FirstOrDefault(t => t.Language == Language.English)?.Name;
+            var english = list.FirstOrDefault(t => t.Language == Language.en)?.Name;
             if (!string.IsNullOrEmpty(english))
                 return english!;
 

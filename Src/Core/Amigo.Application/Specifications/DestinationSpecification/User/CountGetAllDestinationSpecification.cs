@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
-    public class CountGetAllDestinationSpecification : BaseSpecification<Destination, Guid>
+    public class CountGetAllDestinationSpecification : UserBaseSpecification<Destination, Guid>
     {
         public CountGetAllDestinationSpecification(GetAllDestinationQuery requestQuery ,bool isAdmin)
             : base(

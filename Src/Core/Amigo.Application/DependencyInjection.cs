@@ -66,9 +66,10 @@ public static class DependencyInjection
         services.AddScoped<IAdminCustomerService, AdminCustomerService>();
 
         services.AddScoped<ICurrencyService, CurrencyService>();
+        services.AddScoped<ICustomerService, CustomerService>();
 
         services.AddScoped<IImageService, ImageService>();
-
+        services.AddScoped<IPhoneCodeService, PhoneCodeService>();
         services.AddScoped<TranslationService>();
         services.AddHttpClient<TranslationService>();
         services.AddScoped<TranslationEngine>();
