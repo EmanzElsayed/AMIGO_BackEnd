@@ -64,15 +64,29 @@ public class PaypalPaymentProvider : IPaymentProvider
         );
     }
 
-    public async Task<string> CapturePaymentAsync(string orderId)
+    public async Task<CapturePaymentResponseDTO> CapturePaymentAsync(string orderId)
     {
-        var request = new OrdersCaptureRequest(orderId);
-        request.RequestBody(new OrderActionRequest());
+        try
+        {
+            
+            var request = new OrdersCaptureRequest(orderId);
+            request.RequestBody(new OrderActionRequest());
+            var response = await _client.Execute(request);
+            var result = response.Result<PayPalCheckoutSdk.Orders.Order>();
+            return  new CapturePaymentResponseDTO
+            {
+                PaymentProviderReferenceId = result.Id,
+                Status = result.Status,
+                Success = result.Status == "COMPLETED"
+            }; 
+        
 
-        var response = await _client.Execute(request);
-        var result = response.Result<PayPalCheckoutSdk.Orders.Order>();
-
-        return result.Id;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+            
+        }
     }
 
     public async Task<bool> VerifyWebhookAsync(HttpRequest request, string body)

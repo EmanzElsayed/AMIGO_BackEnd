@@ -15,7 +15,7 @@ public class AvailableSlots:BaseEntity<Guid>
     public AvailableDateTimeStatus AvailableTimeStatus { get; set; }
 
     public int MaxCapacity { get; set; }
+
     public int ReservedCount { get; set; }
-    public int BookedCount { get; set; }
 
 }

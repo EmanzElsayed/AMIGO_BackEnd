@@ -1,4 +1,6 @@
-﻿using Amigo.Application.Specifications.GetBackGroundServicesSpecification;
+﻿using Amigo.Application.Specifications.AvailableSlotsSpecification;
+using Amigo.Application.Specifications.GetBackGroundServicesSpecification;
+using Amigo.Domain.Abstraction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,17 +10,15 @@ namespace Amigo.Application.Services;
 /// <summary>
 /// Production Background Worker
 /// Runs periodic maintenance jobs:
-/// 1. Expire pending reservations
+/// 1. Delete pending reservations
 /// 2. Expire unpaid orders
-/// 3. Reconcile stuck payments
-/// 4. Cleanup old data
 /// </summary>
 public sealed class BookingBackgroundService(
     IServiceScopeFactory scopeFactory,
     ILogger<BookingBackgroundService> logger)
     : BackgroundService
 {
-    private readonly TimeSpan _interval = TimeSpan.FromMinutes(1);
+    private readonly TimeSpan _interval = TimeSpan.FromMinutes(2);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -46,119 +46,91 @@ public sealed class BookingBackgroundService(
         using var scope = scopeFactory.CreateScope();
 
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        var orchestrator = scope.ServiceProvider.GetRequiredService<IPaymentOrchestrator>();
 
         await ExpireReservations(unitOfWork);
         await ExpireOrders(unitOfWork);
-        //await ReconcilePendingPayments(unitOfWork, orchestrator);
-        await CleanupOldReservations(unitOfWork);
+        await SlodOutSlots(unitOfWork);
     }
 
     // =====================================================
     // 1) Expire Pending Reservations
     // =====================================================
-    private async Task ExpireReservations(IUnitOfWork uow)
+    private async Task ExpireReservations(IUnitOfWork _unitOfWork)
     {
         var now = DateTime.UtcNow;
 
-        var repo = uow.GetRepository<SlotReservation, Guid>();
+        var repo = _unitOfWork.GetRepository<SlotReservation, Guid>();
 
         var reservations = await repo.GetAllAsync(
             new GetExpiredPendingReservationsSpecification(now));
 
-        foreach (var reservation in reservations)
-        {
-            reservation.Status = ReservationStatus.Expired;
+        repo.RemoveRange(reservations);
 
-            var slot = reservation.Slot;
 
-            if (slot is null)
-                continue;
 
-            slot.ReservedCount = Math.Max(0,
-                slot.ReservedCount - reservation.Quantity);
-        }
-
-        await uow.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
     // =====================================================
     // 2) Expire Orders still unpaid
     // =====================================================
-    private async Task ExpireOrders(IUnitOfWork uow)
+    private async Task ExpireOrders(IUnitOfWork _unitOfWork)
     {
-        var limit = DateTime.UtcNow.AddMinutes(-15);
+        var now = DateTime.UtcNow;
 
-        var repo = uow.GetRepository<Order, Guid>();
+        var repo = _unitOfWork.GetRepository<Order, Guid>();
 
         var orders = await repo.GetAllAsync(
-            new GetPendingOrdersBeforeDateSpecification(limit));
+            new GetPendingOrdersBeforeDateSpecification(now));
 
         foreach (var order in orders)
         {
-            order.Status = OrderStatus.Expired;
+            order.Status = OrderStatus.Failed;
         }
 
-        await uow.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
-
     // =====================================================
-    // 3) Reconcile Pending Payments
-    // If webhook missed
+    // 3) SoldOutSlots 
     // =====================================================
-    //private async Task ReconcilePendingPayments(
-    //IUnitOfWork uow,
-    //IPaymentOrchestrator orchestrator)
-    //{
-    //    var limit = DateTime.UtcNow.AddMinutes(-5);
-
-    //    var repo = uow.GetRepository<Payment, Guid>();
-
-    //    var payments = await repo.GetAllAsync(
-    //        new GetOldPendingPaymentsSpecification(limit));
-
-    //    foreach (var payment in payments)
-    //    {
-    //        try
-    //        {
-    //            await ProcessPayment(payment, orchestrator);
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            logger.LogWarning(ex,
-    //                "Payment reconciliation skipped for {PaymentId}",
-    //                payment.Id);
-    //        }
-    //    }
-    //}
-
-    //private async Task ProcessPayment(
-    //Payment payment,
-    //IPaymentOrchestrator orchestrator)
-    //{
-    //    if (payment.Provider == PaymentProvider.Stripe)
-    //    {
-    //        var payload = CreateStripeFakeEvent(payment.PaymentProviderReferenceId);
-
-    //        await orchestrator.HandleSuccessAsync(
-    //            PaymentProvider.Stripe,
-    //            payload);
-    //    }
-    //}
-    // =====================================================
-    // 4) Cleanup old expired reservations
-    // =====================================================
-    private async Task CleanupOldReservations(IUnitOfWork uow)
+    private async Task SlodOutSlots(IUnitOfWork _unitOfWork)
     {
-        var oldDate = DateTime.UtcNow.AddDays(-30);
+        
 
-        var repo = uow.GetRepository<SlotReservation, Guid>();
+        var repo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
 
-        var oldReservations = await repo.GetAllAsync(
-            new GetOldExpiredReservationsSpecification(oldDate));
+        var availableSlots = await repo.GetAllAsync(
+            new GetAllAvailableSlots());
 
-        repo.RemoveRange(oldReservations);
+        if (!availableSlots.Any())
+            return;
 
-        await uow.SaveChangesAsync();
+        var avialableSlotsIds = availableSlots.Select(availableSlots => availableSlots.Id).ToList();
+
+        var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+
+        var reservationsCount = await reservationRepo.GetGroupedCountAsync(
+            x => avialableSlotsIds.Contains(x.SlotId),
+            x => x.SlotId
+        );
+
+        foreach (var slot in availableSlots)
+        {
+            var count = reservationsCount.ContainsKey(slot.Id)
+                ? reservationsCount[slot.Id]
+                : 0;
+            slot.ReservedCount = count;
+            if (count >= slot.MaxCapacity)
+            {
+                slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
+                slot.SetModifiedDate(DateTime.UtcNow);
+            }
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
+
+
+
+
 }

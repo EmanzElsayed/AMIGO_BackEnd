@@ -77,16 +77,38 @@ namespace Amigo.Application.Services
             if (payment is null)
                 return Result.Fail("Payment not found");
 
+            if (payment.Status == PaymentStatus.Captured)
+                return Result.Fail("Payment already captured");
+
+            if (payment.Status == PaymentStatus.Failed)
+                return Result.Fail("Cannot capture failed payment");
+
+            if (payment.Status != PaymentStatus.Pending 
+                )
+                return Result.Fail("Invalid payment state");
+
             var provider = _resolver.Resolve(payment.Provider.Value);
             
 
             var result = await provider.CapturePaymentAsync(payment.PaymentProviderReferenceId);
             
+            
+            if (result.Success)
+            {
+                payment.Status = PaymentStatus.Captured;
+                payment.SetModifiedDate(DateTime.UtcNow) ;
+            }
+            else
+            {
+                payment.Status = PaymentStatus.Failed;
+            }
+            await _unitOfWork.SaveChangesAsync();
+
             return Result.Ok(new CapturePaymentResponseDTO
             {
                 PaymentProviderReferenceId = payment.PaymentProviderReferenceId,
                 Success = true,
-                Status = result
+                Status = result.Status
             });
         }
 

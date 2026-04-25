@@ -9,7 +9,7 @@ public class Booking:BaseEntity<Guid>
     public Guid OrderId { get; set; }
     public Guid PaymentId { get; set; }
     public string UserId { get; set; } = null!;
-    public ApplicationUser User { get; set; } = null!;
+    public ApplicationUser User { get; set; } 
 
 
     public string CustomerName { get; set; } = null!;

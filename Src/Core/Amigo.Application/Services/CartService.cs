@@ -13,7 +13,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Amigo.Application.Services
 {
-    public class CartService(IUnitOfWork _unitOfWork , IPaymentProviderResolver _paymentProviderResolver) 
+    public class CartService(IUnitOfWork _unitOfWork , IPaymentProviderResolver _paymentProviderResolver,ISlotsRepo _slotsRepo) 
         : ICartService
     {
         public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
@@ -160,6 +160,7 @@ namespace Amigo.Application.Services
                         Status = OrderStatus.PendingPayment,
                         OrderDate = DateTime.UtcNow,
                         TotalAmount = 0,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(20),
                         OrderItems = new List<OrderItem>(cart.Items.Count)
                     };
 
@@ -181,7 +182,7 @@ namespace Amigo.Application.Services
                     // GEt Ids
 
                     var tourIds = cart.Items.Select(x => x.TourId).Distinct().ToList();
-                    var slotIds = cart.Items.Select(x => x.SlotId).Distinct().ToList();
+                    var slotIds = cart.Items.Select(x => x.SlotId).Distinct().OrderBy(x => x).ToList();
                     var orderId = order.Id;
 
                     //create tour dictionary
@@ -192,8 +193,12 @@ namespace Amigo.Application.Services
 
 
                     var slots = await slotRepo.GetAllAsync(
-                        new GetSlotsByIdsSpecification(slotIds));
+                             new GetSlotsByIdsSpecification(slotIds));
 
+
+                    //var slots = await _slotsRepo.GetLockedSlotsAsync(slotIds);
+
+                    if (slots is null || !slots.Any() ) return Result.Fail("Slots Not Avaialble");
 
                     var reservations = await reservationRepo.GetAllAsync(
                         new GetReservationsBySlotIdsSpecification(slotIds));
@@ -238,10 +243,9 @@ namespace Amigo.Application.Services
                             return Result.Fail("Slot not found");
 
                         var reserved = reservationLookup.GetValueOrDefault(item.SlotId, 0);
-                      
+                        
                         var available =
                             orderedSlot.MaxCapacity -
-                            orderedSlot.BookedCount -
                             reserved;
 
 
@@ -263,7 +267,7 @@ namespace Amigo.Application.Services
                             OrderId = order.Id,
                             Quantity = totalPeople,
                             CreatedAt = DateTime.UtcNow,
-                            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                            ExpiresAt = DateTime.UtcNow.AddMinutes(20),
                             Status = ReservationStatus.Pending
                         };
                         newReservations.Add(reservation);

@@ -62,6 +62,8 @@ public static class DependencyInjection
         //services.AddScoped<ITourReviewEligibilityReader, TourReviewEligibilityReader>();
         services.AddScoped<IUserRepo, UserRepo>();
 
+        services.AddScoped<ISlotsRepo, SlotsRepo>();
+
         return services;
     }
 }

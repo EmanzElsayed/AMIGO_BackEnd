@@ -152,7 +152,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateAvailableSlotsRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
-
+        services.AddHostedService<BookingBackgroundService>();
 
         return services;
     }

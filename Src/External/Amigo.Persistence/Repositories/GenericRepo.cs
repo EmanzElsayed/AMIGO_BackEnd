@@ -85,5 +85,22 @@ public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext)
     }
     public void RemoveRange(IEnumerable<TEntity> entities)
         => _dbContext.Set<TEntity>().RemoveRange(entities);
-    
+
+
+    public async Task<Dictionary<TKey, int>> GetGroupedCountAsync<TKey>(
+                Expression<Func<TEntity, bool>> filter,
+                Expression<Func<TEntity, TKey>> groupBy)
+    where TKey : notnull
+    {
+        return await _dbContext.Set<TEntity>()
+            .Where(filter)
+            .GroupBy(groupBy)
+            .Select(g => new
+            {
+                Key = g.Key,
+                Count = g.Count()
+            })
+            .ToDictionaryAsync(x => x.Key, x => x.Count);
+    }
+
 }

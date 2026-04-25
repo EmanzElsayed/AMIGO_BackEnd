@@ -43,8 +43,9 @@ namespace Amigo.Presentation.Controllers
         {
             try
             {
+
                 var json = await new StreamReader(Request.Body).ReadToEndAsync();
-                _logger.LogInformation("PayPal webhook received: {json}", json);
+                //_logger.LogInformation("PayPal webhook received: {json}", json);
 
                 var provider = _resolver.Resolve(PaymentProvider.Paypal);
 
@@ -56,8 +57,7 @@ namespace Amigo.Presentation.Controllers
 
                 var eventType = JsonDocument.Parse(json)
                     .RootElement.GetProperty("event_type").GetString();
-
-                _logger.LogInformation("PayPal event type: {type}", eventType);
+                //_logger.LogInformation("PayPal event type: {type}", eventType);
 
 
                 switch (eventType)

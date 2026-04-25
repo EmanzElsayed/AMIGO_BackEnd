@@ -35,4 +35,8 @@ public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
     Task RemoveWhereAsync(Expression<Func<TEntity, bool>> predicate);
 
     public void RemoveRange(IEnumerable<TEntity> entities);
+
+   public Task<Dictionary<TKey, int>> GetGroupedCountAsync<TKey>(
+               Expression<Func<TEntity, bool>> filter,
+               Expression<Func<TEntity, TKey>> groupBy);
 }

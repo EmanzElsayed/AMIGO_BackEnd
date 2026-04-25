@@ -7,7 +7,8 @@ namespace Amigo.Application.Specifications.AvailableSlotsSpecification
     internal class GetReservationsBySlotIdsSpecification : BaseSpecification<SlotReservation, Guid>
     {
         public GetReservationsBySlotIdsSpecification(List<Guid> ids)
-            : base(t => ids.Contains(t.Id) && !t.IsDeleted)
+            : base(t => ids.Contains(t.SlotId) && !t.IsDeleted 
+            && (t.Status == ReservationStatus.Confirmed || (t.Status == ReservationStatus.Pending && t.ExpiresAt > DateTime.UtcNow)))
         {
     }   }
 }

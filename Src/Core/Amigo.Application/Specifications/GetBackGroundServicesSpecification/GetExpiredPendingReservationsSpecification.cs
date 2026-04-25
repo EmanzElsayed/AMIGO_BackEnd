@@ -12,7 +12,6 @@ namespace Amigo.Application.Specifications.GetBackGroundServicesSpecification
                 r.Status == ReservationStatus.Pending &&
                 r.ExpiresAt < now && !r.IsDeleted)
         {
-            AddInclude(r => r.Slot);
 
         }
     }

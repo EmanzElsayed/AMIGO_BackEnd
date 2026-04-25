@@ -7,10 +7,10 @@ namespace Amigo.Application.Specifications.GetBackGroundServicesSpecification
     public class GetPendingOrdersBeforeDateSpecification
     : BaseSpecification<Order, Guid>
     {
-        public GetPendingOrdersBeforeDateSpecification(DateTime limit)
+        public GetPendingOrdersBeforeDateSpecification(DateTime now)
             : base(o =>
                 o.Status == OrderStatus.PendingPayment &&
-                o.OrderDate < limit && !o.IsDeleted)
+                o.ExpiresAt < now && !o.IsDeleted)
         {
         }
     }

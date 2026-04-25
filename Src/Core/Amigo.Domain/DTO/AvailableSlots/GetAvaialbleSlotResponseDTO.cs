@@ -12,8 +12,7 @@ namespace Amigo.Domain.DTO.AvailableSlots
         string AvailableTimeStatus,
         int MaxCapacity,
 
-      int ReservedCount,
-      int BookedCount
+      int ReservedCount
     );    
     
 }

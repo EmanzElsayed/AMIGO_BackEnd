@@ -423,8 +423,7 @@ namespace Amigo.Application.Services.Admin
                                 
                                 slot.AvailableTimeStatus.ToString(),
                                 slot.MaxCapacity,
-                                slot.ReservedCount,
-                                slot.BookedCount
+                                slot.ReservedCount
                             ))
                             .ToList()
                     ))

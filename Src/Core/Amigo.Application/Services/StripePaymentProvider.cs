@@ -37,8 +37,17 @@ namespace Amigo.Application.Services
             );
         }
 
-        public Task<string> CapturePaymentAsync(string providerPaymentId)
-            => Task.FromResult(providerPaymentId);
+        public  async Task<CapturePaymentResponseDTO> CapturePaymentAsync(string providerPaymentId)
+        { 
+           //var result =   Task.FromResult(providerPaymentId);
+
+            return new CapturePaymentResponseDTO
+            {
+                PaymentProviderReferenceId = providerPaymentId,
+                Status = "complete",
+                Success = true
+            };
+        }
 
         public Task<bool> VerifyWebhookAsync(HttpRequest req, string body)
             => Task.FromResult(true);

@@ -34,6 +34,7 @@ namespace Amigo.Application.Services
                 {
                     var (providerRefId, rawData) = ExtractProviderData(provider, payload);
 
+                   
                     var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
                     var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
                     var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
@@ -62,28 +63,14 @@ namespace Amigo.Application.Services
                     // 3. Reservations 
                     var reservations = await reservationRepo
                         .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
+                    
+                    if (reservations is null)
+                        return;
 
                     foreach (var r in reservations)
                         r.Status = ReservationStatus.Confirmed;
 
-                    // 4.Load ALL slots in ONE query
-                    var slotIds = reservations
-                        .Select(r => r.SlotId)
-                        .Distinct()
-                        .ToList();
-
-                    var slots = await slotRepo.GetAllAsync(new GetSlotsByIdsSpecification(slotIds));
-
-                    var slotDict = slots.ToDictionary(x => x.Id);
-
-                    foreach (var r in reservations)
-                    {
-                        if (slotDict.TryGetValue(r.SlotId, out var slot))
-                        {
-                            slot.ReservedCount -= r.Quantity;
-                            slot.BookedCount += r.Quantity;
-                        }
-                    }
+                  
 
                     // 5. Batch check bookings
                     var orderItemIds = order.OrderItems.Select(x => x.Id).ToList();
@@ -102,8 +89,11 @@ namespace Amigo.Application.Services
                         {
                             Id = Guid.NewGuid(),
                             OrderItemId = item.Id,
+                            OrderItem = item,
                             OrderId = order.Id,
                             UserId = order.UserId,
+                            CustomerName = order.User.FullName,
+                            CustomerEmail = order.User.Email,
                             PaymentId = payment.Id,
                             BookingNumber = GenerateBookingNumber(),
                             Status = BookingStatus.Confirmed,
@@ -165,35 +155,21 @@ namespace Amigo.Application.Services
                     if (order != null)
                         order.Status = OrderStatus.PendingPayment;
 
-                    var reservations = await reservationRepo
-                        .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
+                    //var reservations = await reservationRepo
+                    //    .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
 
-                    foreach (var r in reservations)
-                        r.Status = ReservationStatus.Cancelled;
+                    //foreach (var r in reservations)
+                    //    r.Status = ReservationStatus.Pending;
 
-                    var slotIds = reservations
-                       .Select(r => r.SlotId)
-                       .Distinct()
-                       .ToList();
-
-                    var slots = await slotRepo.GetAllAsync(new GetSlotsByIdsSpecification(slotIds));
-
-                    var slotDict = slots.ToDictionary(s => s.Id);
-
-                    foreach (var r in reservations)
-                    {
-                        if (slotDict.TryGetValue(r.SlotId, out var slot))
-                        {
-                            slot.ReservedCount -= r.Quantity;
-                        }
-                    }
+                   
+                  
 
                     await _unitOfWork.SaveChangesAsync();
                     await tx.CommitAsync();
                 }
                 catch {
                     await tx.RollbackAsync();
-                    throw;
+                        throw;
 
                 }
             });

@@ -11,7 +11,7 @@ namespace Amigo.Application.Abstraction.Services
         PaymentProvider Provider { get; }
 
         Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order);
-        Task<string> CapturePaymentAsync(string providerPaymentId);
+        Task<CapturePaymentResponseDTO> CapturePaymentAsync(string providerPaymentId);
 
         Task<bool> VerifyWebhookAsync(HttpRequest request, string body);
 
