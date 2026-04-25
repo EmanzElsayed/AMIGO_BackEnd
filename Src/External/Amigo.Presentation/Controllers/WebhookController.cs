@@ -1,6 +1,7 @@
 ﻿using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.Enum;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Stripe;
 using System;
@@ -12,7 +13,7 @@ namespace Amigo.Presentation.Controllers
 {
     [Route("api/webhook")]
     public class WebhookController(IConfiguration _config , IPaymentOrchestrator _orchestrator,
-            IPaymentProviderResolver _resolver ) : BaseController
+            IPaymentProviderResolver _resolver, ILogger<WebhookController> _logger) : BaseController
     {
         [HttpPost("stripe")]
         public async Task<IActionResult> StripeWebhook()
@@ -40,30 +41,44 @@ namespace Amigo.Presentation.Controllers
         [HttpPost("paypal")]
         public async Task<IActionResult> PaypalWebhook()
         {
-            var json = await new StreamReader(Request.Body).ReadToEndAsync();
-            var provider = _resolver.Resolve(PaymentProvider.Paypal);
-
-            var isValid = await provider.VerifyWebhookAsync(Request, json);
-
-
-            if (!isValid)
-                return Unauthorized();
-
-            var eventType = JsonDocument.Parse(json)
-                .RootElement.GetProperty("event_type").GetString();
-
-            switch (eventType)
+            try
             {
-                case "PAYMENT.CAPTURE.COMPLETED":
-                    await _orchestrator.HandleSuccessAsync(PaymentProvider.Paypal, json);
-                    break;
+                var json = await new StreamReader(Request.Body).ReadToEndAsync();
+                _logger.LogInformation("PayPal webhook received: {json}", json);
 
-                case "PAYMENT.CAPTURE.DENIED":
-                    await _orchestrator.HandleFailureAsync(PaymentProvider.Paypal, json);
-                    break;
+                var provider = _resolver.Resolve(PaymentProvider.Paypal);
+
+                var isValid = await provider.VerifyWebhookAsync(Request, json);
+
+
+                if (!isValid)
+                    return Unauthorized();
+
+                var eventType = JsonDocument.Parse(json)
+                    .RootElement.GetProperty("event_type").GetString();
+
+                _logger.LogInformation("PayPal event type: {type}", eventType);
+
+
+                switch (eventType)
+                {
+                    case "PAYMENT.CAPTURE.COMPLETED":
+                        await _orchestrator.HandleSuccessAsync(PaymentProvider.Paypal, json);
+                        break;
+
+                    case "PAYMENT.CAPTURE.DENIED":
+                        await _orchestrator.HandleFailureAsync(PaymentProvider.Paypal, json);
+                        break;
+                }
+
+                return Ok();
             }
-
-            return Ok();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "PayPal webhook failed");
+                return StatusCode(500);
+            }
+          
         }
     }
 }

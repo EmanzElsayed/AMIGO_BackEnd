@@ -119,8 +119,9 @@ namespace Amigo.Application.Services
                 catch
                 {
                     await tx.RollbackAsync();
+                    throw;
 
-  
+
                 }
             });
         }
@@ -192,6 +193,7 @@ namespace Amigo.Application.Services
                 }
                 catch {
                     await tx.RollbackAsync();
+                    throw;
 
                 }
             });
