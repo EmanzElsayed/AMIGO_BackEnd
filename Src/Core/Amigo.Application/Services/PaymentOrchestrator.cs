@@ -1,5 +1,6 @@
 ﻿using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,7 @@ namespace Amigo.Application.Services
                     payment.RawResponseJson = rawData;
 
                     // 2. Order 
-                    var order = await orderRepo.GetByIdAsync(payment.OrderId);
+                    var order = await orderRepo.GetByIdAsync( new GetOrderByIdSpecification( payment.OrderId));
 
                     if (order is null)
                         return;
