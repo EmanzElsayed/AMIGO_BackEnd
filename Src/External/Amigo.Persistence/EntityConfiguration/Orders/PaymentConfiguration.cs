@@ -32,7 +32,9 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                    .HasMaxLength(1000);
 
             builder.Property(x => x.Provider)
-                   .HasMaxLength(100);
+                   .HasConversion<int>();
+
+           
 
             builder.Property(x => x.ProviderTransactionId)
                    .HasMaxLength(250);

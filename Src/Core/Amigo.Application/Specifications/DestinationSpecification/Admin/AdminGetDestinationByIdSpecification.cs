@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.DestinationSpecification.Admin
 {
-    internal class AdminGetDestinationByIdSpecification : UserBaseSpecification<Destination, Guid>
+    internal class AdminGetDestinationByIdSpecification : BaseSpecification<Destination, Guid>
     {
         public AdminGetDestinationByIdSpecification(Guid destinationId, GetDestinationByIdQuery requestQuery)
             : base(

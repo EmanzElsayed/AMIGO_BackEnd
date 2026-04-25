@@ -1,129 +1,164 @@
-﻿using Amigo.Application.Specifications.OrderSpecification;
-using Amigo.Domain.Abstraction;
-using Stripe;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Amigo.Application.Specifications.GetBackGroundServicesSpecification;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace Amigo.Application.Services
+namespace Amigo.Application.Services;
+
+/// <summary>
+/// Production Background Worker
+/// Runs periodic maintenance jobs:
+/// 1. Expire pending reservations
+/// 2. Expire unpaid orders
+/// 3. Reconcile stuck payments
+/// 4. Cleanup old data
+/// </summary>
+public sealed class BookingBackgroundService(
+    IServiceScopeFactory scopeFactory,
+    ILogger<BookingBackgroundService> logger)
+    : BackgroundService
 {
-    public class BackGroundServices(IUnitOfWork _unitOfWork)
+    private readonly TimeSpan _interval = TimeSpan.FromMinutes(1);
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //public async Task ExpirePendingOrders()
-        //{
-        //    var limit = DateTime.UtcNow.AddMinutes(-30);
+        logger.LogInformation("Booking Background Service Started");
 
-        //    var _orderRepo = _unitOfWork.GetRepository<Order, Guid>();
-        //    var orders = await _orderRepo.GetAllAsync(new GetOrderByStatusAndTimeSpecification(limit));
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await RunJobs(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Background job failed");
+            }
 
-        //    foreach (var order in orders)
-        //    {
-        //        order.Status = OrderStatus.Expired;
+            await Task.Delay(_interval, stoppingToken);
+        }
 
-        //        var reservations = await _reservationRepo
-        //            .FindAsync(r => r.OrderId == order.Id);
+        logger.LogInformation("Booking Background Service Stopped");
+    }
 
-        //        foreach (var reservation in reservations)
-        //        {
-        //            if (reservation.Status == ReservationStatus.Pending)
-        //            {
-        //                reservation.Status = ReservationStatus.Expired;
+    private async Task RunJobs(CancellationToken token)
+    {
+        using var scope = scopeFactory.CreateScope();
 
-        //                var slot = await _slotRepo.GetByIdAsync(reservation.SlotId);
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var orchestrator = scope.ServiceProvider.GetRequiredService<IPaymentOrchestrator>();
 
-        //                if (slot != null)
-        //                {
-        //                    slot.ReservedCount -= reservation.Quantity;
+        await ExpireReservations(unitOfWork);
+        await ExpireOrders(unitOfWork);
+        //await ReconcilePendingPayments(unitOfWork, orchestrator);
+        await CleanupOldReservations(unitOfWork);
+    }
 
-        //                    if (slot.ReservedCount < 0)
-        //                        slot.ReservedCount = 0;
-        //                }
-        //            }
-        //        }
-        //    }
+    // =====================================================
+    // 1) Expire Pending Reservations
+    // =====================================================
+    private async Task ExpireReservations(IUnitOfWork uow)
+    {
+        var now = DateTime.UtcNow;
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //}
-        //public async Task ExpireReservations()
-        //{
-        //    var now = DateTime.UtcNow;
+        var repo = uow.GetRepository<SlotReservation, Guid>();
 
-        //    var reservations = await _reservationRepo.FindAsync(r =>
-        //        r.Status == ReservationStatus.Pending &&
-        //        r.ExpiresAt < now);
+        var reservations = await repo.GetAllAsync(
+            new GetExpiredPendingReservationsSpecification(now));
 
-        //    foreach (var r in reservations)
-        //    {
-        //        r.Status = ReservationStatus.Expired;
+        foreach (var reservation in reservations)
+        {
+            reservation.Status = ReservationStatus.Expired;
 
-        //        var slot = await _slotRepo.GetByIdAsync(r.SlotId);
+            var slot = reservation.Slot;
 
-        //        if (slot != null)
-        //        {
-        //            slot.ReservedCount -= r.Quantity;
+            if (slot is null)
+                continue;
 
-        //            if (slot.ReservedCount < 0)
-        //                slot.ReservedCount = 0;
-        //        }
-        //    }
+            slot.ReservedCount = Math.Max(0,
+                slot.ReservedCount - reservation.Quantity);
+        }
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //}
-        //public async Task ReconcilePayments()
-        //{
-        //    var payments = await _paymentRepo.FindAsync(p =>
-        //        p.Status == PaymentStatus.Pending &&
-        //        p.CreatedAt < DateTime.UtcNow.AddMinutes(-10));
+        await uow.SaveChangesAsync();
+    }
 
-        //    foreach (var payment in payments)
-        //    {
-        //        var service = new PaymentIntentService();
+    // =====================================================
+    // 2) Expire Orders still unpaid
+    // =====================================================
+    private async Task ExpireOrders(IUnitOfWork uow)
+    {
+        var limit = DateTime.UtcNow.AddMinutes(-15);
 
-        //        var intent = await service.GetAsync(payment.ProviderPaymentIntentId);
+        var repo = uow.GetRepository<Order, Guid>();
 
-        //        if (intent.Status == "succeeded")
-        //        {
-        //            payment.Status = PaymentStatus.Succeeded;
-        //        }
-        //        else if (intent.Status == "canceled")
-        //        {
-        //            payment.Status = PaymentStatus.Failed;
-        //        }
-        //    }
+        var orders = await repo.GetAllAsync(
+            new GetPendingOrdersBeforeDateSpecification(limit));
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //}
-        //public async Task RecalculateSlots()
-        //{
-        //    var slots = await _slotRepo.GetAllAsync();
+        foreach (var order in orders)
+        {
+            order.Status = OrderStatus.Expired;
+        }
 
-        //    foreach (var slot in slots)
-        //    {
-        //        var reservations = await _reservationRepo.FindAsync(r =>
-        //            r.SlotId == slot.Id &&
-        //            r.Status == ReservationStatus.Confirmed);
+        await uow.SaveChangesAsync();
+    }
 
-        //        var reserved = await _reservationRepo.FindAsync(r =>
-        //            r.SlotId == slot.Id &&
-        //            r.Status == ReservationStatus.Pending);
+    // =====================================================
+    // 3) Reconcile Pending Payments
+    // If webhook missed
+    // =====================================================
+    //private async Task ReconcilePendingPayments(
+    //IUnitOfWork uow,
+    //IPaymentOrchestrator orchestrator)
+    //{
+    //    var limit = DateTime.UtcNow.AddMinutes(-5);
 
-        //        slot.BookedCount = reservations.Sum(r => r.Quantity);
-        //        slot.ReservedCount = reserved.Sum(r => r.Quantity);
-        //    }
+    //    var repo = uow.GetRepository<Payment, Guid>();
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //}
-        //public async Task Cleanup()
-        //{
-        //    var old = DateTime.UtcNow.AddDays(-30);
+    //    var payments = await repo.GetAllAsync(
+    //        new GetOldPendingPaymentsSpecification(limit));
 
-        //    var expired = await _reservationRepo.FindAsync(r =>
-        //        r.Status == ReservationStatus.Expired &&
-        //        r.CreatedAt < old);
+    //    foreach (var payment in payments)
+    //    {
+    //        try
+    //        {
+    //            await ProcessPayment(payment, orchestrator);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            logger.LogWarning(ex,
+    //                "Payment reconciliation skipped for {PaymentId}",
+    //                payment.Id);
+    //        }
+    //    }
+    //}
 
-        //    _reservationRepo.RemoveRange(expired);
+    //private async Task ProcessPayment(
+    //Payment payment,
+    //IPaymentOrchestrator orchestrator)
+    //{
+    //    if (payment.Provider == PaymentProvider.Stripe)
+    //    {
+    //        var payload = CreateStripeFakeEvent(payment.PaymentProviderReferenceId);
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //}
+    //        await orchestrator.HandleSuccessAsync(
+    //            PaymentProvider.Stripe,
+    //            payload);
+    //    }
+    //}
+    // =====================================================
+    // 4) Cleanup old expired reservations
+    // =====================================================
+    private async Task CleanupOldReservations(IUnitOfWork uow)
+    {
+        var oldDate = DateTime.UtcNow.AddDays(-30);
+
+        var repo = uow.GetRepository<SlotReservation, Guid>();
+
+        var oldReservations = await repo.GetAllAsync(
+            new GetOldExpiredReservationsSpecification(oldDate));
+
+        repo.RemoveRange(oldReservations);
+
+        await uow.SaveChangesAsync();
     }
 }

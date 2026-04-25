@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.TourSpecification
 {
-    public class GetAllToursForAdminSpecification : UserBaseSpecification<Tour, Guid>
+    public class GetAllToursForAdminSpecification : BaseSpecification<Tour, Guid>
     {
         public GetAllToursForAdminSpecification(GetAllAdminTourQuery requestQuery)
             : base(TourCatalogCriteria.BuildAdminTourCatalog(requestQuery.DestinationId,requestQuery.Name,requestQuery.Language))

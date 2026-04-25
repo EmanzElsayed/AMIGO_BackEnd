@@ -4,7 +4,7 @@ using Amigo.Domain.Enum;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class TourIncludedLinesForDestinationSpecification : UserBaseSpecification<TourInclusion, Guid>
+public class TourIncludedLinesForDestinationSpecification : BaseSpecification<TourInclusion, Guid>
 {
     public TourIncludedLinesForDestinationSpecification(Guid destinationId)
         : base(ti =>

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.BookingSpecification
 {
-    public class GetBookingByItemIdSpecification : UserBaseSpecification<Booking, Guid>
+    public class GetBookingByItemIdSpecification : BaseSpecification<Booking, Guid>
     {
         public GetBookingByItemIdSpecification(Guid itemId) 
             : base(b => b.OrderItemId == itemId)

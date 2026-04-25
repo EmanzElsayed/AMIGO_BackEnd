@@ -17,7 +17,7 @@ namespace Amigo.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1039,12 +1039,12 @@ namespace Amigo.Persistence.Migrations
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Provider")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<string>("PaymentProviderReferenceId")
+                        .HasColumnType("text")
+                        .HasColumnName("ProviderPaymentIntentId");
 
-                    b.Property<string>("ProviderPaymentIntentId")
-                        .HasColumnType("text");
+                    b.Property<int?>("Provider")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ProviderTransactionId")
                         .HasMaxLength(250)

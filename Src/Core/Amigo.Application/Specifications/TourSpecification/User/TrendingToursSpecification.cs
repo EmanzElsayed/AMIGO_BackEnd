@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class TrendingToursSpecification : UserBaseSpecification<Tour, Guid>
+public class TrendingToursSpecification : BaseSpecification<Tour, Guid>
 {
     public TrendingToursSpecification(DateOnly todayUtc)
         : base(BuildCriteria(todayUtc))

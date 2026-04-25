@@ -1,244 +1,94 @@
-﻿using System;
+﻿using Amigo.Application.Specifications.PaymentSpecification;
+using Amigo.Domain.DTO.Payment;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Services;
-
-using Amigo.Application.Specifications.AvailableSlotsSpecification;
-using Amigo.Application.Specifications.BookingSpecification;
-using Amigo.Application.Specifications.OrderSpecification;
-using Amigo.Application.Specifications.PaymentSpecification;
-using Amigo.Domain.Abstraction;
-using Amigo.Domain.DTO.Payment;
-using Stripe;
-
-public class PaymentService(IUnitOfWork _unitOfWork) : IPaymentService
+namespace Amigo.Application.Services
 {
-    public async Task<CreatePaymentResponseDTO> CreateStripePaymentAsync(Order order)
+    public class PaymentService(
+    IUnitOfWork _unitOfWork,
+    IPaymentProviderResolver _resolver) :IPaymentService
+
     {
-        var service = new PaymentIntentService();
-
-        var options = new PaymentIntentCreateOptions
+        public async Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto)
         {
-            Amount = (long)(order.TotalAmount * 100),
-            Currency = "usd",
-            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
+            var strategy = _unitOfWork.CreateExecutionStrategy();
+
+            return await strategy.ExecuteAsync(async () =>
             {
-                Enabled = true
-            },
-            Metadata = new Dictionary<string, string>
-            {
-                { "orderId", order.Id.ToString() }
-            }
-        };
+                await using var tx = await _unitOfWork.BeginTransactionAsync();
 
-        var intent = await service.CreateAsync(options);
-
-        return new CreatePaymentResponseDTO
-       (
-            PaymentIntentId : intent.Id,
-            ClientSecret : intent.ClientSecret
-        );
-    }
-
-
-    public async Task HandlePaymentFailed(Event stripeEvent)
-    {
-        var intent = stripeEvent.Data.Object as PaymentIntent;
-
-        if (intent == null)
-            return;
-
-        var strategy = _unitOfWork.CreateExecutionStrategy();
-
-        await strategy.ExecuteAsync(async () =>
-        {
-            await using var transaction = await _unitOfWork.BeginTransactionAsync();
-
-            try
-            {
-                var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
                 var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
-                var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+                var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
 
-                // 1. Get Payment by Stripe Intent
-                var payment = await paymentRepo
-                    .GetByIdAsync(new GetPaymentByPaymentIntentSpecification(intent.Id));
+                var order = await orderRepo.GetByIdAsync(dto.OrderId);
 
-                if (payment == null)
-                    return;
+                if (order is null)
+                    return Result.Fail("Order not found");
 
-                // 🔐 IDMPOTENCY CHECK
-                if (payment.Status == PaymentStatus.Failed)
-                    return;
+                if (order.Status != OrderStatus.PendingPayment)
+                    return Result.Fail("Order is not available for payment");
 
-                // 2. Update Payment
-                payment.Status = PaymentStatus.Failed;
-                payment.FailureReason = intent.LastPaymentError?.Message;
-                payment.RawResponseJson = intent.ToJson();
+                // 2. Find existing payment
 
-                // 3. Get Order
-                var order = await orderRepo.GetByIdAsync(payment.OrderId);
+                var payment = await paymentRepo.GetByIdAsync(
+                    new GetPaymentByOrderIdSpecification(dto.OrderId));
 
-                if (order != null)
-                {
-                    order.Status = OrderStatus.PendingPayment;
-                }
+                if (payment is null)
+                    return Result.Fail("Payment not found");
 
-                // 4. Get Reservations
-                var reservations = await reservationRepo
-                    .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
+                if (payment.Status != PaymentStatus.Pending)
+                    return Result.Fail("Payment already processed");
 
-                foreach (var reservation in reservations)
-                {
-                    reservation.Status = ReservationStatus.Cancelled;
-                }
+                // 3. Resolve provider
+                var provider = _resolver.Resolve(dto.Provider);
 
-                // 5. Release Slot Capacity
-                var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+                // 4. Call provider
+                var providerResult = await provider.CreatePaymentAsync(order);
 
-                foreach (var reservation in reservations)
-                {
-                    var slot = await slotRepo.GetByIdAsync(reservation.SlotId);
+                // 5. Save provider reference
+                payment.PaymentProviderReferenceId = providerResult.PaymentIntentId;
+                payment.Provider = dto.Provider;
 
-                    if (slot != null)
-                    {
-                        // release capacity safely
-                        slot.ReservedCount -= reservation.Quantity;
-
-                        if (slot.ReservedCount < 0)
-                            slot.ReservedCount = 0;
-                    }
-                }
-
-                // 6. Save ALL changes in ONE transaction
                 await _unitOfWork.SaveChangesAsync();
 
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        });
+                await tx.CommitAsync();
+
+               
 
 
+                return Result.Ok(new CreatePaymentResponseDTO(
+                    PaymentIntentId: providerResult.PaymentIntentId,
+                   RequiresRedirect: providerResult.RequiresRedirect,
+                   ClientSecret: providerResult.ClientSecret,
+                   RedirectUrl: providerResult.RedirectUrl,
+                    paymentId: payment.Id
+                ));
+            });
+        }
 
-    }
-
-    public async Task HandlePaymentSucceeded(Event stripeEvent)
-    {
-        var intent = stripeEvent.Data.Object as PaymentIntent;
-
-        if (intent == null)
-            return;
-
-        var strategy = _unitOfWork.CreateExecutionStrategy();
-
-        await strategy.ExecuteAsync(async () =>
+        public async Task<Result<CapturePaymentResponseDTO>> CapturePaymentAsync(Guid paymentId)
         {
-            await using var transaction = await _unitOfWork.BeginTransactionAsync();
+            var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
 
-            try
+            var payment = await paymentRepo.GetByIdAsync(paymentId);
+
+            if (payment is null)
+                return Result.Fail("Payment not found");
+
+            var provider = _resolver.Resolve(payment.Provider.Value);
+            
+
+            var result = await provider.CapturePaymentAsync(payment.PaymentProviderReferenceId);
+            
+            return Result.Ok(new CapturePaymentResponseDTO
             {
-                var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
-                var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
-                var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
-                var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
-                var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
-                // 1. Get Payment
-                var payment = await paymentRepo
-                    .GetByIdAsync(new GetPaymentByPaymentIntentSpecification(intent.Id));
+                PaymentProviderReferenceId = payment.PaymentProviderReferenceId,
+                Success = true,
+                Status = result
+            });
+        }
 
-                if (payment == null)
-                    return;
-
-                //  IDMPOTENCY CHECK
-                if (payment.Status == PaymentStatus.Succeeded)
-                    return;
-
-                // 2. Update Payment
-                payment.Status = PaymentStatus.Succeeded;
-                payment.PaidAt = DateTime.UtcNow;
-                payment.RawResponseJson = intent.ToJson();
-
-                // 3. Get Order To Confirm
-                var order = await orderRepo.GetByIdAsync(new GetOrderByIdSpecification(payment.OrderId));
-
-                if (order is not null)
-                {
-                    order.Status = OrderStatus.Confirmed;
-
-                    foreach (var item in order.OrderItems)
-                    {
-                        var exists = await bookingRepo.AnyAsync(
-                           new GetBookingByItemIdSpecification(item.Id));
-
-                        if (exists)
-                            continue;
-                        int totalPeople = item.OrderedPrice.Sum(x => x.Quantity);
-                        var booking = new Booking
-                        {
-                            Id = Guid.NewGuid(),
-                            OrderItemId = item.Id,
-                            UserId = order.UserId,
-                            User = order.User,
-                            OrderId = order.Id,
-                            PaymentId = payment.Id,
-                            CustomerName = order.User.FullName,
-                            CustomerEmail = order.User.Email,
-                            RequiredTravelersCount = totalPeople,
-                            BookingNumber = GenerateBookingNumber(),
-
-                            Status = BookingStatus.Confirmed,
-                            ConfirmedAt = DateTime.UtcNow,
-                        };
-
-                        await bookingRepo.AddAsync(booking);
-                    }
-                }
-                
-                // 4. Get Reservations To confirm
-                var reservations = await reservationRepo
-                   .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
-
-
-                foreach (var reservation in reservations)
-                {
-                    reservation.Status = ReservationStatus.Confirmed;
-                }
-
-                // 5. Update Slot Capacity (BOOKED)
-                foreach (var reservation in reservations)
-                {
-                    var slot = await slotRepo.GetByIdAsync(reservation.SlotId);
-
-                    if (slot != null)
-                    {
-                        // move from reserved → booked
-                        slot.ReservedCount -= reservation.Quantity;
-                        slot.BookedCount += reservation.Quantity;
-
-                        if (slot.ReservedCount < 0)
-                            slot.ReservedCount = 0;
-                    }
-                }
-
-                // 6. Save all changes
-                await _unitOfWork.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
-        });
-    }
-    private string GenerateBookingNumber()
-    {
-        return $"AMG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
     }
 }

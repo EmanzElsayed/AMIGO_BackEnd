@@ -22,6 +22,7 @@ using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using PayPalCheckoutSdk.Core;
 
 
 namespace Amigo.Application;
@@ -75,9 +76,28 @@ public static class DependencyInjection
         services.AddScoped<TranslationEngine>();
 
         services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IPaymentOrchestrator, PaymentOrchestrator>();
+
+        services.AddScoped<IPaymentProviderResolver, PaymentProviderResolver>();
+
+        services.AddScoped<IPaymentProvider, StripePaymentProvider>();
+        services.AddScoped<IPaymentProvider, PaypalPaymentProvider>();
         services.AddScoped<IPaymentService, PaymentService>();
+
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IBookingService, BookingService>();
+
+        services.AddSingleton<PayPalHttpClient>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+
+            var env = new SandboxEnvironment(
+                config["Paypal:ClientId"],
+                config["Paypal:Secret"]
+            );
+
+            return new PayPalHttpClient(env);
+        });
         //services.Configure<TranslationApiSettings>(
         //            configuration.GetSection("TranslationApi")
 

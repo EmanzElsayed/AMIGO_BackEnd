@@ -14,9 +14,9 @@ public class Payment:BaseEntity<Guid>
     public CurrencyCode Currency { get; set; }
     public DateTime PaidAt { get; set; }       
     
-    public string? Provider { get; set; } // Stripe / Paymob / Paypal
+    public PaymentProvider? Provider { get; set; } // Stripe / Paymob / Paypal
     public string? ProviderTransactionId { get; set; }
-    public string? ProviderPaymentIntentId { get; set; }
+    public string? PaymentProviderReferenceId { get; set; }
     public string? IdempotencyKey { get; set; }
 
     public string? FailureReason { get; set; }

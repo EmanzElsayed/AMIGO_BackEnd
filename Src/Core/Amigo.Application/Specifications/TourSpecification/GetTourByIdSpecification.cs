@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.TourSpecification
 {
-    public class GetTourByIdSpecification : UserBaseSpecification<Tour, Guid>
+    public class GetTourByIdSpecification : BaseSpecification<Tour, Guid>
     {
         public GetTourByIdSpecification(Guid tourId)
             : base(t => t.Id == tourId && t.IsDeleted == false)

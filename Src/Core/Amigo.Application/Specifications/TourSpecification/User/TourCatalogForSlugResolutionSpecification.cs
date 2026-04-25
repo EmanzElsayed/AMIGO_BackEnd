@@ -3,7 +3,7 @@ using Amigo.Domain.Entities;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class TourCatalogForSlugResolutionSpecification : UserBaseSpecification<Tour, Guid>
+public class TourCatalogForSlugResolutionSpecification : BaseSpecification<Tour, Guid>
 {
     public TourCatalogForSlugResolutionSpecification(Guid destinationId)
         : base(t => t.DestinationId == destinationId && !t.IsDeleted)

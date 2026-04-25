@@ -6,9 +6,9 @@ namespace Amigo.Domain.DTO.Cart
 {
    public record CheckoutResponseDTO
     (
-        Guid OrderId,
-         string ClientSecret,
+         Guid OrderId,
          Guid PaymentId,
+      
         List<CheckoutPriceResponseDTO>? ChangedPrices ,
         bool? IsTourTitleChanged = false,
         bool? IsDestinationNameChanged = false

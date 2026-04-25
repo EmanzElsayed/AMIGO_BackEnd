@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Amigo.Application.Specifications.TourSpecification.User;
 
-public class CancellationTranslationsForCancellationSpecification : UserBaseSpecification<CancellationTranslation, Guid>
+public class CancellationTranslationsForCancellationSpecification : BaseSpecification<CancellationTranslation, Guid>
 {
     public CancellationTranslationsForCancellationSpecification(Guid cancellationId)
         : base(BuildCriteria(cancellationId))

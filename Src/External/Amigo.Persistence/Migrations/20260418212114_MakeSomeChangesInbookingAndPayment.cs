@@ -26,7 +26,7 @@ namespace Amigo.Persistence.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
-                name: "ProviderPaymentIntentId",
+                name: "PaymentProviderReferenceId",
                 schema: "payment",
                 table: "Payment",
                 type: "text",
@@ -148,7 +148,7 @@ namespace Amigo.Persistence.Migrations
                 table: "Payment");
 
             migrationBuilder.DropColumn(
-                name: "ProviderPaymentIntentId",
+                name: "PaymentProviderReferenceId",
                 schema: "payment",
                 table: "Payment");
 

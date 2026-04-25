@@ -1046,7 +1046,7 @@ namespace Amigo.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("ProviderPaymentIntentId")
+                    b.Property<string>("PaymentProviderReferenceId")
                         .HasColumnType("text");
 
                     b.Property<string>("ProviderTransactionId")

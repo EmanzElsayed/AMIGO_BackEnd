@@ -2,6 +2,7 @@
 
 public enum PaymentMethod
 {
-    Paypal = 1,
+    Linked_card = 0,
+    PayPal_balance = 1,
     Card = 2
 }

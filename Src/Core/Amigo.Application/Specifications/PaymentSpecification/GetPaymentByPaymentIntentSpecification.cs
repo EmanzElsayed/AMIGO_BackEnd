@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.PaymentSpecification
 {
-    public class GetPaymentByPaymentIntentSpecification : UserBaseSpecification<Payment, Guid>
+    public class GetPaymentByPaymentIntentSpecification : BaseSpecification<Payment, Guid>
     {
         public GetPaymentByPaymentIntentSpecification(string intentId) 
-            : base(p => p.ProviderPaymentIntentId == intentId)
+            : base(p => p.PaymentProviderReferenceId == intentId && !p.IsDeleted)
         {
         }
     }

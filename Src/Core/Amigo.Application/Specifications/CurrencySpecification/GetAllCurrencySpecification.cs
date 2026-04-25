@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.CurrencySpecification
 {
-    public class GetAllCurrencySpecification : UserBaseSpecification<Currency, Guid>
+    public class GetAllCurrencySpecification : BaseSpecification<Currency, Guid>
     {
         public GetAllCurrencySpecification(GetAllCurrencyQuery query) 
             : base(c => !c.IsDeleted

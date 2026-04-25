@@ -1,4 +1,5 @@
 ﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.TourSpecification;
@@ -12,7 +13,8 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Amigo.Application.Services
 {
-    public class CartService(IUnitOfWork _unitOfWork , IPaymentService _paymentService) : ICartService
+    public class CartService(IUnitOfWork _unitOfWork , IPaymentProviderResolver _paymentProviderResolver) 
+        : ICartService
     {
         public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
         {
@@ -157,13 +159,13 @@ namespace Amigo.Application.Services
                         Currency = cart.CurrencyCode,
                         Status = OrderStatus.PendingPayment,
                         OrderDate = DateTime.UtcNow,
-                        TotalAmount = 0
+                        TotalAmount = 0,
+                        OrderItems = new List<OrderItem>(cart.Items.Count)
                     };
 
                     var response = new CheckoutResponseDTO(
                         OrderId: order.Id,
                         ChangedPrices: new List<CheckoutPriceResponseDTO>(),
-                         ClientSecret: string.Empty,
                          PaymentId: Guid.Empty
                     );
 
@@ -171,36 +173,87 @@ namespace Amigo.Application.Services
 
                     var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
 
+                    var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+
+                    var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+
+
+                    // GEt Ids
+
+                    var tourIds = cart.Items.Select(x => x.TourId).Distinct().ToList();
+                    var slotIds = cart.Items.Select(x => x.SlotId).Distinct().ToList();
+                    var orderId = order.Id;
+
+                    //create tour dictionary
+
+                    var tours =  await tourRepo.GetAllAsync(
+                                     new GetToursByIdsSpecification(tourIds));
+
+
+
+                    var slots = await slotRepo.GetAllAsync(
+                        new GetSlotsByIdsSpecification(slotIds));
+
+
+                    var reservations = await reservationRepo.GetAllAsync(
+                        new GetReservationsBySlotIdsSpecification(slotIds));
+
+
+                    var tourDict = tours.ToDictionary(x => x.Id);
+
+                    var priceDict = tours
+                            .SelectMany(t => t.Prices.SelectMany(p =>
+                                p.Translations.Select(tr => new
+                                {
+                                    TourId = t.Id,
+                                    Price = p,
+                                    Type = tr.Type,
+                                    Language = tr.Language
+                                })))
+                            .ToLookup(x => (x.TourId, x.Type, x.Language), x => x.Price);
+
+
+                    //create slots dictionary
+
+
+
+                    var slotDict = slots.ToDictionary(x => x.Id);
+
+                    //create reservations dictionary
+
+
+
+                    var reservationLookup = reservations
+                        .GroupBy(x => x.SlotId)
+                        .ToDictionary(x => x.Key, x => x.Sum(r => r.Quantity));
+
+                    var newReservations = new List<SlotReservation>(cart.Items.Count);
+
                     foreach (var item in cart.Items)
                     {
-                        var tour = await tourRepo.GetByIdAsync(
-                            new GetTourByIdSpecification(item.TourId));
+                        if (!tourDict.TryGetValue(item.TourId, out var tour))
+                            return Result.Fail($"Tour {item.TourId} not found");
+
+                        if (!slotDict.TryGetValue(item.SlotId, out var orderedSlot))
+                            return Result.Fail("Slot not found");
+
+                        var reserved = reservationLookup.GetValueOrDefault(item.SlotId, 0);
+                      
+                        var available =
+                            orderedSlot.MaxCapacity -
+                            orderedSlot.BookedCount -
+                            reserved;
 
 
-                        if (tour is null)
-                            return Result.Fail(
-                                new NotFoundError($"Tour {item.TourId} not found"));
+                        var prices = item.Prices;
+                        var totalPeople = prices.Sum(x => x.Quantity);
 
+                        if (totalPeople > available)
+                            return Result.Fail($"Slot full, available {available}");
 
-                        var orderedSlot = await _unitOfWork.GetRepository<AvailableSlots, Guid>().GetByIdAsync(new GetAvaialableSlotsByIdSpecification(item.SlotId));
-                                
+                        reservationLookup[item.SlotId] =
+                                               reservationLookup.GetValueOrDefault(item.SlotId, 0) + totalPeople;
 
-                        if (orderedSlot is null)
-                                   return Result.Fail("This time is no longer available");
-
-
-                        // check if available place in time  
-                        var reservedSlots = await _unitOfWork.GetRepository<SlotReservation, Guid>()
-                        .GetAllAsync(new GetAllSlotReservationSpecification(orderedSlot.Id));
-                        var reserved =  reservedSlots.Sum(s => s.Quantity);               
-                            
-
-                        var available = orderedSlot.MaxCapacity - orderedSlot.BookedCount - reserved;
-
-                        int totalPeople = item.Prices.Sum(x => x.Quantity);
-
-                        if ( totalPeople > available)
-                            return Result.Fail($"Slot is full avialable {available} seats at this time");
 
                         // reserved  slot 
                         var reservation = new SlotReservation
@@ -213,8 +266,7 @@ namespace Amigo.Application.Services
                             ExpiresAt = DateTime.UtcNow.AddMinutes(15),
                             Status = ReservationStatus.Pending
                         };
-
-                        await _unitOfWork.GetRepository<SlotReservation,Guid>().AddAsync(reservation);
+                        newReservations.Add(reservation);
 
 
                         string tourTitle =
@@ -227,9 +279,8 @@ namespace Amigo.Application.Services
                                 .FirstOrDefault(t => t.Language == item.Language)
                                 ?.Name ?? "";
 
-                        if (!string.IsNullOrWhiteSpace(tourTitle) &&
-                            !tourTitle.Trim().ToLower()
-                                .Contains(item.TourTitle.ToLower()))
+                        if (!string.IsNullOrWhiteSpace(tourTitle) && SlugHelper.MatchesName(tourTitle, item.TourTitle) == false)
+                                        
                         {
                             response = response with
                             {
@@ -271,12 +322,10 @@ namespace Amigo.Application.Services
 
                         decimal itemTotal = 0;
 
-                        foreach (var cartPrice in item.Prices)
+                        foreach (var cartPrice in prices)
                         {
-                            var priceEntity = tour.Prices.FirstOrDefault(p =>
-                                p.Translations.Any(t =>
-                                    t.Type == cartPrice.Type &&
-                                    t.Language == item.Language));
+                            var priceEntity =  priceDict[(tour.Id, cartPrice.Type, item.Language)]
+                                                                    .SingleOrDefault(); 
 
                             if (priceEntity is null)
                                 return Result.Fail(
@@ -315,16 +364,18 @@ namespace Amigo.Application.Services
                         .GetRepository<Order, Guid>()
                         .AddAsync(order);
 
+                    // Save new Reservation 
+                    await reservationRepo.AddRangeAsync(newReservations);
+
                     // -------------------------------
                     // Create Payment Record
                     // -------------------------------
                     var payment = new Payment
                     {
-                        //Id = Guid.NewGuid(),
+                        Id = Guid.NewGuid(),
                         OrderId = order.Id,
                         TotalAmount = total,
                         Status = PaymentStatus.Pending,
-                        Provider = "Stripe",
                         Currency = cart.CurrencyCode
                     };
 
@@ -332,18 +383,8 @@ namespace Amigo.Application.Services
                         .GetRepository<Payment, Guid>()
                         .AddAsync(payment);
 
-                    await _unitOfWork.SaveChangesAsync();
 
-                    // -------------------------------
-                    // Create Stripe PaymentIntent
-                    // -------------------------------
-                    var stripe =
-                        await _paymentService.CreateStripePaymentAsync(order);
-
-                    payment.ProviderPaymentIntentId =
-                        stripe.PaymentIntentId;
-
-                    await _unitOfWork.SaveChangesAsync();
+                   
 
                     // -------------------------------
                     // Clear Cart
@@ -361,8 +402,8 @@ namespace Amigo.Application.Services
                     return Result.Ok(
                         response with
                         {
-                            PaymentId = payment.Id,
-                            ClientSecret = stripe.ClientSecret
+                            PaymentId = payment.Id
+                           
                         });
                 }
                 catch (Exception ex)
@@ -416,6 +457,7 @@ namespace Amigo.Application.Services
                 ExpiresAt = DateTime.UtcNow.AddDays(15)
             };
             await cartRepo.AddAsync(cart);
+
             await _unitOfWork.SaveChangesAsync();
             
             return cart;

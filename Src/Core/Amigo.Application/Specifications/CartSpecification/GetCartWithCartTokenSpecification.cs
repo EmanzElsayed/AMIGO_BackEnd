@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.CartSpecification
 {
-    public class GetCartWithCartTokenSpecification : UserBaseSpecification<Cart, Guid>
+    public class GetCartWithCartTokenSpecification : BaseSpecification<Cart, Guid>
     {
         public GetCartWithCartTokenSpecification(string cartToken)
             : base(c => c.CartToken == cartToken)
