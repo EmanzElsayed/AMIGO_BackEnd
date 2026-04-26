@@ -40,7 +40,8 @@ namespace Amigo.Persistence.EntityConfiguration.Bookings
                        .HasForeignKey(x => x.OrderItemId)
                        .OnDelete(DeleteBehavior.Restrict);
 
-                builder.HasOne(x => x.User)
+
+            builder.HasOne(x => x.User)
                        .WithMany()
                        .HasForeignKey(x => x.UserId)
                        .OnDelete(DeleteBehavior.Restrict);

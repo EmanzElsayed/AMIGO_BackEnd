@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static PhoneNumbers.PhoneNumber;
 
 namespace Amigo.Application.Services
 {
@@ -137,7 +138,7 @@ namespace Amigo.Application.Services
         }
 
 
-        public async Task<Result<CheckoutResponseDTO>> CheckoutAsync(string userId, string? cartToken)
+        public async Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO,string userId, string? cartToken)
         {
             var cart = await GetOrCreateCart(userId, cartToken);
 
@@ -234,6 +235,11 @@ namespace Amigo.Application.Services
 
                     var newReservations = new List<SlotReservation>(cart.Items.Count);
 
+                    // handle Travelers
+
+                    var requestItemMap = requestDTO.Items
+                            .ToDictionary(x => x.CartItemId);
+
                     foreach (var item in cart.Items)
                     {
                         if (!tourDict.TryGetValue(item.TourId, out var tour))
@@ -241,6 +247,12 @@ namespace Amigo.Application.Services
 
                         if (!slotDict.TryGetValue(item.SlotId, out var orderedSlot))
                             return Result.Fail("Slot not found");
+                        
+                        //check if valid type or not no made ****** 
+
+                        if (!requestItemMap.TryGetValue(item.Id, out var itemRequest))
+                            return Result.Fail("Missing item Travelers request");
+
 
                         var reserved = reservationLookup.GetValueOrDefault(item.SlotId, 0);
                         
@@ -251,6 +263,13 @@ namespace Amigo.Application.Services
 
                         var prices = item.Prices;
                         var totalPeople = prices.Sum(x => x.Quantity);
+
+                        if (itemRequest.Travelers.Count != totalPeople)
+                        {
+                            return Result.Fail($"You Should Enter {totalPeople} Passanger Details");
+
+                        }
+
 
                         if (totalPeople > available)
                             return Result.Fail($"Slot full, available {available}");
@@ -321,7 +340,11 @@ namespace Amigo.Application.Services
                             CancellationBefore =
                                 tour.Cancellation.CancellationBefore,
                             RefundPercentage =
-                                tour.Cancellation.RefundPercentage
+                                tour.Cancellation.RefundPercentage,
+                            NameAndAddressOfAccomodation = itemRequest.NameAndAddressAccommodation,
+                            CommentForProvider = itemRequest.CommentForProvider,
+
+                            TravelersDraft = BuildTravelers(itemRequest)
                         };
 
                         decimal itemTotal = 0;
@@ -418,6 +441,18 @@ namespace Amigo.Application.Services
                         .FromException(details: ex.Message);
                 }
             });
+        }
+
+        private List<TravelerDraft> BuildTravelers(
+            CheckoutItemRequestDTO requestItem)
+        {
+            return requestItem.Travelers.Select(t => new TravelerDraft
+            {
+                Id = Guid.NewGuid(),
+                FullName = $"{t.FirstName} {t.LastName}",
+                Nationality = t.Nationality,
+                Type = t.Type
+            }).ToList();
         }
         private void RecalculateCart(Cart cart)
         {

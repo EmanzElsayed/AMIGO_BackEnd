@@ -6,13 +6,17 @@ public class Traveler : BaseEntity<Guid>
 {
     public Guid BookingId { get; set; }
 
-    public Booking Booking { get; set; } = null!;
+    public Booking Booking { get; set; } 
 
     [Required]
     public string FullName { get; set; } = null!;
 
     [Required]
     public string Nationality { get; set; } = null!;
+
+
+    [Required]
+    public string Type { get; set; } = null!;
 
     public DateOnly? BirthDate { get; set; }
 

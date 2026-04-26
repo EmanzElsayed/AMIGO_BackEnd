@@ -19,7 +19,7 @@ namespace Amigo.Application.Abstraction.Services
             string? userId,
             string? cartToken,
             UpdateCartItemRequestDTO dto);
-        Task<Result<CheckoutResponseDTO>> CheckoutAsync(string userId, string? cartToken);
+        Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO, string userId, string? cartToken);
 
         //Task<CartDto> RemoveItemAsync(
         //    Guid itemId,

@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Amigo.Domain.DTO.Cart
 {
-    public class CheckoutRequestDTO
-    {
-        public PaymentProvider PaymentProvider { get; set; }
-    }
+    public record CheckoutRequestDTO
+    (
+        List<CheckoutItemRequestDTO> Items    
+    );
 }

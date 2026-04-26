@@ -17,6 +17,12 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                            .HasMaxLength(400)
                            .IsRequired();
 
+            builder.Property(x => x.NameAndAddressOfAccomodation)
+                          .HasMaxLength(500);
+
+            builder.Property(x => x.CommentForProvider)
+                          .HasMaxLength(500);
+
             builder.Property(x => x.DestinationName)
                    .HasMaxLength(300)
                    .IsRequired();
@@ -42,6 +48,11 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                    .WithOne(x => x.OrderItem)
                    .HasForeignKey(x => x.OrderItemId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(x => x.TravelersDraft)
+                       .WithOne(x => x.OrderItem)
+                       .HasForeignKey(x => x.OrderItemId)
+                       .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

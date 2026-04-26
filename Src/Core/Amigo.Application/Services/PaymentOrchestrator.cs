@@ -2,6 +2,8 @@
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
+using Amigo.Application.Specifications.Travelers;
+using Amigo.Domain.DTO.Cart;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -32,9 +34,10 @@ namespace Amigo.Application.Services
 
                 try
                 {
-                    var (providerRefId, rawData) = ExtractProviderData(provider, payload);
+                    // var (providerRefId, rawData) = ExtractProviderData(provider, payload);
 
-                   
+                    var providerRefId = "85W77256UB120932T";
+                    var rawData = "eman mohamed";
                     var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
                     var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
                     var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
@@ -75,11 +78,13 @@ namespace Amigo.Application.Services
                     // 5. Batch check bookings
                     var orderItemIds = order.OrderItems.Select(x => x.Id).ToList();
 
+
                     var existingBookings = await bookingRepo.GetAllAsync(
                         new GetBookingsByOrderItemIdsSpecification(orderItemIds));
 
                     var existingSet = existingBookings.Select(x => x.OrderItemId).ToHashSet();
 
+                    List<Booking> bookingList = new List<Booking>(order.OrderItems.Count);
                     foreach (var item in order.OrderItems)
                     {
                         if (existingSet.Contains(item.Id))
@@ -90,18 +95,30 @@ namespace Amigo.Application.Services
                             Id = Guid.NewGuid(),
                             OrderItemId = item.Id,
                             OrderItem = item,
-                            OrderId = order.Id,
                             UserId = order.UserId,
                             CustomerName = order.User.FullName,
                             CustomerEmail = order.User.Email,
                             PaymentId = payment.Id,
                             BookingNumber = GenerateBookingNumber(),
                             Status = BookingStatus.Confirmed,
-                            ConfirmedAt = DateTime.UtcNow
+                            ConfirmedAt = DateTime.UtcNow,
+                            NameAndAddressOfAccomodation = item.NameAndAddressOfAccomodation,
+                            CommentForProvider = item.CommentForProvider,
+                            Travelers = BuildTravelers(item)
                         };
+                        bookingList.Add(booking);
 
-                        await bookingRepo.AddAsync(booking);
                     }
+                     await bookingRepo.AddRangeAsync(bookingList);
+
+                    var travelersDraftRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
+
+                    var travelersDraft = order.OrderItems
+                             .SelectMany(x => x.TravelersDraft)
+                             .ToList();
+
+                    travelersDraftRepo.RemoveRange(travelersDraft);
+
 
                     await _unitOfWork.SaveChangesAsync();
                     await tx.CommitAsync();
@@ -115,7 +132,17 @@ namespace Amigo.Application.Services
                 }
             });
         }
-
+        private List<Traveler> BuildTravelers(
+            OrderItem item)
+        {
+            return item.TravelersDraft.Select(t => new Traveler
+            {
+                Id = Guid.NewGuid(),
+                FullName = t.FullName,
+                Nationality = t.Nationality,
+                Type = t.Type
+            }).ToList();
+        }
         // =========================
         // FAILURE FLOW
         // =========================

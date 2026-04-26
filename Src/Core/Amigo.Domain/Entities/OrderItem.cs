@@ -22,12 +22,17 @@ public class OrderItem:BaseEntity<Guid>
     public string? MeetingPoint { get; set; }
     public TimeSpan Duration { get; set; }
 
+    public string? NameAndAddressOfAccomodation { get; set; }
+    public string? CommentForProvider { get; set; }
+
     // Cancellation Info :
     public CancelationPolicyType CancelationPolicyType { get; set; }
     public TimeSpan CancellationBefore { get; set; }
     public decimal RefundPercentage { get; set; }
 
     // price
-    public ICollection<OrderedPrice> OrderedPrice = new List<OrderedPrice>(); 
+    public ICollection<OrderedPrice> OrderedPrice = new List<OrderedPrice>();
+    public ICollection<TravelerDraft> TravelersDraft { get; set; } = new List<TravelerDraft>();
+
 
 }
