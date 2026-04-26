@@ -119,7 +119,6 @@ public sealed class BookingBackgroundService(
             var count = reservationsCount.ContainsKey(slot.Id)
                 ? reservationsCount[slot.Id]
                 : 0;
-            slot.ReservedCount = count;
             if (count >= slot.MaxCapacity)
             {
                 slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;

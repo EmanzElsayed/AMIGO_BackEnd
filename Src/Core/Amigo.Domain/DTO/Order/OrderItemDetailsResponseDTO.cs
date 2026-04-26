@@ -10,7 +10,6 @@ namespace Amigo.Domain.DTO.Order
         string TourTitle,
         DateOnly TourDate,
         TimeOnly StartTime,
-        int? PeopleCount,
         Guid? BookingId,
         string? BookingNumber
     );

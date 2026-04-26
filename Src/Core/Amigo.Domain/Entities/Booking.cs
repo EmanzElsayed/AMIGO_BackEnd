@@ -21,8 +21,7 @@ public class Booking:BaseEntity<Guid>
     public string? NameAndAddressOfAccomodation { get; set; }
     public string? CommentForProvider { get; set; }
 
-    public int RequiredTravelersCount { get; set; }
-    public bool TravelersCompleted { get; set; }
+  
 
     public ICollection<Traveler> Travelers { get; set; } = new List<Traveler>(); 
 }

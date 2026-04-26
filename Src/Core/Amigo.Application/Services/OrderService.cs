@@ -41,7 +41,7 @@ namespace Amigo.Application.Services
                     TourTitle: item.TourTitle,
                     TourDate: item.TourDate,
                     StartTime: item.StartTime,
-                    PeopleCount: booking?.RequiredTravelersCount,
+                  
                     BookingId: booking?.Id,
                     BookingNumber: booking?.BookingNumber
                 ));

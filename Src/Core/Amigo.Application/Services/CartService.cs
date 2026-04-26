@@ -4,13 +4,7 @@ using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Domain.DTO.Cart;
-using Amigo.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using static PhoneNumbers.PhoneNumber;
+
 
 namespace Amigo.Application.Services
 {

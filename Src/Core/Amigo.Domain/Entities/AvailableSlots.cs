@@ -16,6 +16,6 @@ public class AvailableSlots:BaseEntity<Guid>
 
     public int MaxCapacity { get; set; }
 
-    public int ReservedCount { get; set; }
 
+    public ICollection<SlotReservation> SlotReservations { get; set; } = new List<SlotReservation>();
 }

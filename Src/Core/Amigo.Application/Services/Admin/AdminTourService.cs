@@ -142,10 +142,29 @@ namespace Amigo.Application.Services.Admin
             var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
             var tours = await tourRepo.GetAllAsync(new GetAllToursForAdminSpecification(requestQuery));
             Language language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
+
+
+
             var bookedRepo = _unitOfWork.GetRepository<Booking, Guid>();
+
             var tourIds = tours.Select(t => t.Id).ToList();
+
             var bookedData = await bookedRepo.GetAllAsync(new GetBookingsByTourIdsSpecification(tourIds));
-            var bookedSeatsData = bookedData.Sum(b => b.RequiredTravelersCount);
+
+            var travelersCountByTourId = bookedData
+                        .Where(b => b.OrderItem?.TourId != null)
+                        .GroupBy(b => b.OrderItem!.TourId!.Value)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.Sum(b => b.Travelers?.Count ?? 0)
+                        );
+
+            var TourCapacity = tours.ToDictionary(
+                    t => t.Id,
+
+                   t => t.AvailableTimes.SelectMany(at => at.AvailableSlots).Sum(s => s.MaxCapacity)
+
+                );
 
             var MappingTours = tours.Select(tour =>
             {
@@ -190,7 +209,8 @@ namespace Amigo.Application.Services.Admin
                         .Where(s => s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
                         .Sum(s => s.MaxCapacity),
 
-                    BookedSeats = bookedSeatsData
+                    BookedSeats = travelersCountByTourId[tour.Id],
+                    BookedPercentage = travelersCountByTourId[tour.Id] / TourCapacity[tour.Id] * 100
 
                 };
             });
@@ -423,7 +443,7 @@ namespace Amigo.Application.Services.Admin
                                 
                                 slot.AvailableTimeStatus.ToString(),
                                 slot.MaxCapacity,
-                                slot.ReservedCount
+                                slot.SlotReservations.Where(r => !r.IsDeleted && r.Status == ReservationStatus.Confirmed).Sum(r => r.Quantity )
                             ))
                             .ToList()
                     ))
