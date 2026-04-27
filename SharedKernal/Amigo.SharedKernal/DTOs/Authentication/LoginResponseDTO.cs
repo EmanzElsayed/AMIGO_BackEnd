@@ -8,7 +8,9 @@ namespace Amigo.SharedKernal.DTOs.Authentication
     (
         string FullName,
         string Email,
-        string Token,
+        string AccessToken,
+        string RefreshToken,
+        DateTime AccessTokenExpiresIn,
         bool EmailConfirmed,
         string? Role 
 

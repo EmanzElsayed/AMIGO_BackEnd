@@ -78,6 +78,9 @@ public static class DependencyInjection
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IPaymentOrchestrator, PaymentOrchestrator>();
 
+        services.AddScoped<IJWTTokenService, JWTTokenService>();
+
+
         services.AddScoped<IPaymentProviderResolver, PaymentProviderResolver>();
 
         services.AddScoped<IPaymentProvider, StripePaymentProvider>();

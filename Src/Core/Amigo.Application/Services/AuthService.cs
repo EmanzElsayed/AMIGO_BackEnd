@@ -1,5 +1,8 @@
 
 
+using System.Security.Cryptography;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace Amigo.Application.Services;
 
 public class AuthService(
@@ -9,12 +12,13 @@ public class AuthService(
                         IValidationService _validationService,
                          IConfiguration _configuration,
                          IEmailService _emailService,
-                         IUserMapping _userMapping
+                         IUserMapping _userMapping,IUnitOfWork _unitOfWork,
+                         IJWTTokenService _jWTTokenService
     ) : IAuthService
 {
     
 
-    public async Task<Result<LoginResponseDTO>> LoginAsync(LoginRequestDTO requestDTO)
+    public async Task<Result<LoginResponseDTO>> LoginAsync(LoginRequestDTO requestDTO  , CancellationToken cancellationToken)
     {
         var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
@@ -52,15 +56,30 @@ public class AuthService(
         if (isPasswordCorrect)
         {
             string role = await GetRole(user);
+
             var data = new LoginResponseDTO
             (
                 FullName : user.FullName?? user.UserName,
                 Email: requestDTO.Email,
-                Token: await GenerateToken(user),
+                AccessToken: await _jWTTokenService.GenerateToken(user) ,
+                RefreshToken : _jWTTokenService.GenerateRefreshToken(),
+                AccessTokenExpiresIn: DateTime.UtcNow.AddDays(1),
                 Role: role,
                 EmailConfirmed: user.EmailConfirmed
-            );  
+            );
 
+            var refreshToken = new UserRefreshToken()
+            {
+                RefreshToken = data.RefreshToken,
+                UserId = user.Id,
+                User = user,
+                CreatedAtUtc = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddDays(15),
+
+            };
+            await _refreshTokenRepo.AddToken(refreshToken , cancellationToken);
+            await _unitOfWork.SaveChangesAsync();
+            
             return Result.Ok(data)
                  .WithSuccess(new Success("Welcome To Amigo Arabe Tours"));
                  
@@ -74,10 +93,7 @@ public class AuthService(
         }
     }
 
-    public Task<Result<LoginResponseDTO>> RefreshTokenAsync(RefreshTokenRequestDTO request)
-    {
-        throw new NotImplementedException();
-    }
+   
 
     public async Task<Result> ForgetPassword(ForgetPasswordRequestDTO requestDTO)
     {
@@ -372,46 +388,47 @@ public class AuthService(
         }
 
     }
-    private async Task<string> GenerateToken(ApplicationUser User)
+
+    public async Task<Result<AuthResponseDTO>> RefreshTokenAsync(CancellationToken cancellationToken, RefreshTokenRequestDTO requestDTO)
     {
-        // header 
-        var secretKey = _configuration["JWTOptions:SecretKey"];
+        var refreshToken = await _refreshTokenRepo.GetByRefreshToken(requestDTO.RefreshToken, cancellationToken);
+        
+        if (refreshToken is null)
+            return Result.Fail(new UnauthorizedError("Invalid token."));
 
-        var EncodedSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-        var Creds = new SigningCredentials(EncodedSecurityKey, SecurityAlgorithms.HmacSha256);
+        if (refreshToken.IsRevoked || refreshToken.IsExpired)
+            return Result.Fail(new UnauthorizedError("Expired token."));
 
+        // ROTATE TOKEN (Best Practice)
+        refreshToken.IsRevoked = true;
 
-        //paylodad
-        //
-        var UserClaims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Email,User.Email),
-                new Claim(ClaimTypes.Name , User.UserName),
-                new Claim(ClaimTypes.NameIdentifier,User.Id)
-            };
-        var Roles = await _userManager.GetRolesAsync(User);
-        foreach (var role in Roles)
+        var newRefreshToken = _jWTTokenService.GenerateRefreshToken();
+        
+
+        var refreshEntity = new UserRefreshToken()
         {
-            UserClaims.Add(new Claim(ClaimTypes.Role, role));
-        }
+            RefreshToken = refreshToken.RefreshToken,
+            UserId = refreshToken.UserId,
+            User = refreshToken.User,
+            CreatedAtUtc = DateTime.UtcNow,
+            ExpiryDate = DateTime.UtcNow.AddDays(15),
+
+        };
 
 
+        await _refreshTokenRepo.AddToken(refreshToken, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
 
-        //signeture
+        var newAccessToken = await _jWTTokenService.GenerateToken(refreshToken.User);
 
-        var token = new JwtSecurityToken
-        (
-            issuer: _configuration["JWTOptions:Issuer"],
-            audience: _configuration["JWTOptions:Audience"],
-            expires: DateTime.Now.AddDays(2),
-            claims: UserClaims,
-            signingCredentials: Creds
-
-        );
-        return new JwtSecurityTokenHandler().WriteToken(token);
-
+        var response =  new AuthResponseDTO(
+           newAccessToken,
+           newRefreshToken,
+           DateTime.UtcNow.AddDays(1)
+       );
+        return Result.Ok(response);
     }
 
-    
+
 }
 

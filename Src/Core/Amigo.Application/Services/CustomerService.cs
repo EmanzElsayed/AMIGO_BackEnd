@@ -10,8 +10,9 @@ using System.Text;
 namespace Amigo.Application.Services
 {
     public class CustomerService(IValidationService _validationService,
-                                    IUserRepo _userRepo,IUnitOfWork _unitOfWork,
+                                    IUserRepo _userRepo,
                                     IConfiguration _configuration,
+                                    IJWTTokenService _jWTTokenService,
                                     UserManager<ApplicationUser> _userManager, IEmailService _emailService) 
                                                     : ICustomerService
     {
@@ -79,7 +80,9 @@ namespace Amigo.Application.Services
             return new LoginResponseDTO(
                 FullName: user.FullName,
                 Email: user.Email,
-                Token: await GenerateToken(user),
+                AccessToken: await _jWTTokenService.GenerateToken(user),
+                RefreshToken: _jWTTokenService.GenerateRefreshToken(),
+                AccessTokenExpiresIn: DateTime.UtcNow.AddDays(1),
                 EmailConfirmed: user.EmailConfirmed,
                 Role: null
             );
@@ -128,45 +131,6 @@ namespace Amigo.Application.Services
         {
             var number = _phoneUtil.Parse(phone, region);
             return _phoneUtil.Format(number, PhoneNumberFormat.E164);
-        }
-        private async Task<string> GenerateToken(ApplicationUser User)
-        {
-            // header 
-            var secretKey = _configuration["JWTOptions:SecretKey"];
-
-            var EncodedSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var Creds = new SigningCredentials(EncodedSecurityKey, SecurityAlgorithms.HmacSha256);
-
-
-            //paylodad
-            //
-            var UserClaims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Email,User.Email),
-                new Claim(ClaimTypes.Name , User.UserName),
-                new Claim(ClaimTypes.NameIdentifier,User.Id)
-            };
-            var Roles = await _userManager.GetRolesAsync(User);
-            foreach (var role in Roles)
-            {
-                UserClaims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-
-
-            //signeture
-
-            var token = new JwtSecurityToken
-            (
-                issuer: _configuration["JWTOptions:Issuer"],
-                audience: _configuration["JWTOptions:Audience"],
-                expires: DateTime.Now.AddDays(2),
-                claims: UserClaims,
-                signingCredentials: Creds
-
-            );
-            return new JwtSecurityTokenHandler().WriteToken(token);
-
         }
 
     }

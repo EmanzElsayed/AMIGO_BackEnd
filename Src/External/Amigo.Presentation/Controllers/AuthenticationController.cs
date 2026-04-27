@@ -1,5 +1,7 @@
 ﻿
 
+using PayPalCheckoutSdk.Core;
+
 namespace Amigo.Presentation.Controllers
 {
     
@@ -15,9 +17,9 @@ namespace Amigo.Presentation.Controllers
            
         }
         [HttpPost("login")]
-        public async Task<IResultBase> Login([FromBody] LoginRequestDTO loginRequestDTO)
+        public async Task<IResultBase> Login(CancellationToken cancellationToken,[FromBody] LoginRequestDTO loginRequestDTO)
         {
-            return await _authService.LoginAsync(loginRequestDTO);
+            return await _authService.LoginAsync(loginRequestDTO, cancellationToken);
 
           
 
@@ -53,6 +55,11 @@ namespace Amigo.Presentation.Controllers
             return await _authService.ResetPassword(requestDTO);
 
         }
+        [HttpPost("refresh")]
+        public async Task<IResultBase> RefreshToken(CancellationToken cancellationToken, [FromBody] RefreshTokenRequestDTO requestDTO)
+        {
+            return await _authService.RefreshTokenAsync(cancellationToken, requestDTO);
 
+        }
     }
 }
