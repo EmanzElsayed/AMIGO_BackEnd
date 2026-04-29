@@ -89,6 +89,8 @@ public static class DependencyInjection
         services.AddScoped<IPaymentProvider, PaypalPaymentProvider>();
         services.AddScoped<IPaymentService, PaymentService>();
 
+        services.AddScoped<ICheckoutQuoteService, CheckoutQuoteService>();
+
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IBookingService, BookingService>();
 
