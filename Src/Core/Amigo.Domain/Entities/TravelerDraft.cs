@@ -9,6 +9,8 @@ namespace Amigo.Domain.Entities
         public Guid OrderItemId { get; set; }
         public OrderItem OrderItem { get; set; }
 
+        public Guid? CartItemId {  get; set; }
+
         [Required]
         public string FullName { get; set; } = null!;
 

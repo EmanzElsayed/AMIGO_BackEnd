@@ -81,6 +81,7 @@ public static class DependencyInjection
 
         services.AddScoped<IJWTTokenService, JWTTokenService>();
 
+        services.AddScoped<ITravelersService, TravelersService>();
 
         services.AddScoped<IPaymentProviderResolver, PaymentProviderResolver>();
 
@@ -162,7 +163,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
         services.AddHostedService<BookingBackgroundService>();
-
+        services.AddSingleton<EncryptionService>();
         return services;
     }
 }

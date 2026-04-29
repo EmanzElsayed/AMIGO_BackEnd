@@ -2155,6 +2155,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
 
+                    b.Property<Guid?>("CartItemId")
+                        .HasColumnType("uuid");
+
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer")
                         .HasColumnOrder(2);

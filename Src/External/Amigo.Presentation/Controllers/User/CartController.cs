@@ -44,11 +44,23 @@ namespace Amigo.Presentation.Controllers.User
 
 
 
-        //[HttpDelete("items/{id}")]
-        //    public Task<IActionResult> RemoveItem()
+        [HttpDelete("item/{id}")]
+        public async Task<IResultBase> RemoveItem(Guid id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
 
-        //[HttpDelete]
-        //    public Task<IActionResult> ClearCart()
+            return await _cartService.RemoveItemAsync(id, userId, cartToken);
+        }
+
+        [HttpDelete]
+        public async Task<IResultBase> ClearCart()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
+
+            return await _cartService.ClearAsync(userId, cartToken);
+        }
 
         //[HttpPost("merge")]
         //    public Task<IActionResult> MergeGuestCart()

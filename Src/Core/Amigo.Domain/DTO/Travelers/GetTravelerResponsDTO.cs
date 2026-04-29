@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Domain.DTO.Cart
+namespace Amigo.Domain.DTO.Travelers
 {
-    public record CheckoutTravelersRequestDTO
+    public record GetTravelerResponsDTO
     (
-        string Type ,
+        Guid TravelerId,
         string FirstName,
         string LastName,
         string Nationality,
-        string PassportNumber,
-        DateOnly BirthDate
+        string? PassportNumber,
+        DateOnly? BirthDate
 
     );
 }

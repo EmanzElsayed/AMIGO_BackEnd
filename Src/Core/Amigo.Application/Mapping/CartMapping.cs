@@ -16,7 +16,7 @@ namespace Amigo.Application.Mapping
                 Id : cart.Id,
                 UserId : cart.UserId,
                 CartToken: cart.CartToken,
-                CurrencyCode: cart.CurrencyCode,
+                CurrencyCode: cart.CurrencyCode.ToString(),
                 TotalAmount: cart.TotalAmount,
                 TotalItems: cart.Items?.Count ?? 0,
                 LastUpdatedAt: cart.LastUpdatedAt,

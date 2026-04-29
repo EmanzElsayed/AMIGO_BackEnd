@@ -698,7 +698,7 @@ namespace Amigo.Persistence.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
@@ -2102,7 +2102,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
@@ -2168,7 +2168,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");

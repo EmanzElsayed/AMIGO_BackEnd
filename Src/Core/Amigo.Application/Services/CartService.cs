@@ -8,7 +8,10 @@ using Amigo.Domain.DTO.Cart;
 
 namespace Amigo.Application.Services
 {
-    public class CartService(IUnitOfWork _unitOfWork , IPaymentProviderResolver _paymentProviderResolver,ISlotsRepo _slotsRepo) 
+    public class CartService(IUnitOfWork _unitOfWork ,
+        EncryptionService _encryptionService
+
+        ) 
         : ICartService
     {
         public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
@@ -407,14 +410,7 @@ namespace Amigo.Application.Services
 
                    
 
-                    // -------------------------------
-                    // Clear Cart
-                    // -------------------------------
-                    _unitOfWork
-                        .GetRepository<CartItem, Guid>()
-                        .RemoveRange(cart.Items);
-
-                    cart.TotalAmount = 0;
+                 
 
                     await _unitOfWork.SaveChangesAsync();
 
@@ -445,7 +441,13 @@ namespace Amigo.Application.Services
                 Id = Guid.NewGuid(),
                 FullName = $"{t.FirstName} {t.LastName}",
                 Nationality = t.Nationality,
-                Type = t.Type
+                Type = t.Type,
+                BirthDate = t.BirthDate,
+                PassportNumber = string.IsNullOrWhiteSpace(t.PassportNumber)
+                        ? null
+                        : _encryptionService.Encrypt(t.PassportNumber),
+                CartItemId = requestItem.CartItemId
+
             }).ToList();
         }
         private void RecalculateCart(Cart cart)
@@ -497,5 +499,41 @@ namespace Amigo.Application.Services
 
         }
 
+        public async Task<Result<string>> RemoveItemAsync(
+                Guid itemId,
+                string? userId,
+                string? cartToken)
+        {
+            var cart = await GetOrCreateCart(userId, cartToken);
+
+            var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
+
+            if (item is null)
+                return Result.Fail(new NotFoundError("Cart item not found"));
+
+            cart.Items.Remove(item);
+
+            RecalculateCart(cart);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.Ok("Cart Item Deleted Successfully");
+        }
+        public async Task<Result<string>> ClearAsync(
+                string? userId,
+                string? cartToken)
+        {
+            var cart = await GetOrCreateCart(userId, cartToken);
+
+            if (cart.Items.Any())
+                cart.Items.Clear();
+
+            cart.TotalAmount = 0;
+            cart.LastUpdatedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return Result.Ok("Cart Deleted Successfully");
+        }
     }
 }
