@@ -10,6 +10,7 @@ public class Currency:BaseEntity<Guid>
     public CurrencyCode CurrencyCode { get; set; }
     
     public string? Icon { get; set; } 
+    public string? CodeIcon { get; set; }
 
     public ICollection<CurrencyTranslation> Translations = new List<CurrencyTranslation>();
 }

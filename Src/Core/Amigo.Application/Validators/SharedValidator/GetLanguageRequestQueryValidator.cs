@@ -5,17 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Validators.Destination
+namespace Amigo.Application.Validators.SharedValidator
 {
-    public class GetDestinaionByIdRequestQueryValidator:AbstractValidator<GetDestinationByIdQuery>
+    public class GetLanguageRequestQueryValidator:AbstractValidator<GetLanuageQuery>
     {
-        public GetDestinaionByIdRequestQueryValidator()
+        public GetLanguageRequestQueryValidator()
         {
             RuleFor(x => x.Language)
                  
                 .Must(BusinessRules.BeAValidLanguage)
                 .When(x => x.Language is not null)
-                .WithMessage("Invalid Language Code Must be (English, Spanish, French, Italian, Portuguese (Portugal), Portuguese (Brazil) )");
+                .WithMessage("Invalid Language Code Must be (en, es, fr, it, Portuguese (Portugal), Portuguese (Brazil) )");
 
         }
     }

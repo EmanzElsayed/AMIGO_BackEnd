@@ -12,8 +12,8 @@ namespace Amigo.Application.Services.AutoTranslation
             { Language.es, "es" },
             { Language.fr, "fr" },
             { Language.it, "it" },
-            { Language.pt_br, "pt" },
-            { Language.pt_pt, "pt" }
+            { Language.br, "pt" },
+            { Language.pt, "pt" }
         };
 
         public static string ToCode(Language lang)

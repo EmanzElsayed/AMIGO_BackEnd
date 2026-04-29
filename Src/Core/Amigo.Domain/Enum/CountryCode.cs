@@ -2,9 +2,9 @@
 public enum CountryCode
 {
     None = 0,
-    Egypt = 1,
+    EG = 1,
     UAE = 2,
-    Turkey = 3,
+    TR = 3,
     KSA = 4
 
-}
+}   

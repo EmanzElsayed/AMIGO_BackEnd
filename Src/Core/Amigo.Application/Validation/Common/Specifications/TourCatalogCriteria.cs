@@ -115,7 +115,7 @@ public static class TourCatalogCriteria
              Guid? destinationId,
              string? tourTitle,
              string?language
-             //Language translationLanguage = Language.English
+             //Language translationLanguage = Language.en
 
 
 

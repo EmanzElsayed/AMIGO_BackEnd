@@ -19,7 +19,7 @@ namespace Amigo.Presentation.Controllers.User
         }
 
         [HttpGet("by-slug/{slug}")]
-        public async Task<IResultBase> GetDestinationBySlug(string slug, [FromQuery] GetDestinationByIdQuery requestQuery)
+        public async Task<IResultBase> GetDestinationBySlug(string slug, [FromQuery] GetLanuageQuery requestQuery)
         {
             var id = await _slugResolver.ResolveDestinationIdAsync(slug);
             if (id is null)
@@ -28,7 +28,7 @@ namespace Amigo.Presentation.Controllers.User
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<IResultBase> GetDestinationById(string id, [FromQuery] GetDestinationByIdQuery requestQuery)
+        public async Task<IResultBase> GetDestinationById(string id, [FromQuery] GetLanuageQuery requestQuery)
         {
             return await _destinationService.GetDestinationByIdAsync(id, requestQuery);
         }

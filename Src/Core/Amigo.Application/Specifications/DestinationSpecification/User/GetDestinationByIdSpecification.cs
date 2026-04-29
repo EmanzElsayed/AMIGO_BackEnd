@@ -8,7 +8,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
     public class GetDestinationByIdSpecification : BaseSpecification<Destination, Guid>
     {
-        public GetDestinationByIdSpecification(Guid destinationId,GetDestinationByIdQuery requestQuery ) 
+        public GetDestinationByIdSpecification(Guid destinationId,GetLanuageQuery requestQuery ) 
             : base(
                  DestinationCommonSpecification.BuildGetDestinaionByIdCriteria(requestQuery,destinationId)
 

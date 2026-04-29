@@ -13,7 +13,7 @@ public enum Language
     it = 8,          
 
     
-    pt_pt = 16, 
+    pt = 16, 
     
-    pt_br = 32    
+    br = 32    
 }

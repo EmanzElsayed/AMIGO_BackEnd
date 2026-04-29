@@ -9,8 +9,9 @@ namespace Amigo.SharedKernal.DTOs.Currency
         Guid CurrencyId,
         string CurrencyCode,
         string? Icon ,
-        List<GetTranslationCurrencyResponseDTO> Translations,
-        bool IsFullyTranslated
-        
+        string?CodeIcon,
+        string Name,
+        string Language
+
     );
 }

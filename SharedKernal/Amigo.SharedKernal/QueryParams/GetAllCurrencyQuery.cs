@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Amigo.SharedKernal.QueryParams
 {
-    public class GetAllCurrencyQuery
-    {
-        public string? CurrencyCode;
-        public string? Name;
-        public string? Language;
+    public record GetAllCurrencyQuery
+    (
+         string? CurrencyCode ,
+         string? Name ,
+         string? Language 
 
-    }
+    );
 }

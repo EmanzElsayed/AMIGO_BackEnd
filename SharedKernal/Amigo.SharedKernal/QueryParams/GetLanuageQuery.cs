@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Amigo.SharedKernal.QueryParams
 {
-    public record GetDestinationByIdQuery
+    public record GetLanuageQuery
     (
         string? Language   
      );

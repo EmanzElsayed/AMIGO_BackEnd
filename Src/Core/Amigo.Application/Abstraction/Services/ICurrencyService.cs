@@ -10,9 +10,9 @@ namespace Amigo.Application.Abstraction.Services
     {
         Task<Result<List<GetCurrencyResponseDTO>>> GetAllCurrencyAsync(GetAllCurrencyQuery requestQuery);
         
-        Task<Result<GetCurrencyResponseDTO>> GetCurrencyByIdAsync(string currencyId, GetAllCurrencyQuery requestQuery);
-        Task<Result> CreateCurrencyAsync(CreateCurrencyRequestDTO requestDTO);
-        Task<Result> UpdateCurrency(UpdateCurrencyRequestDTO requestDTO, string Id);
+        Task<Result<GetCurrencyResponseDTO>> GetCurrencyByIdAsync(string currencyId, GetLanuageQuery requestQuery);
+        //Task<Result> CreateCurrencyAsync(CreateCurrencyRequestDTO requestDTO);
+        //Task<Result> UpdateCurrency(UpdateCurrencyRequestDTO requestDTO, string Id);
 
     }
 }

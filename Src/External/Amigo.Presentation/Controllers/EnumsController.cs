@@ -20,25 +20,18 @@ namespace Amigo.Presentation.Controllers
         IEnumService _enumService,
         ICurrencyService _currencyService,
         IHttpClientFactory _httpClientFactory,
-        IPhoneCodeService _phoneCodeService,
+        ICountryInfoService _countryInfoService,
         IConfiguration _configuration) : BaseController
     {
         [HttpGet("languages")]
         public IResultBase GetLanguages()
         {
-            return _enumService.GetEnum<Language>();
+            return _enumService.GetLanguageEnum();
 
          
         }
 
-        [HttpGet("CurrencyCode")]
-        public IResultBase GetCurrency()
-        {
-            return _enumService.GetEnum<CurrencyCode>();
-
-            
-
-        }
+      
 
         [HttpGet("Currency")]
         public async Task<IResultBase> GetAllCurrency([FromQuery]  GetAllCurrencyQuery requestQuery)
@@ -47,17 +40,23 @@ namespace Amigo.Presentation.Controllers
 
         }
         [HttpGet("Currency/{id}")]
-        public async Task<IResultBase> GetCurrencyById([FromQuery] GetAllCurrencyQuery requestQuery , string id)
+        public async Task<IResultBase> GetCurrencyById([FromQuery] GetLanuageQuery requestQuery, string id)
         {
             return await _currencyService.GetCurrencyByIdAsync(id,requestQuery);
 
         }
-        [HttpGet("Country")]
-        public IResultBase GetCountry()
+
+
+        [HttpGet("Country-info")]
+        public async Task<IResultBase> GetAllCountryInfo([FromQuery] GetAllCountryInfoQuery requestQuery)
         {
-            return _enumService.GetEnum<CountryCode>();
+            return await _countryInfoService.GetAllCountryInfoAsync(requestQuery);
 
-
+        }
+        [HttpGet("Country-info/{id}")]
+        public async Task<IResultBase> GetCountryInfoById([FromQuery] GetLanuageQuery requestQuery, string id)
+        {
+            return await _countryInfoService.GetCountryInfoByIdAsync(id, requestQuery);
 
         }
 
@@ -123,10 +122,8 @@ namespace Amigo.Presentation.Controllers
             return result;
         }
 
-        [HttpGet("countries-code")]
-        public  IResultBase GetAllCountriesCode([FromQuery] string? language)
-        {
-            return  _phoneCodeService.GetCountries(language);
-        }
+
+
+       
     }
 }

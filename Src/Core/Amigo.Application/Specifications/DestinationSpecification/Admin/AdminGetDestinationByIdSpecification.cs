@@ -7,7 +7,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification.Admin
 {
     internal class AdminGetDestinationByIdSpecification : BaseSpecification<Destination, Guid>
     {
-        public AdminGetDestinationByIdSpecification(Guid destinationId, GetDestinationByIdQuery requestQuery)
+        public AdminGetDestinationByIdSpecification(Guid destinationId, GetLanuageQuery requestQuery)
             : base(
                   d => 
                     d.Id == destinationId && !d.IsDeleted

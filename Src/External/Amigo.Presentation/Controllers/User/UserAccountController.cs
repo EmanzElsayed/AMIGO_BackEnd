@@ -153,13 +153,13 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
     //            tourId = tour.Id,
     //            tourTitle = tour.Translations
     //                .Where(tr => !tr.IsDeleted)
-    //                .OrderBy(tr => tr.Language == Language.English ? 0 : 1)
+    //                .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
     //                .Select(tr => tr.Title)
     //                .FirstOrDefault() ?? "Tour",
     //            tourSlug = SlugHelper.ToUrlSlug(
     //                tour.Translations
     //                    .Where(tr => !tr.IsDeleted)
-    //                    .OrderBy(tr => tr.Language == Language.English ? 0 : 1)
+    //                    .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
     //                    .Select(tr => tr.Title)
     //                    .FirstOrDefault() ?? "tour"),
     //            dateIso = schedule.StartDate,

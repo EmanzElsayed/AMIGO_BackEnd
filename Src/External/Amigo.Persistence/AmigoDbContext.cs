@@ -10,6 +10,8 @@ namespace Amigo.Persistence
         public DbSet<TourTranslation> TourTranslations { get; set; }
         public DbSet<InclusionTranslation> InclusionTranslations { get; set; }
         public DbSet<CurrencyTranslation> CurrencyTranslations { get; set; }
+        public DbSet<CountryInfoTranslation> CountryInfoTranslations { get; set; }
+
 
         // Core Entities
 
@@ -17,6 +19,8 @@ namespace Amigo.Persistence
         public DbSet<Destination> Destinations { get; set; }
 
         public DbSet<Currency> Currency { get; set; }
+        public DbSet<CountryInfo> CountryInfo { get; set; }
+
         public DbSet<AvailableSlots> AvailableSlots { get; set; }
         public DbSet<SlotReservation> SlotReservations { get; set; }
 

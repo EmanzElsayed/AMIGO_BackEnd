@@ -29,12 +29,12 @@ namespace Amigo.Application.Validators.Destination
             RuleFor(x => x.CountryCode)
                 .Must(BusinessRules.BeAValidCountry)
                 .When(x => x.CountryCode is not null)
-                .WithMessage("Invalid Country Code Must be (Egypt, UAE, Turkey, KSA)");
+                .WithMessage("Invalid Country Code Must be (EG, UAE, TR, KSA)");
 
             RuleFor(x => x.Language)
                 .Must(BusinessRules.BeAValidLanguage)
                 .When(x => x.Language is not null)
-                .WithMessage("Invalid Language Code Must be (English, Spanish, SpanishLatinAmerica, French, Italian, PortuguesePortugal, PortugueseBrazil)");
+                .WithMessage("Invalid Language Code Must be (en, es, SpanishLatinAmerica, fr, it, PortuguesePortugal, PortugueseBrazil)");
            
             RuleFor(x => x.PublicId)
                .NotEmpty()

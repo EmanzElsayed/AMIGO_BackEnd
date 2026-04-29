@@ -26,7 +26,7 @@ namespace Amigo.Presentation.Controllers.Admin
 
         }
         [HttpGet("{id}")]
-        public async Task<IResultBase> GetDestinationById(string id, [FromQuery] GetDestinationByIdQuery requestQuery)
+        public async Task<IResultBase> GetDestinationById(string id, [FromQuery] GetLanuageQuery requestQuery)
         {
             return await _destinationService.GetDestinationByIdAsync(id, requestQuery);
 

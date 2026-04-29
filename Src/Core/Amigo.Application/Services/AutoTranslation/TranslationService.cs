@@ -15,7 +15,7 @@ namespace Amigo.Application.Services.AutoTranslation
 
             _httpClient.BaseAddress = new Uri("http://127.0.0.1:8000");
 
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", "w(_Ul*R]Jw.]xl*QIiX5jhMTXE:M.B&l");
+            _httpClient.DefaultRequestHeaders.Add("x-api-key", "w(_Ul*BRL]Jw.]xl*QIiX5jhMTXE:M.B&l");
         }
 
         public async Task<List<string>> TranslateBatchAsync(

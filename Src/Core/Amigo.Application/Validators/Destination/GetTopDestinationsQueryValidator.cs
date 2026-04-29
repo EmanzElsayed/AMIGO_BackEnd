@@ -13,7 +13,7 @@ public class GetTopDestinationsQueryValidator : AbstractValidator<GetTopDestinat
         RuleFor(x => x.Language)
             .Must(BusinessRules.BeAValidLanguage)
             .When(x => !string.IsNullOrWhiteSpace(x.Language))
-            .WithMessage("Invalid Language Code Must be (English, Spanish, French, Italian, Portuguese (Portugal), Portuguese (Brazil) )");
+            .WithMessage("Invalid Language Code Must be (en, es, fr, it, Portuguese (Portugal), Portuguese (Brazil) )");
 
         RuleFor(x => x.Currency)
             .Must(BusinessRules.BeAValidCurrency)

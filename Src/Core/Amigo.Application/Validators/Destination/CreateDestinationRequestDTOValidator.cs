@@ -26,13 +26,13 @@ namespace Amigo.Application.Validators.Destination
                 .NotEmpty()
                 .WithMessage("Country Is Required")
                 .Must(BusinessRules.BeAValidCountry)
-                .WithMessage("Invalid Country Code Must be (Egypt, UAE, Turkey, KSA)");
+                .WithMessage("Invalid Country Code Must be (EG, UAE, TR, KSA)");
 
             RuleFor(x => x.Language)
                 .NotEmpty()
                 .WithMessage("Language Is Required")
                 .Must(BusinessRules.BeAValidLanguage)
-                .WithMessage("Invalid Language Code Must be (English, Spanish, French, Italian, Portuguese (Portugal), Portuguese (Brazil) )");
+                .WithMessage("Invalid Language Code Must be (en, es, fr, it, Portuguese (Portugal), Portuguese (Brazil) )");
 
             RuleFor(x => x.PublicId)
                 .NotEmpty()

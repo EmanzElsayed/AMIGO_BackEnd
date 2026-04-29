@@ -34,10 +34,9 @@ namespace Amigo.Application.Services
 
                 try
                 {
-                    // var (providerRefId, rawData) = ExtractProviderData(provider, payload);
+                    var (providerRefId, rawData) = ExtractProviderData(provider, payload);
 
-                    var providerRefId = "85W77256UB120932T";
-                    var rawData = "eman mohamed";
+                   
                     var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
                     var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
                     var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();

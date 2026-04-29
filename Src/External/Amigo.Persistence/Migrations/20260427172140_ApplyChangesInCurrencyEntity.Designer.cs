@@ -3,6 +3,7 @@ using System;
 using Amigo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    partial class AmigoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427172140_ApplyChangesInCurrencyEntity")]
+    partial class ApplyChangesInCurrencyEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -471,54 +474,6 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("CartItemId");
 
                     b.ToTable("CartPrice", "booking");
-                });
-
-            modelBuilder.Entity("Amigo.Domain.Entities.CountryInfo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnOrder(1)
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<int>("CountryCode")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(2);
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnOrder(3)
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnOrder(6);
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(4);
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnOrder(5)
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<string>("PhoneCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountryCode");
-
-                    b.ToTable("CountryInfo", "public");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Currency", b =>
@@ -1688,61 +1643,6 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("CancellationTranslation", "translation");
                 });
 
-            modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CountryInfoTranslation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnOrder(1)
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<Guid>("CountryInfoId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(2);
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnOrder(3)
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnOrder(6);
-
-                    b.Property<int>("Language")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(4);
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnOrder(5)
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Language");
-
-                    b.HasIndex("CountryInfoId", "Language")
-                        .IsUnique();
-
-                    b.ToTable("CountryInfoTranslation", "translation");
-                });
-
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CurrencyTranslation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2748,17 +2648,6 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("Cancellation");
                 });
 
-            modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CountryInfoTranslation", b =>
-                {
-                    b.HasOne("Amigo.Domain.Entities.CountryInfo", "CountryInfo")
-                        .WithMany("Translations")
-                        .HasForeignKey("CountryInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CountryInfo");
-                });
-
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CurrencyTranslation", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Currency", "Currency")
@@ -2932,11 +2821,6 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.CartItem", b =>
                 {
                     b.Navigation("Prices");
-                });
-
-            modelBuilder.Entity("Amigo.Domain.Entities.CountryInfo", b =>
-                {
-                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Currency", b =>

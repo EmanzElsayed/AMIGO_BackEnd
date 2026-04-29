@@ -15,12 +15,12 @@ namespace Amigo.Application.Helpers
             PhoneCode = "+20",
             Names = new Dictionary<string, string>
             {
-                ["en"] = "Egypt",
+                ["en"] = "EG",
                 ["es"] = "Egipto",
                 ["fr"] = "Égypte",
                 ["it"] = "Egitto",
                 ["pt-pt"] = "Egito",
-                ["pt-br"] = "Egito"
+                ["pt-pt"] = "Egito"
             }
         },
 
@@ -35,7 +35,7 @@ namespace Amigo.Application.Helpers
                 ["fr"] = "Émirats arabes unis",
                 ["it"] = "Emirati Arabi Uniti",
                 ["pt-pt"] = "Emirados Árabes Unidos",
-                ["pt-br"] = "Emirados Árabes Unidos"
+                ["pt-pt"] = "Emirados Árabes Unidos"
             }
         },
 
@@ -50,7 +50,7 @@ namespace Amigo.Application.Helpers
                 ["fr"] = "Arabie saoudite",
                 ["it"] = "Arabia Saudita",
                 ["pt-pt"] = "Arábia Saudita",
-                ["pt-br"] = "Arábia Saudita"
+                ["pt-pt"] = "Arábia Saudita"
             }
         },
 
@@ -60,12 +60,12 @@ namespace Amigo.Application.Helpers
             PhoneCode = "+90",
             Names = new Dictionary<string, string>
             {
-                ["en"] = "Turkey",
+                ["en"] = "TR",
                 ["es"] = "Turquía",
                 ["fr"] = "Turquie",
                 ["it"] = "Turchia",
                 ["pt-pt"] = "Turquia",
-                ["pt-br"] = "Turquia"
+                ["pt-pt"] = "Turquia"
             }
         }
     };

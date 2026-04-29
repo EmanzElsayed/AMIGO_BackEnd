@@ -62,7 +62,7 @@ namespace Amigo.Application.Validation.Common.Specifications
         }
 
         public static Expression<Func<Destination, bool>> BuildGetDestinaionByIdCriteria(
-        GetDestinationByIdQuery requestQuery ,Guid destinationId)
+        GetLanuageQuery requestQuery ,Guid destinationId)
         {
             Language? language = null;
             if (!string.IsNullOrWhiteSpace(requestQuery.Language))
