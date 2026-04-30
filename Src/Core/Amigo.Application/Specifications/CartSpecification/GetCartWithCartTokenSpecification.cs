@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,6 +13,12 @@ namespace Amigo.Application.Specifications.CartSpecification
             AddInclude(t => t
                    .Include(t => t.Items)
                    .ThenInclude(t => t.Prices)
+                   .Include(t => t.Items)
+                   .ThenInclude(t => t.Travelers)
+                   .Include(t => t.Items)
+                   .ThenInclude(t => t.Tour)
+                   .ThenInclude(t => t.Prices)
+                   .ThenInclude(t => t.Translations)
                    );
 
 

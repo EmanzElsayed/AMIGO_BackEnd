@@ -1,4 +1,4 @@
-﻿namespace Amigo.Domain.Entities;
+namespace Amigo.Domain.Entities;
 
 [Table($"{nameof(CartItem)}", Schema = SchemaConstants.booking_schema)]
 
@@ -25,6 +25,12 @@ public class CartItem:BaseEntity<Guid>
 
     public decimal TotalAmount { get; set; }
 
+    public string? PhoneCode { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? HotelNameAddress { get; set; }
+    public string? CommentForProvider { get; set; }
+
     public ICollection<CartPrice> Prices { get; set; } = new List<CartPrice>();
+    public ICollection<TravelerDraft> Travelers { get; set; } = new List<TravelerDraft>();
 
 }

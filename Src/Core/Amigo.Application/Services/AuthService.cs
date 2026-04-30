@@ -139,9 +139,7 @@ public class AuthService(
 
         }
 
-        var token = WebUtility.UrlDecode(requestDTO.Token);
-       
-        var result = await _userManager.ResetPasswordAsync(user, token, requestDTO.NewPassword);
+        var result = await _userManager.ResetPasswordAsync(user, requestDTO.Token, requestDTO.NewPassword);
 
         if (!result.Succeeded)
         {
@@ -239,9 +237,7 @@ public class AuthService(
 
         }
 
-        var token = WebUtility.UrlDecode(requestDTO.Token);
-
-        var result = await _userManager.ConfirmEmailAsync(user, token);
+        var result = await _userManager.ConfirmEmailAsync(user, requestDTO.Token);
 
 
         if (!result.Succeeded)
@@ -337,7 +333,7 @@ public class AuthService(
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
-            var confirmLink = $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?confirmemail={user.Email}&token={encodedToken}";
+            var confirmLink = $"{_configuration["FrontendAPIs:ConfirmEmailFrontend"]}?email={user.Email}&token={encodedToken}";
             if (!string.IsNullOrWhiteSpace(returnUrl))
             {
                 confirmLink += $"&returnUrl={WebUtility.UrlEncode(returnUrl)}";
@@ -369,7 +365,7 @@ public class AuthService(
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = WebUtility.UrlEncode(token);
             var resetPasswordLink =
-                $"{_configuration["FrontendAPIs:ResetPasswordFrontend"]}?confirmemail={user.Email}&token={encodedToken}";
+                $"{_configuration["FrontendAPIs:ResetPasswordFrontend"]}?email={user.Email}&token={encodedToken}";
             await _emailService.SendEmailAsync(
                 user.Email,
                 "Reset Password",

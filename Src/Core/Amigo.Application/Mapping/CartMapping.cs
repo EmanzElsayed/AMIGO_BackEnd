@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.DTO.Cart;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,11 +18,12 @@ namespace Amigo.Application.Mapping
                 CartToken: cart.CartToken,
                 CurrencyCode: cart.CurrencyCode.ToString(),
                 TotalAmount: cart.TotalAmount,
-                TotalItems: cart.Items?.Count ?? 0,
+                TotalItems: cart.Items?.Count(i => !i.IsDeleted) ?? 0,
                 LastUpdatedAt: cart.LastUpdatedAt,
                 ExpiresAt: cart.ExpiresAt,
 
                 Items: cart.Items?
+                    .Where(item => !item.IsDeleted)
                     .Select(item => new CartItemDTO
                     (
                         Id : item.Id,
@@ -44,7 +45,24 @@ namespace Amigo.Application.Mapping
                                 Quantity: price.Quantity,
                                 FinalPrice: price.FinalPrice
                             ))
-                            .ToList() ?? new List<CartPriceDTO>()
+                            .ToList() ?? new List<CartPriceDTO>(),
+
+                        Travelers: item.Travelers?
+                            .Select(t => new CheckoutTravelersRequestDTO
+                            (
+                                Type: t.Type,
+                                FirstName: t.FullName.Split(' ', 2).FirstOrDefault() ?? "",
+                                LastName: t.FullName.Split(' ', 2).LastOrDefault() ?? "",
+                                Nationality: t.Nationality,
+                                PassportNumber: t.PassportNumber ?? "", 
+                                BirthDate: t.BirthDate ?? DateOnly.FromDateTime(DateTime.Today)
+                            ))
+                            .ToList() ?? new List<CheckoutTravelersRequestDTO>(),
+                        
+                        PhoneCode: item.PhoneCode,
+                        PhoneNumber: item.PhoneNumber,
+                        HotelNameAddress: item.HotelNameAddress,
+                        CommentForProvider: item.CommentForProvider
                     ))
                     .ToList() ?? new List<CartItemDTO>()
             );

@@ -1,4 +1,4 @@
-﻿namespace Amigo.Domain.Entities;
+namespace Amigo.Domain.Entities;
 
 [Table($"{nameof(Order)}", Schema = SchemaConstants.booking_schema)]
 
@@ -12,5 +12,5 @@ public class Order :BaseEntity<Guid>
     public decimal TotalAmount { get; set; }
     public DateTime ExpiresAt { get; set; }
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

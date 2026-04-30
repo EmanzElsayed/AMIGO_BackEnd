@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +6,8 @@ namespace Amigo.Domain.DTO.Cart
 {
     public record CheckoutRequestDTO
     (
-        List<CheckoutItemRequestDTO> Items    
+        List<CheckoutItemRequestDTO> Items,
+        string? TransactionId = null,
+        string? PaymentMethod = null
     );
 }

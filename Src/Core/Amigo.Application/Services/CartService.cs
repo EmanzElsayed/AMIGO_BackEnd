@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.CartSpecification;
@@ -9,17 +9,32 @@ using Amigo.Domain.DTO.Cart;
 namespace Amigo.Application.Services
 {
     public class CartService(IUnitOfWork _unitOfWork ,
-        EncryptionService _encryptionService
-
+        EncryptionService _encryptionService,
+        IPaymentOrchestrator _paymentOrchestrator,
+        Microsoft.AspNetCore.Identity.UserManager<Amigo.Domain.Entities.Identity.ApplicationUser> _userManager
         ) 
         : ICartService
     {
         public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
         {
-            var cart = await GetOrCreateCart(userId, cartToken);
+            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+
+            if (cart == null)
+            {
+                return Result.Ok(new CartDTO(
+                    Guid.Empty,
+                    userId,
+                    cartToken,
+                    "USD",
+                    0,
+                    0,
+                    DateTime.UtcNow,
+                    DateTime.UtcNow.AddDays(15),
+                    new List<CartItemDTO>()
+                ));
+            }
 
             var MappedCart = cart.ToDto();
-
             return Result.Ok(MappedCart);
         }
 
@@ -54,7 +69,7 @@ namespace Amigo.Application.Services
                 ?? string.Empty;
             var item = new CartItem
             {
-                //Id = Guid.NewGuid(),
+                
                 Cart = cart,
                 CartId = cart.Id,
                 TourId = requestDTO.TourId,
@@ -75,7 +90,7 @@ namespace Amigo.Application.Services
 
                 item.Prices.Add(new CartPrice
                 {
-                    //Id = Guid.NewGuid(),
+                    
                     Type = p.Type,
                     Quantity = p.Quantity,
                     RetailPrice = retailPrice
@@ -95,49 +110,145 @@ namespace Amigo.Application.Services
         }
 
         public async Task<Result<CartDTO>> UpdateItemAsync(
-               Guid itemId,
-               string? userId,
-               string? cartToken,
-               UpdateCartItemRequestDTO dto)
+                Guid itemId,
+                string? userId,
+                string? cartToken,
+                UpdateCartItemRequestDTO dto)
         {
-            var cart = await GetOrCreateCart(userId, cartToken);
+            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+            if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
+            
+            var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
+            var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
 
-            if(!cart.Items.Any())
-                return Result.Fail(new NotFoundError("Cart don't have items"));
-
-            var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
-
-                if(item is null)
+            if (item is null || item.CartId != cart.Id)
                 return Result.Fail(new NotFoundError("This Item Not Found"));
 
-            item.Prices.Clear();
-
-            foreach (var p in dto.Prices)
+            if (dto.Prices != null && dto.Prices.Any())
             {
-                var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language);
-
-                item.Prices.Add(new CartPrice
+                var priceRepo = _unitOfWork.GetRepository<CartPrice, Guid>();
+                item.Prices.Clear();
+                foreach (var p in dto.Prices)
                 {
-                    Id = Guid.NewGuid(),
-                    Type = p.Type,
-                    Quantity = p.Quantity,
-                    RetailPrice = retailPrice
-                });
+                    var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language);
+                    var newPrice = new CartPrice
+                    {
+                        Id = Guid.NewGuid(),
+                        CartItemId = item.Id,
+                        Type = p.Type,
+                        Quantity = p.Quantity,
+                        RetailPrice = retailPrice
+                    };
+                    await priceRepo.AddAsync(newPrice);
+                    item.Prices.Add(newPrice);
+                }
+            }
+
+            if (dto.Travelers != null)
+            {
+                var travelerRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
+                item.Travelers.Clear();
+                foreach (var t in dto.Travelers)
+                {
+                    var rawPassport = string.IsNullOrWhiteSpace(t.PassportNumber) ? null : t.PassportNumber.Trim();
+                    if (rawPassport != null && rawPassport.Length > 60)
+                    {
+                        rawPassport = rawPassport.Substring(0, 60);
+                    }
+
+                    var newTraveler = new TravelerDraft
+                    {
+                        Id = Guid.NewGuid(),
+                        CartItemId = item.Id,
+                        FullName = $"{t.FirstName} {t.LastName}",
+                        Nationality = t.Nationality,
+                        Type = t.Type,
+                        BirthDate = t.BirthDate,
+                        PassportNumber = rawPassport == null ? null : _encryptionService.Encrypt(rawPassport)
+                    };
+                    await travelerRepo.AddAsync(newTraveler);
+                    item.Travelers.Add(newTraveler);
+                }
+            }
+
+            if (dto.PhoneCode != null || dto.PhoneNumber != null || dto.HotelNameAddress != null || dto.CommentForProvider != null)
+            {
+                item.PhoneCode = dto.PhoneCode;
+                item.PhoneNumber = dto.PhoneNumber;
+                item.HotelNameAddress = dto.HotelNameAddress;
+                item.CommentForProvider = dto.CommentForProvider;
             }
 
             item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
 
             RecalculateCart(cart);
 
-            await _unitOfWork.SaveChangesAsync();
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail(new Error($"DB Error: {ex.Message} Inner: {ex.InnerException?.Message}"));
+            }
 
             return cart.ToDto();
         }
 
 
+        public async Task<Result<CartItemBookingDetailDTO>> GetBookingDetailAsync(Guid itemId, string? userId, string? cartToken)
+        {
+            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+            if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
+            
+            var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
+            var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
+
+            if (item is null || item.CartId != cart.Id)
+                return Result.Fail(new NotFoundError("This Item Not Found"));
+
+            var travelers = item.Travelers?.Select(t => new CheckoutTravelersRequestDTO
+            (
+                Type: t.Type ?? "",
+                FirstName: t.FullName.Split(' ', 2).FirstOrDefault() ?? "",
+                LastName: t.FullName.Split(' ', 2).LastOrDefault() ?? "",
+                Nationality: t.Nationality,
+                PassportNumber: string.IsNullOrWhiteSpace(t.PassportNumber) ? "" : _encryptionService.Decrypt(t.PassportNumber),
+                BirthDate: t.BirthDate ?? DateOnly.FromDateTime(DateTime.Today)
+            )).ToList() ?? new List<CheckoutTravelersRequestDTO>();
+
+            string? firstName = null;
+            string? lastName = null;
+            string? email = null;
+            string? phoneNumber = null;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    firstName = user.FullName?.Split(' ', 2).FirstOrDefault();
+                    lastName = user.FullName?.Split(' ', 2).LastOrDefault();
+                    email = user.Email;
+                    phoneNumber = user.PhoneNumber;
+                }
+            }
+
+            return Result.Ok(new CartItemBookingDetailDTO(
+                travelers, 
+                firstName, 
+                lastName, 
+                email, 
+                item.PhoneCode,
+                item.PhoneNumber ?? phoneNumber, 
+                item.HotelNameAddress, 
+                item.CommentForProvider));
+        }
+
         public async Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO,string userId, string? cartToken)
         {
-            var cart = await GetOrCreateCart(userId, cartToken);
+            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+            if (cart == null) return Result.Fail("Cart not found");
 
             if (!cart.Items.Any())
                 return Result.Fail("Cart don't have Items");
@@ -179,8 +290,8 @@ namespace Amigo.Application.Services
 
                     // GEt Ids
 
-                    var tourIds = cart.Items.Select(x => x.TourId).Distinct().ToList();
-                    var slotIds = cart.Items.Select(x => x.SlotId).Distinct().OrderBy(x => x).ToList();
+                    var tourIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.TourId).Distinct().ToList();
+                    var slotIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.SlotId).Distinct().OrderBy(x => x).ToList();
                     var orderId = order.Id;
 
                     //create tour dictionary
@@ -237,7 +348,7 @@ namespace Amigo.Application.Services
                     var requestItemMap = requestDTO.Items
                             .ToDictionary(x => x.CartItemId);
 
-                    foreach (var item in cart.Items)
+                    foreach (var item in cart.Items.Where(i => !i.IsDeleted))
                     {
                         if (!tourDict.TryGetValue(item.TourId, out var tour))
                             return Result.Fail($"Tour {item.TourId} not found");
@@ -340,6 +451,8 @@ namespace Amigo.Application.Services
                                 tour.Cancellation.RefundPercentage,
                             NameAndAddressOfAccomodation = itemRequest.NameAndAddressAccommodation,
                             CommentForProvider = itemRequest.CommentForProvider,
+                            PhoneCode = itemRequest.PhoneCode,
+                            PhoneNumber = itemRequest.PhoneNumber,
 
                             TravelersDraft = BuildTravelers(itemRequest)
                         };
@@ -426,7 +539,7 @@ namespace Amigo.Application.Services
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-
+                    Console.WriteLine($"Checkout Failed: {ex.Message}");
                     return FluentValidationExtension
                         .FromException(details: ex.Message);
                 }
@@ -436,18 +549,38 @@ namespace Amigo.Application.Services
         private List<TravelerDraft> BuildTravelers(
             CheckoutItemRequestDTO requestItem)
         {
-            return requestItem.Travelers.Select(t => new TravelerDraft
+            return requestItem.Travelers.Select(t => 
             {
-                Id = Guid.NewGuid(),
-                FullName = $"{t.FirstName} {t.LastName}",
-                Nationality = t.Nationality,
-                Type = t.Type,
-                BirthDate = t.BirthDate,
-                PassportNumber = string.IsNullOrWhiteSpace(t.PassportNumber)
-                        ? null
-                        : _encryptionService.Encrypt(t.PassportNumber),
-                CartItemId = requestItem.CartItemId
+                var rawPassport = string.IsNullOrWhiteSpace(t.PassportNumber) ? null : t.PassportNumber.Trim();
+                if (rawPassport != null && rawPassport.Length > 60)
+                {
+                    rawPassport = rawPassport.Substring(0, 60);
+                }
 
+                string finalPassport = null;
+                if (rawPassport != null)
+                {
+                    try
+                    {
+                        _encryptionService.Decrypt(rawPassport);
+                        finalPassport = rawPassport;
+                    }
+                    catch
+                    {
+                        finalPassport = _encryptionService.Encrypt(rawPassport);
+                    }
+                }
+
+                return new TravelerDraft
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = $"{t.FirstName} {t.LastName}",
+                    Nationality = t.Nationality,
+                    Type = t.Type,
+                    BirthDate = t.BirthDate,
+                    PassportNumber = finalPassport,
+                    CartItemId = requestItem.CartItemId
+                };
             }).ToList();
         }
         private void RecalculateCart(Cart cart)
@@ -468,19 +601,49 @@ namespace Amigo.Application.Services
 
             return price.RetailPrice;
         }
-        private async Task<Cart> GetOrCreateCart(string? userId, string? cartToken)
+        private async Task<Cart?> GetOrCreateCart(string? userId, string? cartToken, bool autoCreate = true)
         {
-
-            Cart? cart = null;
             var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+            Cart? userCart = null;
+            Cart? tokenCart = null;
+
             if (!string.IsNullOrWhiteSpace(userId))
-                cart = await cartRepo.GetByIdAsync(new GetCartWithUserIdSpecification(userId));
+                userCart = await cartRepo.GetByIdAsync(new GetCartWithUserIdSpecification(userId));
 
-            if (cart is null && !string.IsNullOrWhiteSpace(cartToken))
-                cart = await cartRepo.GetByIdAsync(new GetCartWithCartTokenSpecification(cartToken));
+            if (!string.IsNullOrWhiteSpace(cartToken))
+                tokenCart = await cartRepo.GetByIdAsync(new GetCartWithCartTokenSpecification(cartToken));
 
-             if (cart is not  null)
-                        return cart;
+            if (userCart != null && tokenCart != null && userCart.Id != tokenCart.Id)
+            {
+                if (tokenCart.Items.Any())
+                {
+                    foreach (var item in tokenCart.Items.ToList())
+                    {
+                        item.CartId = userCart.Id;
+                        item.Cart = userCart;
+                        userCart.Items.Add(item);
+                    }
+                    RecalculateCart(userCart);
+                }
+                
+                cartRepo.Remove(tokenCart);
+                await _unitOfWork.SaveChangesAsync();
+                return userCart;
+            }
+
+            if (userCart == null && tokenCart != null && !string.IsNullOrWhiteSpace(userId))
+            {
+                tokenCart.UserId = userId;
+                await _unitOfWork.SaveChangesAsync();
+                return tokenCart;
+            }
+
+            var cart = userCart ?? tokenCart;
+            if (cart is not null)
+                return cart;
+
+            if (!autoCreate)
+                return null;
            
             cart = new Cart
             {
@@ -492,11 +655,9 @@ namespace Amigo.Application.Services
                 ExpiresAt = DateTime.UtcNow.AddDays(15)
             };
             await cartRepo.AddAsync(cart);
-
             await _unitOfWork.SaveChangesAsync();
             
             return cart;
-
         }
 
         public async Task<Result<string>> RemoveItemAsync(
@@ -504,7 +665,8 @@ namespace Amigo.Application.Services
                 string? userId,
                 string? cartToken)
         {
-            var cart = await GetOrCreateCart(userId, cartToken);
+            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+            if (cart == null) return Result.Ok("Cart already empty");
 
             var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
 
@@ -523,9 +685,9 @@ namespace Amigo.Application.Services
                 string? userId,
                 string? cartToken)
         {
-            var cart = await GetOrCreateCart(userId, cartToken);
+            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
 
-            if (cart.Items.Any())
+            if (cart != null && cart.Items.Any())
                 cart.Items.Clear();
 
             cart.TotalAmount = 0;

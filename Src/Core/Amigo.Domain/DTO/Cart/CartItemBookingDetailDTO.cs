@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Amigo.Domain.DTO.Cart
 {
-    public record UpdateCartItemRequestDTO
+    public record CartItemBookingDetailDTO
     (
-        List<AddCartPriceRequestDTO> Prices,
-        List<CheckoutTravelersRequestDTO>? Travelers,
+        List<CheckoutTravelersRequestDTO> Travelers,
+        string? FirstName = null,
+        string? LastName = null,
+        string? Email = null,
         string? PhoneCode = null,
         string? PhoneNumber = null,
         string? HotelNameAddress = null,

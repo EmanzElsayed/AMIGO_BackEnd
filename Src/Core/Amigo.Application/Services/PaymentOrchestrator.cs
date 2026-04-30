@@ -1,9 +1,12 @@
-﻿using Amigo.Application.Specifications.AvailableSlotsSpecification;
+using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Application.Specifications.Travelers;
+using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.Entities;
+using Amigo.Domain.Enum;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,18 +28,22 @@ namespace Amigo.Application.Services
         // =========================
         public async Task HandleSuccessAsync(PaymentProvider provider, string payload)
         {
+            var (providerRefId, rawData) = ExtractProviderData(provider, payload);
+            await ProcessSuccess(providerRefId, rawData);
+        }
+
+       
+
+        private async Task ProcessSuccess(string providerRefId, string? rawData)
+        {
             var strategy = _unitOfWork.CreateExecutionStrategy();
            
             await strategy.ExecuteAsync(async () =>
             {
                 await using var tx = await _unitOfWork.BeginTransactionAsync();
 
-
                 try
                 {
-                    var (providerRefId, rawData) = ExtractProviderData(provider, payload);
-
-                   
                     var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
                     var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
                     var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
@@ -72,11 +79,8 @@ namespace Amigo.Application.Services
                     foreach (var r in reservations)
                         r.Status = ReservationStatus.Confirmed;
 
-                  
-
                     // 5. Batch check bookings
                     var orderItemIds = order.OrderItems.Select(x => x.Id).ToList();
-
 
                     var existingBookings = await bookingRepo.GetAllAsync(
                         new GetBookingsByOrderItemIdsSpecification(orderItemIds));
@@ -118,6 +122,18 @@ namespace Amigo.Application.Services
 
                     travelersDraftRepo.RemoveRange(travelersDraft);
 
+                    // Clear user's cart
+                    var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+                    var cart = await cartRepo.GetByIdAsync(new GetCartWithUserIdSpecification(order.UserId));
+                    if (cart != null && cart.Items != null)
+                    {
+                        var cartItemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
+                        foreach (var item in cart.Items)
+                        {
+                            item.SetIsDeleted(true);
+                            cartItemRepo.Update(item);
+                        }
+                    }
 
                     await _unitOfWork.SaveChangesAsync();
                     await tx.CommitAsync();
@@ -126,8 +142,6 @@ namespace Amigo.Application.Services
                 {
                     await tx.RollbackAsync();
                     throw;
-
-
                 }
             });
         }

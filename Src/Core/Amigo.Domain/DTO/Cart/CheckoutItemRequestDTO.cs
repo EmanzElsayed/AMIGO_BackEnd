@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,7 +9,8 @@ namespace Amigo.Domain.DTO.Cart
         Guid CartItemId,
         List<CheckoutTravelersRequestDTO> Travelers,
         string? NameAndAddressAccommodation,
-        string? CommentForProvider
-        
+        string? CommentForProvider,
+        string? PhoneCode = null,
+        string? PhoneNumber = null
     );
 }

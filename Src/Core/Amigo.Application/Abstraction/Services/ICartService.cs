@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.DTO.Cart;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,6 +20,8 @@ namespace Amigo.Application.Abstraction.Services
             string? cartToken,
             UpdateCartItemRequestDTO dto);
         Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO, string userId, string? cartToken);
+        
+        Task<Result<CartItemBookingDetailDTO>> GetBookingDetailAsync(Guid itemId, string? userId, string? cartToken);
 
         Task<Result<string>> RemoveItemAsync(
             Guid itemId,

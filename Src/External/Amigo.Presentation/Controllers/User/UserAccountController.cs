@@ -1,3 +1,4 @@
+using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.Identity;
@@ -14,7 +15,7 @@ namespace Amigo.Presentation.Controllers.User;
 
 [Authorize]
 [Route("api/v1/user")]
-public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUser> userManager) : BaseController
+public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUser> userManager, IBookingService _bookingService) : BaseController
 {
     [HttpGet("profile")]
     public async Task<IResultBase> GetProfile()
@@ -131,56 +132,15 @@ public class UserAccountController(AmigoDbContext db, UserManager<ApplicationUse
         return Result.Ok(new { tourId, isFavorite = false });
     }
 
-   // [HttpGet("bookings")]
-    //public async Task<IResultBase> GetBookings([FromQuery] string? paymentStatus = null)
-    //{
-    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        return Result.Fail(new UnauthorizedError("Not authenticated"));
+    [HttpGet("bookings")]
+    public async Task<IResultBase> GetBookings([FromQuery] string? paymentStatus = null)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-    //    var rows = await (
-    //        from b in db.Bookings.AsNoTracking()
-    //        join o in db.Orders.AsNoTracking() on b.OrderId equals o.Id
-    //        join pay in db.Payments.AsNoTracking() on o.Id equals pay.OrderId
-    //        join slot in db.AvailableSlots.AsNoTracking() on b.AvailableSlotsId equals slot.Id
-    //        join schedule in db.TourSchedules.AsNoTracking() on slot.TourScheduleId equals schedule.Id
-    //        join tour in db.Tours.AsNoTracking() on schedule.TourId equals tour.Id
-    //        where !b.IsDeleted && !o.IsDeleted && !pay.IsDeleted && !slot.IsDeleted && !schedule.IsDeleted && !tour.IsDeleted
-    //              && o.UserId == userId
-    //        select new
-    //        {
-    //            bookingId = b.Id,
-    //            tourId = tour.Id,
-    //            tourTitle = tour.Translations
-    //                .Where(tr => !tr.IsDeleted)
-    //                .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
-    //                .Select(tr => tr.Title)
-    //                .FirstOrDefault() ?? "Tour",
-    //            tourSlug = SlugHelper.ToUrlSlug(
-    //                tour.Translations
-    //                    .Where(tr => !tr.IsDeleted)
-    //                    .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
-    //                    .Select(tr => tr.Title)
-    //                    .FirstOrDefault() ?? "tour"),
-    //            dateIso = schedule.StartDate,
-    //            startTime = slot.StartTime,
-    //            paymentStatus = pay.Status,
-    //            orderStatus = o.Status,
-    //            bookingStatus = b.Status,
-    //            paidAmount = pay.TotalAmount,
-    //            currency = pay.Currency
-    //        })
-    //        .ToListAsync();
-
-    //    if (!string.IsNullOrWhiteSpace(paymentStatus) && paymentStatus.Equals("paid", StringComparison.OrdinalIgnoreCase))
-    //    {
-    //        rows = rows
-    //            .Where(x => x.paymentStatus == PaymentStatus.Completed && x.orderStatus == OrderStatus.Paid)
-    //            .ToList();
-    //    }
-
-    //    return Result.Ok(rows);
-    //}
+        return await _bookingService.GetUserBookingsAsync(userId, paymentStatus);
+    }
 
     //[HttpPost("bookings/pay-now")]
     //public async Task<IResultBase> PayNow([FromBody] PayNowRequest body)

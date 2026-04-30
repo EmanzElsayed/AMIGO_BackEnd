@@ -1,4 +1,6 @@
-﻿using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.OrderSpecification;
+using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Booking;
 using System;
@@ -51,6 +53,53 @@ namespace Amigo.Application.Services
                 booking.Travelers.Count,
                 true
             ));
+        }
+
+        public async Task<Result<IEnumerable<UserBookingDTO>>> GetUserBookingsAsync(string userId, string? paymentStatus = null)
+        {
+            var itemRepo = _unitOfWork.GetRepository<OrderItem, Guid>();
+            var spec = new GetUserBookingHistorySpecification(userId, paymentStatus);
+            var items = await itemRepo.GetAllAsync(spec);
+
+            if (items == null || !items.Any())
+                return Result.Ok(Enumerable.Empty<UserBookingDTO>());
+
+            if (!string.IsNullOrWhiteSpace(paymentStatus) && paymentStatus.Equals("Succeeded", StringComparison.OrdinalIgnoreCase))
+            {
+                items = items.Where(i => i.Order.Status == OrderStatus.Paid && 
+                                        i.Order.Payments.Any(p => p.Status == PaymentStatus.Succeeded && !p.IsDeleted));
+            }
+
+            var tourIds = items.Where(i => i.TourId.HasValue).Select(i => i.TourId!.Value).Distinct().ToList();
+            
+            var imageRepo = _unitOfWork.GetRepository<TourImage, Guid>();
+            var images = await imageRepo.GetAllAsync(); 
+            
+            var imageMap = images
+                .Where(img => tourIds.Contains(img.TourId) && !img.IsDeleted)
+                .GroupBy(img => img.TourId)
+                .ToDictionary(g => g.Key, g => g.OrderBy(x => x.CreatedDate).Select(x => x.ImageUrl).FirstOrDefault());
+
+            var dtos = items.Select(item => {
+                var payment = item.Order.Payments.OrderByDescending(p => p.CreatedDate).FirstOrDefault();
+                return new UserBookingDTO
+                {
+                    OrderId = item.OrderId,
+                    ItemId = item.Id,
+                    TourId = item.TourId ?? Guid.Empty,
+                    TourTitle = item.TourTitle,
+                    DestinationName = item.DestinationName,
+                    DateIso = item.TourDate,
+                    StartTime = item.StartTime.ToString("HH:mm"),
+                    PaymentStatus = payment?.Status ?? PaymentStatus.Pending,
+                    OrderStatus = item.Order.Status,
+                    PaidAmount = payment?.TotalAmount ?? 0,
+                    Currency = payment?.Currency.ToString() ?? item.Order.Currency.ToString(),
+                    ImageUrl = item.TourId.HasValue ? imageMap.GetValueOrDefault(item.TourId.Value) : null
+                };
+            });
+
+            return Result.Ok(dtos);
         }
     }
 }

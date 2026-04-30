@@ -1,4 +1,4 @@
-﻿namespace Amigo.Domain.Entities;
+namespace Amigo.Domain.Entities;
 
 [Table($"{nameof(OrderItem)}", Schema = SchemaConstants.booking_schema)]
 
@@ -24,6 +24,8 @@ public class OrderItem:BaseEntity<Guid>
 
     public string? NameAndAddressOfAccomodation { get; set; }
     public string? CommentForProvider { get; set; }
+    public string? PhoneCode { get; set; }
+    public string? PhoneNumber { get; set; }
 
     // Cancellation Info :
     public CancelationPolicyType CancelationPolicyType { get; set; }

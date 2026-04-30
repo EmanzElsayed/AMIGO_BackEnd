@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Abstraction.Services.Admin;
+using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.Enum;
@@ -37,7 +37,7 @@ namespace Amigo.Presentation.Controllers.Admin
 
         }
         [HttpGet("{id}")]
-        public async Task<IResultBase> GetTourById(string id, [FromBody] GetTourByIdRequestDTO requestDTO)
+        public async Task<IResultBase> GetTourById(string id, [FromQuery] GetTourByIdRequestDTO requestDTO)
         {
 
             return await _adminTourService.GetTourById(id , requestDTO);
