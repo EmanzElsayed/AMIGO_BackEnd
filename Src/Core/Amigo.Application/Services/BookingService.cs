@@ -1,15 +1,19 @@
+using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Booking;
+using Amigo.Domain.DTO.Cart;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Amigo.Application.Services
 {
-    public class BookingService(IUnitOfWork _unitOfWork):IBookingService
+    public class BookingService(IUnitOfWork _unitOfWork, EncryptionService _encryptionService
+                    ) :IBookingService
     {
         public async Task<Result<TravelersSavedResponseDTO>> AddTravelersAsync(
             Guid bookingId,
@@ -100,6 +104,139 @@ namespace Amigo.Application.Services
             });
 
             return Result.Ok(dtos);
+        }
+
+
+        public async Task FinalizeBooking(Guid paymentId)
+        {
+            var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
+            var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
+            var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+            var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+            var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
+
+
+
+            var payment = await paymentRepo.GetByIdAsync(paymentId);
+
+
+            // 2. Order 
+            var order = await orderRepo.GetByIdAsync(new GetOrderByIdSpecification(payment.OrderId));
+
+            if (order is null)
+                return;
+
+            order.Status = OrderStatus.Confirmed;
+
+            // 3. Reservations 
+            var reservations = await reservationRepo
+                .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
+
+            if (reservations is null)
+                return;
+
+            foreach (var r in reservations)
+                r.Status = ReservationStatus.Confirmed;
+
+            // 5. Batch check bookings
+            var orderItemIds = order.OrderItems.Select(x => x.Id).ToList();
+
+            var existingBookings = await bookingRepo.GetAllAsync(
+                new GetBookingsByOrderItemIdsSpecification(orderItemIds));
+
+            var existingSet = existingBookings.Select(x => x.OrderItemId).ToHashSet();
+
+            List<Booking> bookingList = new List<Booking>(order.OrderItems.Count);
+            foreach (var item in order.OrderItems)
+            {
+                if (existingSet.Contains(item.Id))
+                    continue;
+
+                var booking = new Booking
+                {
+                    Id = Guid.NewGuid(),
+                    OrderItemId = item.Id,
+                    OrderItem = item,
+                    UserId = order.UserId,
+                    CustomerName = order.User.FullName,
+                    CustomerEmail = order.User.Email,
+                    PaymentId = payment.Id,
+                    BookingNumber = GenerateBookingNumber(),
+                    Status = BookingStatus.Confirmed,
+                    ConfirmedAt = DateTime.UtcNow,
+                    NameAndAddressOfAccomodation = item.NameAndAddressOfAccomodation,
+                    CommentForProvider = item.CommentForProvider,
+                    Travelers = BuildTravelers(item)
+                };
+                bookingList.Add(booking);
+
+            }
+            await bookingRepo.AddRangeAsync(bookingList);
+
+            var travelersDraftRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
+
+            var travelersDraft = order.OrderItems
+                     .SelectMany(x => x.TravelersDraft)
+                     .ToList();
+
+            travelersDraftRepo.RemoveRange(travelersDraft);
+
+            // Clear user's cart
+            
+            var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
+
+            var cart = await cartRepo.GetByIdAsync(new GetCartWithUserIdSpecification(order.UserId));
+            if (cart != null && cart.Items != null)
+            {
+                await _unitOfWork.CartItemsRepo.BulkSoftDeleteByUserId(order.UserId);
+                
+            }
+
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+       
+        private List<Traveler> BuildTravelers(
+          OrderItem item)
+        {
+            return item.TravelersDraft.Select(t =>
+            {
+                var rawPassport = string.IsNullOrWhiteSpace(t.PassportNumber) ? null : t.PassportNumber.Trim();
+                if (rawPassport != null && rawPassport.Length > 60)
+                {
+                    rawPassport = rawPassport.Substring(0, 60);
+                }
+
+                string finalPassport = null;
+                if (rawPassport != null)
+                {
+                    try
+                    {
+                        _encryptionService.Decrypt(rawPassport);
+                        finalPassport = rawPassport;
+                    }
+                    catch
+                    {
+                        finalPassport = _encryptionService.Encrypt(rawPassport);
+                    }
+                }
+
+                return new Traveler
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = t.FullName,
+                    Nationality = t.Nationality,
+                    Type = t.Type,
+                    BirthDate = t.BirthDate,
+                    PassportNumber = finalPassport,
+                };
+            }).ToList();
+        }
+
+        private string GenerateBookingNumber()
+        {
+            return $"AMG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
         }
     }
 }

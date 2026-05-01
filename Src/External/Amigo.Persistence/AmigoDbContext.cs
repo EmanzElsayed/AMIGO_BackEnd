@@ -5,6 +5,9 @@ namespace Amigo.Persistence
 
         // Translation Entities
         public DbSet<DestinationTranslation> DestinationTranslations { get; set; }
+        public DbSet<WebhookEventLog> WebhookEventLogs { get; set; }
+        public DbSet<OutboxMessage> OutboxMessages { get; set; }
+
         public DbSet<ReviewTranslation> ReviewTranslations { get; set; }
         public DbSet<CancellationTranslation> CancelationTranslations { get; set; }
         public DbSet<TourTranslation> TourTranslations { get; set; }

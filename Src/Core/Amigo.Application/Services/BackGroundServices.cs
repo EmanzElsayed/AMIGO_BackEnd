@@ -64,6 +64,23 @@ public sealed class BookingBackgroundService(
         var reservations = await repo.GetAllAsync(
             new GetExpiredPendingReservationsSpecification(now));
 
+        var slotGroups = reservations
+       .GroupBy(x => x.SlotId)
+       .Select(g => new
+       {
+           SlotId = g.Key,
+           Total = g.Sum(x => x.Quantity)
+       })
+       .ToList();
+
+
+        var updates = slotGroups
+                .Select(x => (x.SlotId, x.Total))
+                .ToList();
+
+        await _unitOfWork.SlotsRepo
+            .BulkDecreaseReservedCountAsync(updates); 
+
         repo.RemoveRange(reservations);
 
 
@@ -116,14 +133,25 @@ public sealed class BookingBackgroundService(
 
         foreach (var slot in availableSlots)
         {
-            var count = reservationsCount.ContainsKey(slot.Id)
-                ? reservationsCount[slot.Id]
-                : 0;
-            if (count >= slot.MaxCapacity)
+            if (slot.TourSchedule.StartDate.ToDateTime(slot.StartTime) <= DateTime.UtcNow)
             {
                 slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
-                slot.SetModifiedDate(DateTime.UtcNow);
+                
             }
+            else
+
+            {
+                var count = reservationsCount.ContainsKey(slot.Id)
+                      ? reservationsCount[slot.Id]
+                      : 0;
+                slot.ReservedCount = count;
+                if (count >= slot.MaxCapacity)
+                {
+                    slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
+                    slot.SetModifiedDate(DateTime.UtcNow);
+                }
+            }
+              
         }
 
         await _unitOfWork.SaveChangesAsync();

@@ -29,8 +29,20 @@ namespace Amigo.Persistence
             }
         }
 
-        public async Task<int> SaveChangesAsync()
-                => await _dbContext.SaveChangesAsync();
+
+        private ISlotsRepo? _slotsRepo;
+
+        public ISlotsRepo SlotsRepo
+            => _slotsRepo ??= new SlotsRepo(_dbContext);
+
+
+        private ICartItemRepo? _cartItemsRepo;
+
+        public ICartItemRepo CartItemsRepo
+            => _cartItemsRepo ??= new CartItemRepo(_dbContext);
+
+        public async Task<int> SaveChangesAsync(CancellationToken ct = default)
+                => await _dbContext.SaveChangesAsync(ct);
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {

@@ -10,6 +10,8 @@ namespace Amigo.Application.Specifications.AvailableSlotsSpecification
         public GetAllAvailableSlots()
             : base(s => !s.IsDeleted && s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
         {
+            AddInclude(a => a.SlotReservations);
+            AddInclude(a => a.TourSchedule);
         }
     }
 }

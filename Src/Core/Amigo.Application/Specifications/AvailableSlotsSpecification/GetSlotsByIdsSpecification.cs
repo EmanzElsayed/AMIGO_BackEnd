@@ -8,7 +8,7 @@ namespace Amigo.Application.Specifications.AvailableSlotsSpecification
         : BaseSpecification<AvailableSlots, Guid>
     {
         public GetSlotsByIdsSpecification(List<Guid> ids)
-            : base(s => ids.Contains(s.Id) && !s.IsDeleted)
+            : base(s => ids.Contains(s.Id) && !s.IsDeleted && s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
         {
         }
     }

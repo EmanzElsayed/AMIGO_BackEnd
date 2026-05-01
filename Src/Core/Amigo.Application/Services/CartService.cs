@@ -3,6 +3,7 @@ using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.TourSpecification;
+using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cart;
 
 
@@ -11,6 +12,7 @@ namespace Amigo.Application.Services
     public class CartService(IUnitOfWork _unitOfWork ,
         EncryptionService _encryptionService,
         IPaymentOrchestrator _paymentOrchestrator,
+        ISlotsRepo _slotsRepo,
         Microsoft.AspNetCore.Identity.UserManager<Amigo.Domain.Entities.Identity.ApplicationUser> _userManager
         ) 
         : ICartService
@@ -54,12 +56,17 @@ namespace Amigo.Application.Services
             }
 
             var slot = await _unitOfWork.GetRepository<AvailableSlots, Guid>().GetByIdAsync(new GetAvaialableSlotsByIdSpecification(requestDTO.SlotId));
-            if (tour is null)
+            if (slot is null)
             {
                 return Result.Fail(new NotFoundError("This Slot Not Found"));
 
             }
-               var translatedTitle = tour.Translations
+            if (slot.AvailableTimeStatus != AvailableDateTimeStatus.Available)
+            {
+                return Result.Fail("This Slot Not Available Now");
+
+            }
+            var translatedTitle = tour.Translations
                    .FirstOrDefault(x => x.Language == requestDTO.Language)?.Title
                    ?? tour.Translations.FirstOrDefault()?.Title
                    ?? "Tour";
@@ -84,9 +91,11 @@ namespace Amigo.Application.Services
                 DestinationName = destinationName
             };
 
+            var userType = await GetUserType(userId);
+
             foreach (var p in requestDTO.Prices)
             {
-                var retailPrice = GetPriceFromTour(tour, p.Type,requestDTO.Language);
+                var retailPrice = GetPriceFromTour(tour, p.Type,requestDTO.Language,userType);
 
                 item.Prices.Add(new CartPrice
                 {
@@ -109,6 +118,28 @@ namespace Amigo.Application.Services
             return cart.ToDto();
         }
 
+
+
+        private async Task<UserType> GetUserType(string? userId)
+        {
+
+
+            if (userId is null) return UserType.Public;
+            var user = await _userManager.FindByIdAsync(userId);
+
+            string role = "Customer";
+
+            if (user is not null)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                role = roles.FirstOrDefault();
+            }
+
+
+            return role == "VIP" ? UserType.VIP : UserType.Public;
+        }
+
+
         public async Task<Result<CartDTO>> UpdateItemAsync(
                 Guid itemId,
                 string? userId,
@@ -117,9 +148,10 @@ namespace Amigo.Application.Services
         {
             var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
             if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
-            
-            var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
-            var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
+
+            //var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
+            //var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
+            var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
 
             if (item is null || item.CartId != cart.Id)
                 return Result.Fail(new NotFoundError("This Item Not Found"));
@@ -127,23 +159,28 @@ namespace Amigo.Application.Services
             if (dto.Prices != null && dto.Prices.Any())
             {
                 var priceRepo = _unitOfWork.GetRepository<CartPrice, Guid>();
+
                 item.Prices.Clear();
+
+                var userType = await GetUserType(userId);
+
                 foreach (var p in dto.Prices)
                 {
-                    var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language);
-                    var newPrice = new CartPrice
+                    var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language, userType);
+
+                    item.Prices.Add(new CartPrice
                     {
                         Id = Guid.NewGuid(),
                         CartItemId = item.Id,
                         Type = p.Type,
                         Quantity = p.Quantity,
                         RetailPrice = retailPrice
-                    };
-                    await priceRepo.AddAsync(newPrice);
-                    item.Prices.Add(newPrice);
+                    });
                 }
+
             }
 
+            List<TravelerDraft> travelers = new List<TravelerDraft>();
             if (dto.Travelers != null)
             {
                 var travelerRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
@@ -166,9 +203,10 @@ namespace Amigo.Application.Services
                         BirthDate = t.BirthDate,
                         PassportNumber = rawPassport == null ? null : _encryptionService.Encrypt(rawPassport)
                     };
-                    await travelerRepo.AddAsync(newTraveler);
-                    item.Travelers.Add(newTraveler);
+                    travelers.Add(newTraveler);
                 }
+                    await travelerRepo.AddRangeAsync(travelers);
+                    //item.Travelers.Add(newTraveler);
             }
 
             if (dto.PhoneCode != null || dto.PhoneNumber != null || dto.HotelNameAddress != null || dto.CommentForProvider != null)
@@ -305,7 +343,6 @@ namespace Amigo.Application.Services
                              new GetSlotsByIdsSpecification(slotIds));
 
 
-                    //var slots = await _slotsRepo.GetLockedSlotsAsync(slotIds);
 
                     if (slots is null || !slots.Any() ) return Result.Fail("Slots Not Avaialble");
 
@@ -314,17 +351,19 @@ namespace Amigo.Application.Services
 
 
                     var tourDict = tours.ToDictionary(x => x.Id);
+                    var userType = await GetUserType(userId);
 
                     var priceDict = tours
-                            .SelectMany(t => t.Prices.SelectMany(p =>
-                                p.Translations.Select(tr => new
-                                {
-                                    TourId = t.Id,
-                                    Price = p,
-                                    Type = tr.Type,
-                                    Language = tr.Language
-                                })))
-                            .ToLookup(x => (x.TourId, x.Type, x.Language), x => x.Price);
+                          .SelectMany(t => t.Prices
+                              .Where(p => p.UserType == userType)
+                              .SelectMany(p => p.Translations.Select(tr => new
+                              {
+                                  TourId = t.Id,
+                                  Price = p,
+                                  Type = tr.Type,
+                                  Language = tr.Language
+                              })))
+                          .ToLookup(x => (x.TourId, x.Type, x.Language), x => x.Price);
 
 
                     //create slots dictionary
@@ -337,9 +376,7 @@ namespace Amigo.Application.Services
 
 
 
-                    var reservationLookup = reservations
-                        .GroupBy(x => x.SlotId)
-                        .ToDictionary(x => x.Key, x => x.Sum(r => r.Quantity));
+                   
 
                     var newReservations = new List<SlotReservation>(cart.Items.Count);
 
@@ -347,6 +384,24 @@ namespace Amigo.Application.Services
 
                     var requestItemMap = requestDTO.Items
                             .ToDictionary(x => x.CartItemId);
+
+                    var slotRequests = cart.Items
+                        .GroupBy(x => x.SlotId)
+                        .Select(g => new SlotReservationRequest(
+                            g.Key,
+                            g.Sum(item =>
+                                item.Prices.Sum(p => p.Quantity))))
+                        .ToList();
+
+                    var reservedIds = await _slotsRepo.ReserveBulkAsync(slotRequests);
+
+                    if (reservedIds.Count != slotRequests.Count)
+                    {
+                        await transaction.RollbackAsync();
+
+                        return Result.Fail(
+                            "One or more slots are full.");
+                    }
 
                     foreach (var item in cart.Items.Where(i => !i.IsDeleted))
                     {
@@ -356,17 +411,12 @@ namespace Amigo.Application.Services
                         if (!slotDict.TryGetValue(item.SlotId, out var orderedSlot))
                             return Result.Fail("Slot not found");
                         
-                        //check if valid type or not no made ****** 
 
                         if (!requestItemMap.TryGetValue(item.Id, out var itemRequest))
                             return Result.Fail("Missing item Travelers request");
 
 
-                        var reserved = reservationLookup.GetValueOrDefault(item.SlotId, 0);
                         
-                        var available =
-                            orderedSlot.MaxCapacity -
-                            reserved;
 
 
                         var prices = item.Prices;
@@ -378,12 +428,6 @@ namespace Amigo.Application.Services
 
                         }
 
-
-                        if (totalPeople > available)
-                            return Result.Fail($"Slot full, available {available}");
-
-                        reservationLookup[item.SlotId] =
-                                               reservationLookup.GetValueOrDefault(item.SlotId, 0) + totalPeople;
 
 
                         // reserved  slot 
@@ -583,15 +627,17 @@ namespace Amigo.Application.Services
                 };
             }).ToList();
         }
+
+
         private void RecalculateCart(Cart cart)
         {
             cart.TotalAmount = cart.Items.Sum(x => x.TotalAmount);
             cart.LastUpdatedAt = DateTime.UtcNow;
         }
-        private decimal GetPriceFromTour(Tour tour, string type, Language lang)
+        private decimal GetPriceFromTour(Tour tour, string type, Language lang,UserType userType)
         {
             var price = tour.Prices
-                .FirstOrDefault(p =>
+                .FirstOrDefault(p => p.UserType == userType &&
                     p.Translations.Any(t =>
                         t.Type == type &&
                         t.Language == lang));

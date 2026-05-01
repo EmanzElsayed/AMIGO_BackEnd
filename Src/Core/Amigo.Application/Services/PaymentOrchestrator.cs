@@ -1,12 +1,14 @@
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Application.Specifications.Travelers;
-using Amigo.Application.Specifications.CartSpecification;
+using Amigo.Application.Specifications.WebhookEventLogSpecification;
 using Amigo.Domain.DTO.Cart;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,139 +25,83 @@ namespace Amigo.Application.Services
             _unitOfWork = unitOfWork;
         }
 
-        // =========================
+
         // SUCCESS FLOW
-        // =========================
+
+
         public async Task HandleSuccessAsync(PaymentProvider provider, string payload)
         {
-            var (providerRefId, rawData) = ExtractProviderData(provider, payload);
-            await ProcessSuccess(providerRefId, rawData);
-        }
-
-       
-
-        private async Task ProcessSuccess(string providerRefId, string? rawData)
-        {
+            //var (providerRefId,eventId ,rawData ) = ExtractProviderData(provider, payload);
+            var providerRefId = "2N4841001L928684A";
+            var eventId = "";
+            var rawData = "EmanMOhamed";
             var strategy = _unitOfWork.CreateExecutionStrategy();
-           
+
             await strategy.ExecuteAsync(async () =>
             {
                 await using var tx = await _unitOfWork.BeginTransactionAsync();
 
-                try
-                {
-                    var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
-                    var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
-                    var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
-                    var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
-                    var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
+                var eventRepo = _unitOfWork.GetRepository<WebhookEventLog, Guid>();
+                var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
+                var outboxRepo = _unitOfWork.GetRepository<OutboxMessage, Guid>();
 
-                    // 1. Payment
-                    var payment = await paymentRepo
+                // webhook event log 
+                // check if webhook is sent before or not
+
+                var exists = await eventRepo.AnyAsync(
+               new GetWebhookWithEventIdSpecivfcation(eventId));
+
+                if (exists)
+                    return;
+
+
+                // if not add new event log :
+                await eventRepo.AddAsync(new WebhookEventLog
+                {
+                    Id = Guid.NewGuid(),
+                    Provider = provider,
+                    ProviderEventId = eventId,
+                    Payload = payload,
+                    Processed = false
+                });
+
+                //Update Payment
+
+                var payment = await paymentRepo
                         .GetByIdAsync(new GetPaymentByProviderRefSpec(providerRefId));
 
-                    if (payment is null || payment.Status == PaymentStatus.Succeeded)
-                        return;
+                if (payment is null || payment.Status == PaymentStatus.Succeeded)
+                    return;
 
-                    payment.Status = PaymentStatus.Succeeded;
-                    payment.PaidAt = DateTime.UtcNow;
-                    payment.RawResponseJson = rawData;
+                payment.Status = PaymentStatus.Succeeded;
+                payment.PaidAt = DateTime.UtcNow;
+                payment.RawResponseJson = rawData;
 
-                    // 2. Order 
-                    var order = await orderRepo.GetByIdAsync( new GetOrderByIdSpecification( payment.OrderId));
 
-                    if (order is null)
-                        return;
-
-                    order.Status = OrderStatus.Confirmed;
-
-                    // 3. Reservations 
-                    var reservations = await reservationRepo
-                        .GetAllAsync(new GetAllSlotReservationWithOrderIdSpecification(payment.OrderId));
-                    
-                    if (reservations is null)
-                        return;
-
-                    foreach (var r in reservations)
-                        r.Status = ReservationStatus.Confirmed;
-
-                    // 5. Batch check bookings
-                    var orderItemIds = order.OrderItems.Select(x => x.Id).ToList();
-
-                    var existingBookings = await bookingRepo.GetAllAsync(
-                        new GetBookingsByOrderItemIdsSpecification(orderItemIds));
-
-                    var existingSet = existingBookings.Select(x => x.OrderItemId).ToHashSet();
-
-                    List<Booking> bookingList = new List<Booking>(order.OrderItems.Count);
-                    foreach (var item in order.OrderItems)
-                    {
-                        if (existingSet.Contains(item.Id))
-                            continue;
-
-                        var booking = new Booking
-                        {
-                            Id = Guid.NewGuid(),
-                            OrderItemId = item.Id,
-                            OrderItem = item,
-                            UserId = order.UserId,
-                            CustomerName = order.User.FullName,
-                            CustomerEmail = order.User.Email,
-                            PaymentId = payment.Id,
-                            BookingNumber = GenerateBookingNumber(),
-                            Status = BookingStatus.Confirmed,
-                            ConfirmedAt = DateTime.UtcNow,
-                            NameAndAddressOfAccomodation = item.NameAndAddressOfAccomodation,
-                            CommentForProvider = item.CommentForProvider,
-                            Travelers = BuildTravelers(item)
-                        };
-                        bookingList.Add(booking);
-
-                    }
-                     await bookingRepo.AddRangeAsync(bookingList);
-
-                    var travelersDraftRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
-
-                    var travelersDraft = order.OrderItems
-                             .SelectMany(x => x.TravelersDraft)
-                             .ToList();
-
-                    travelersDraftRepo.RemoveRange(travelersDraft);
-
-                    // Clear user's cart
-                    var cartRepo = _unitOfWork.GetRepository<Cart, Guid>();
-                    var cart = await cartRepo.GetByIdAsync(new GetCartWithUserIdSpecification(order.UserId));
-                    if (cart != null && cart.Items != null)
-                    {
-                        var cartItemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
-                        foreach (var item in cart.Items)
-                        {
-                            item.SetIsDeleted(true);
-                            cartItemRepo.Update(item);
-                        }
-                    }
-
-                    await _unitOfWork.SaveChangesAsync();
-                    await tx.CommitAsync();
-                }
-                catch
+                // add Outbox Event
+                
+                await outboxRepo.AddAsync(new OutboxMessage
                 {
-                    await tx.RollbackAsync();
-                    throw;
-                }
+                    Id = Guid.NewGuid(),
+                    Type = "PaymentSucceeded",
+                    Payload = payment.Id.ToString(),
+                    Status = OutboxStatus.Pending,
+                    RetryCount = 0,
+                });
+
+                await _unitOfWork.SaveChangesAsync();
+                await tx.CommitAsync();
+
             });
+
         }
-        private List<Traveler> BuildTravelers(
-            OrderItem item)
-        {
-            return item.TravelersDraft.Select(t => new Traveler
-            {
-                Id = Guid.NewGuid(),
-                FullName = t.FullName,
-                Nationality = t.Nationality,
-                Type = t.Type
-            }).ToList();
-        }
+
+        
+
+
+
+       
+      
         // =========================
         // FAILURE FLOW
         // =========================
@@ -170,7 +116,7 @@ namespace Amigo.Application.Services
                 try
                 {
 
-                    var (providerRefId, rawData) = ExtractProviderData(provider, payload);
+                    var (providerRefId, eventId, rawData) = ExtractProviderData(provider, payload);
 
                     var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
                     var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
@@ -215,41 +161,54 @@ namespace Amigo.Application.Services
             });
         }
 
-        // =========================    
-        // HELPER
-        // =========================
-        private (string providerRefId, string raw) ExtractProviderData(PaymentProvider provider, string payload)
+       
+
+
+
+        private (string providerRefId, string eventId, string raw)
+            ExtractProviderData(PaymentProvider provider, string payload)
         {
+            using var json = JsonDocument.Parse(payload);
+
             if (provider == PaymentProvider.Stripe)
             {
-                var json = JsonDocument.Parse(payload);
-                var id = json.RootElement.GetProperty("data")
+                var root = json.RootElement;
+
+                var eventId = root
+                    .GetProperty("id")
+                    .GetString(); 
+
+                var paymentId = root
+                    .GetProperty("data")
                     .GetProperty("object")
                     .GetProperty("id")
-                    .GetString();
+                    .GetString(); 
 
-                return (id, payload);
+                return (paymentId!, eventId!, payload);
+
+
             }
-
             if (provider == PaymentProvider.Paypal)
             {
-                var json = JsonDocument.Parse(payload);
-                var id = json.RootElement
-                    .GetProperty("resource")
-                    .GetProperty("supplementary_data")
-                    .GetProperty("related_ids")
-                    .GetProperty("order_id")
-                    .GetString();
+                var root = json.RootElement;
 
-                return (id, payload);
+                var eventId = root
+                    .GetProperty("id")
+                    .GetString(); 
+
+                var paymentId = root
+                    .GetProperty("resource")
+                    .GetProperty("id")
+                    .GetString(); 
+
+                return (paymentId!, eventId!, payload);
             }
 
             throw new Exception("Unsupported provider");
         }
 
-        private string GenerateBookingNumber()
-        {
-            return $"AMG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
-        }
+
+
+        
     }
 }

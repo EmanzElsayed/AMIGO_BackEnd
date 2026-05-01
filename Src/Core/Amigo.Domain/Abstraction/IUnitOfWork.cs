@@ -11,7 +11,10 @@ namespace Amigo.Domain.Abstraction
         public IGenericRepo<TEntity, TKey> GetRepository<TEntity, TKey>()
             where TEntity : BaseEntity<TKey>;
 
-        public Task<int> SaveChangesAsync();
+        ISlotsRepo SlotsRepo { get; }
+        ICartItemRepo CartItemsRepo { get; }
+
+        public Task<int> SaveChangesAsync(CancellationToken ct = default);
         public Task<IDbContextTransaction> BeginTransactionAsync();
 
         public IExecutionStrategy CreateExecutionStrategy();

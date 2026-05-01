@@ -165,6 +165,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
         services.AddHostedService<BookingBackgroundService>();
+        services.AddHostedService<OutboxWorker>();
+
         services.AddSingleton<EncryptionService>();
         return services;
     }
