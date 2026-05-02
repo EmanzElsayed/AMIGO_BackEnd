@@ -1,4 +1,4 @@
-﻿
+
 
 using PayPalCheckoutSdk.Core;
 
@@ -60,6 +60,18 @@ namespace Amigo.Presentation.Controllers
         {
             return await _authService.RefreshTokenAsync(cancellationToken, requestDTO);
 
+        }
+
+        [HttpPost("identify-checkout")]
+        public async Task<IResultBase> IdentifyEmail([FromBody] IdentifyEmailRequestDTO requestDTO)
+        {
+            return await _authService.IdentifyEmailAsync(requestDTO);
+        }
+
+        [HttpPost("verify-checkout-otp")]
+        public async Task<IResultBase> VerifyOTPCheckout([FromBody] VerifyOTPCheckoutRequestDTO requestDTO)
+        {
+            return await _authService.VerifyOTPCheckoutAsync(requestDTO);
         }
     }
 }
