@@ -2,6 +2,11 @@
 
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Amigo.Domain.Entities.Identity;
+using Amigo.Domain.Enum;
+using Amigo.Application.Specifications.Identity;
+using Amigo.Domain.DTO.Authentication;
+using System.Net;
 
 namespace Amigo.Application.Services;
 
@@ -426,5 +431,150 @@ public class AuthService(
     }
 
 
+
+    public async Task<Result<IdentifyEmailResponseDTO>> IdentifyEmailAsync(IdentifyEmailRequestDTO request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user != null && user.EmailConfirmed)
+        {
+            return Result.Ok(new IdentifyEmailResponseDTO("Confirmed", false, "Email already confirmed. Please proceed to login or payment."));
+        }
+
+        var code = new Random().Next(100000, 999999).ToString();
+        var otp = new OTP(request.Email, code, DateTime.UtcNow.AddMinutes(10), OtpPurpose.CheckoutVerification);
+
+        var otpRepo = _unitOfWork.GetRepository<OTP, Guid>();
+        await otpRepo.AddAsync(otp);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _emailService.SendEmailAsync(
+            request.Email,
+            "Verification Code for Amigo Checkout",
+            $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                    <h2 style='color: #db2777;'>Verification Code</h2>
+                    <p>Hello,</p>
+                    <p>You requested a verification code for your checkout process at Amigo Arabe Tours.</p>
+                    <div style='background: #fdf2f8; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;'>
+                        <span style='font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #db2777;'>{code}</span>
+                    </div>
+                    <p>This code will expire in 10 minutes.</p>
+                    <p>If you didn't request this, please ignore this email.</p>
+                    <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                    <p style='font-size: 12px; color: #999;'>Amigo Arabe Tours Team</p>
+                </div>"
+        );
+
+        var status = user == null ? "NotFound" : "Unconfirmed";
+        var message = user == null 
+            ? "Account not found. We will create one for you after verification." 
+            : "Account exists but email is not confirmed. Please verify your identity.";
+
+        return Result.Ok(new IdentifyEmailResponseDTO(status, true, message));
+    }
+
+    public async Task<Result<LoginResponseDTO>> VerifyOTPCheckoutAsync(VerifyOTPCheckoutRequestDTO request)
+    {
+        var otpRepo = _unitOfWork.GetRepository<OTP, Guid>();
+        var spec = new OTPVerifySpecification(request.Email, request.Code, OtpPurpose.CheckoutVerification);
+        var isValid = await otpRepo.AnyAsync(spec);
+
+        if (!isValid)
+        {
+            return Result.Fail<LoginResponseDTO>("Invalid or expired verification code.");
+        }
+
+        await otpRepo.RemoveWhereAsync(x => x.Email == request.Email && x.purpose == OtpPurpose.CheckoutVerification);
+        await _unitOfWork.SaveChangesAsync();
+
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        bool isNewAccount = false;
+
+        if (user == null)
+        {
+            user = new ApplicationUser
+            {
+                Email = request.Email,
+                UserName = request.Email,
+                FullName = request.FullName ?? request.Email.Split('@')[0],
+                EmailConfirmed = true, 
+                IsActive = true
+            };
+
+            var tempPassword = "Amigo@" + Guid.NewGuid().ToString("N").Substring(0, 10);
+            var createResult = await _userManager.CreateAsync(user, tempPassword);
+            
+            if (!createResult.Succeeded)
+            {
+                return FluentValidationExtension.FromIdentityErrors(createResult.Errors);
+            }
+
+            await _userManager.AddToRoleAsync(user, "Customer");
+            isNewAccount = true;
+
+            
+            await SendAccountCreatedEmail(user);
+        }
+        else
+        {
+            if (!user.EmailConfirmed)
+            {
+                user.EmailConfirmed = true;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+
+        string role = await GetRole(user);
+        var data = new LoginResponseDTO
+        (
+            FullName: user.FullName ?? user.UserName,
+            Email: user.Email,
+            AccessToken: await _jWTTokenService.GenerateToken(user),
+            RefreshToken: _jWTTokenService.GenerateRefreshToken(),
+            AccessTokenExpiresIn: DateTime.UtcNow.AddDays(1),
+            Role: role,
+            EmailConfirmed: user.EmailConfirmed
+        );
+
+        var refreshToken = new UserRefreshToken()
+        {
+            RefreshToken = data.RefreshToken,
+            UserId = user.Id,
+            User = user,
+            CreatedAtUtc = DateTime.UtcNow,
+            ExpiryDate = DateTime.UtcNow.AddDays(15),
+        };
+        await _refreshTokenRepo.AddToken(refreshToken, default);
+        await _unitOfWork.SaveChangesAsync();
+
+        return Result.Ok(data).WithSuccess(new Success(isNewAccount ? "Account created and verified successfully!" : "Identity verified successfully!"));
+    }
+
+    private async Task SendAccountCreatedEmail(ApplicationUser user)
+    {
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebUtility.UrlEncode(token);
+        var resetPasswordLink = $"{_configuration["FrontendAPIs:ResetPasswordFrontend"]}?email={user.Email}&token={encodedToken}";
+
+        await _emailService.SendEmailAsync(
+            user.Email,
+            "Account Created Successfully - Amigo Arabe Tours",
+            $@"
+                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                    <h2 style='color: #db2777;'>Welcome to Amigo Arabe Tours!</h2>
+                    <p>Hello <b>{user.FullName}</b>,</p>
+                    <p>We have created an account for you to manage your bookings easily.</p>
+                    <p>To secure your account, please click the link below to set your password:</p>
+                    <div style='margin: 30px 0;'>
+                        <a href='{resetPasswordLink}' style='background: #db2777; color: white; padding: 12px 25px; text-decoration: none; border-radius: 50px; font-weight: bold;'>Set Your Password</a>
+                    </div>
+                    <p>After setting your password, you can log in and view all your tour vouchers in your dashboard.</p>
+                    <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                    <p style='font-size: 12px; color: #999;'>Thank you for choosing Amigo Arabe Tours!</p>
+                </div>"
+        );
+    }
 }
+
 

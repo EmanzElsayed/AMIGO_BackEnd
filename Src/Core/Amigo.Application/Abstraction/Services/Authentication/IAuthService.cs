@@ -1,4 +1,4 @@
-﻿
+
 namespace Amigo.Application.Abstraction.Services.Authentication;
 public interface IAuthService
 {
@@ -16,5 +16,6 @@ public interface IAuthService
 
 
     Task<Result<AuthResponseDTO>> RefreshTokenAsync(CancellationToken cancellationToken, RefreshTokenRequestDTO requestDTO);
-
+    Task<Result<IdentifyEmailResponseDTO>> IdentifyEmailAsync(IdentifyEmailRequestDTO request);
+    Task<Result<LoginResponseDTO>> VerifyOTPCheckoutAsync(VerifyOTPCheckoutRequestDTO request);
 }
