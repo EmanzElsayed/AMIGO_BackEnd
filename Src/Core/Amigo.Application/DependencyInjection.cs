@@ -47,7 +47,7 @@ public static class DependencyInjection
         //Services
 
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IEmailService, GoogleEmailService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IEnumService, EnumService>();
         services.AddScoped<IDestinationService , DestinationService>();
         services.AddScoped<IUserTourCatalogService, UserTourCatalogService>();
@@ -91,7 +91,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICheckoutQuoteService, CheckoutQuoteService>();
 
-        services.AddScoped<IOrderService, OrderService>();
+        //services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IBookingService, BookingService>();
 
         services.AddSingleton<PayPalHttpClient>(sp =>
@@ -168,6 +168,9 @@ public static class DependencyInjection
         services.AddHostedService<OutboxWorker>();
 
         services.AddSingleton<EncryptionService>();
+
+        services.AddScoped<IVoucherService, VoucherService>();
+
         return services;
     }
 }

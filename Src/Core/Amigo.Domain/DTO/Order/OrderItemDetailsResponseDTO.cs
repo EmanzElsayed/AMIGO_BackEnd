@@ -8,9 +8,17 @@ namespace Amigo.Domain.DTO.Order
     (
         Guid OrderItemId,
         string TourTitle,
+        string DestinationName,
         DateOnly TourDate,
         TimeOnly StartTime,
-        Guid? BookingId,
-        string? BookingNumber
+        string? MeetingPoint,
+        string? NameAndAddressOfAccomodation,
+        string? CommentForProvider,
+        CancelationPolicyType CancelationPolicyType,
+         TimeSpan CancellationBefore,
+         decimal RefundPercentage,
+         List<OrderedPricesResponseDTO> Prices
+
+
     );
 }

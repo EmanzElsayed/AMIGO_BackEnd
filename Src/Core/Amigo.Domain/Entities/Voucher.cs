@@ -14,12 +14,14 @@ public class Voucher : BaseEntity<Guid>
 
     public DateTime IssuedAt { get; set; }
 
-    public string? PdfUrl { get; set; }
 
-    public string? QRCode { get; set; } = null!;
+    public string Token { get; set; } = null!;
+    public string QRCodeBase64 { get; set; } = null!;
 
     public bool IsSentByEmail { get; set; }
 
     public DateTime? SentAt { get; set; }
+
+    public VoucherStatus Status { get; set; }
 }
 
