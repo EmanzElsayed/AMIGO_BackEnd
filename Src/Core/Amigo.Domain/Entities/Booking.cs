@@ -6,6 +6,8 @@ public class Booking:BaseEntity<Guid>
 {
     public Guid OrderItemId { get; set; }
     public OrderItem OrderItem { get; set; } = null!;
+    public Guid? VoucherId {  get; set; }
+    public Voucher? Voucher { get; set; }
     public Guid PaymentId { get; set; }
     public string UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } 
@@ -21,6 +23,7 @@ public class Booking:BaseEntity<Guid>
     public string? NameAndAddressOfAccomodation { get; set; }
     public string? CommentForProvider { get; set; }
 
+    public bool IsVoucherCreated { get; set; } = false;
   
 
     public ICollection<Traveler> Travelers { get; set; } = new List<Traveler>(); 
