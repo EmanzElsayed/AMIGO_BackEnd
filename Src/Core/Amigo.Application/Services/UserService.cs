@@ -112,6 +112,10 @@ namespace Amigo.Application.Services
                 return Result.Fail(new NotFoundError("Your Account is Missing"));
 
             }
+            if (user.Address is null)
+            {
+                user.Address = new Address();
+            }
             if(!string.IsNullOrWhiteSpace(requestDTO.FullName)) user.FullName = requestDTO.FullName;
             if (!string.IsNullOrWhiteSpace(requestDTO.Nationality)) user.Nationality = requestDTO.Nationality;
             if (!string.IsNullOrWhiteSpace(requestDTO.BuildingNumber)) user.Address.BuildingNumber = requestDTO.BuildingNumber;

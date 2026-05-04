@@ -195,7 +195,7 @@ public class AuthService(
         {
             return FluentValidationExtension.FromIdentityErrors(createResult.Errors);
         }
-        await _userManager.AddToRoleAsync(user, "User");
+        await _userManager.AddToRoleAsync(user, "Public");
 
        
        
