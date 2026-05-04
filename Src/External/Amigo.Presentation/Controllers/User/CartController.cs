@@ -35,13 +35,6 @@ namespace Amigo.Presentation.Controllers.User
             return await _cartService.UpdateItemAsync(id,userId, cartToken, requestDTO);
         }
 
-        [HttpGet("item/{id}/bookingdetail")]
-        public async Task<IResultBase> GetBookingDetail(Guid id)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
-            return await _cartService.GetBookingDetailAsync(id, userId, cartToken);
-        }
 
         [HttpPost("checkout")]
         public async Task<IResultBase> Checkout([FromBody] CheckoutRequestDTO requestDTO)

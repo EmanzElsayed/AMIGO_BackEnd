@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Specifications.VoucherConfiguration;
+using Amigo.Application.Specifications.VoucherConfiguration;
 using Amigo.Domain.DTO.Voucher;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
@@ -66,7 +66,6 @@ namespace Amigo.Application.Services
                 .Replace("{{StartTime}}", booking.OrderItem.StartTime.ToString("hh:mm tt"))
                 .Replace("{{DestinationName}}", booking.OrderItem.DestinationName)
                 .Replace("{{MeetingPoint}}", booking.OrderItem.MeetingPoint ?? "")
-                .Replace("{{NameAndAddressOfAccomodation}}", booking.NameAndAddressOfAccomodation ?? "")
                 .Replace("{{TravelerCount}}", booking.Travelers.Count.ToString())
                 .Replace("{{TravelersRows}}", GenerateTravelersRows(booking.Travelers.ToList()))
                 .Replace("{{QRCode}}", voucher.QRCodeBase64);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,8 +13,6 @@ namespace Amigo.Domain.DTO.Order
         DateOnly TourDate,
         TimeOnly StartTime,
         string? MeetingPoint,
-        string? NameAndAddressOfAccomodation,
-        string? CommentForProvider,
         string CancelationPolicyType,
          TimeSpan CancellationBefore,
          decimal RefundPercentage,

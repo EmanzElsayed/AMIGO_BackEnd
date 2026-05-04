@@ -209,14 +209,6 @@ namespace Amigo.Application.Services
                     //item.Travelers.Add(newTraveler);
             }
 
-            if (dto.PhoneCode != null || dto.PhoneNumber != null || dto.HotelNameAddress != null || dto.CommentForProvider != null)
-            {
-                item.PhoneCode = dto.PhoneCode;
-                item.PhoneNumber = dto.PhoneNumber;
-                item.HotelNameAddress = dto.HotelNameAddress;
-                item.CommentForProvider = dto.CommentForProvider;
-            }
-
             item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
 
             RecalculateCart(cart);
@@ -234,54 +226,7 @@ namespace Amigo.Application.Services
         }
 
 
-        public async Task<Result<CartItemBookingDetailDTO>> GetBookingDetailAsync(Guid itemId, string? userId, string? cartToken)
-        {
-            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
-            if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
-            
-            var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
-            var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
 
-            if (item is null || item.CartId != cart.Id)
-                return Result.Fail(new NotFoundError("This Item Not Found"));
-
-            var travelers = item.Travelers?.Select(t => new CheckoutTravelersRequestDTO
-            (
-                Type: t.Type ?? "",
-                FirstName: t.FullName.Split(' ', 2).FirstOrDefault() ?? "",
-                LastName: t.FullName.Split(' ', 2).LastOrDefault() ?? "",
-                Nationality: t.Nationality,
-                PassportNumber: string.IsNullOrWhiteSpace(t.PassportNumber) ? "" : _encryptionService.Decrypt(t.PassportNumber),
-                BirthDate: t.BirthDate ?? DateOnly.FromDateTime(DateTime.Today)
-            )).ToList() ?? new List<CheckoutTravelersRequestDTO>();
-
-            string? firstName = null;
-            string? lastName = null;
-            string? email = null;
-            string? phoneNumber = null;
-
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user != null)
-                {
-                    firstName = user.FullName?.Split(' ', 2).FirstOrDefault();
-                    lastName = user.FullName?.Split(' ', 2).LastOrDefault();
-                    email = user.Email;
-                    phoneNumber = user.PhoneNumber;
-                }
-            }
-
-            return Result.Ok(new CartItemBookingDetailDTO(
-                travelers, 
-                firstName, 
-                lastName, 
-                email, 
-                item.PhoneCode,
-                item.PhoneNumber ?? phoneNumber, 
-                item.HotelNameAddress, 
-                item.CommentForProvider));
-        }
 
         public async Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO,string userId, string? cartToken)
         {
@@ -493,11 +438,6 @@ namespace Amigo.Application.Services
                                 tour.Cancellation.CancellationBefore,
                             RefundPercentage =
                                 tour.Cancellation.RefundPercentage,
-                            NameAndAddressOfAccomodation = itemRequest.NameAndAddressAccommodation,
-                            CommentForProvider = itemRequest.CommentForProvider,
-                            PhoneCode = itemRequest.PhoneCode,
-                            PhoneNumber = itemRequest.PhoneNumber,
-
                             TravelersDraft = BuildTravelers(itemRequest)
                         };
 

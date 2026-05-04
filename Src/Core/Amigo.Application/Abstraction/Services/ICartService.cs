@@ -21,7 +21,6 @@ namespace Amigo.Application.Abstraction.Services
             UpdateCartItemRequestDTO dto);
         Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO, string userId, string? cartToken);
         
-        Task<Result<CartItemBookingDetailDTO>> GetBookingDetailAsync(Guid itemId, string? userId, string? cartToken);
 
         Task<Result<string>> RemoveItemAsync(
             Guid itemId,

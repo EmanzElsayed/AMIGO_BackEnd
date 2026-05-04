@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Order;
+using Amigo.Domain.DTO.Order;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -37,8 +37,6 @@ namespace Amigo.Application.Mapping
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
                             MeetingPoint: item.MeetingPoint,
-                            NameAndAddressOfAccomodation: item.NameAndAddressOfAccomodation,
-                            CommentForProvider: item.CommentForProvider,
                             CancelationPolicyType: item.CancelationPolicyType.ToString(),
                             CancellationBefore: item.CancellationBefore,
                             RefundPercentage: item.RefundPercentage,
@@ -89,8 +87,6 @@ namespace Amigo.Application.Mapping
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
                             MeetingPoint: item.MeetingPoint,
-                            NameAndAddressOfAccomodation: item.NameAndAddressOfAccomodation,
-                            CommentForProvider: item.CommentForProvider,
                             CancelationPolicyType: item.CancelationPolicyType.ToString(),
                             CancellationBefore: item.CancellationBefore,
                             RefundPercentage: item.RefundPercentage,
