@@ -5,7 +5,8 @@ public class ApplicationUser : IdentityUser
 {
     public string? FullName { get; set; } 
     public bool IsActive { get; set; } = true;
-    public string? Image {  get; set; }
+    public string? ImageUrl { get; set; } 
+    public string? ImagePublicId { get; set; } 
     public Gender? Gender { get; set; }
     public DateOnly? BirthDate { get; set; }
     public string? Nationality { get; set; }

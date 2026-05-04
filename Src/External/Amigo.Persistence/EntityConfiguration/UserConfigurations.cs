@@ -31,7 +31,7 @@ namespace Amigo.Persistence.EntityConfiguration
             builder.Property(u => u.IsActive)
                    .HasDefaultValue(true);
 
-            builder.Property(u => u.Image)
+            builder.Property(u => u.ImageUrl)
                    .HasMaxLength(500);
 
             builder.Property(u => u.Gender)

@@ -22,7 +22,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
             if (!_roleManager.Roles.Any())
             {
                 await _roleManager.CreateAsync(new IdentityRole("Admin"));
-                await _roleManager.CreateAsync(new IdentityRole("Customer"));
+                await _roleManager.CreateAsync(new IdentityRole("Public"));
                 await _roleManager.CreateAsync(new IdentityRole("VIP"));
 
             }

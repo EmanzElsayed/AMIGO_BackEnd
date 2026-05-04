@@ -15,7 +15,7 @@ namespace Amigo.Application.Mapping
             Enum.TryParse<CountryCode>(country, true, out var code);
             return code;
         }
-
+       
         public static Language ToLanguageEnum(string language)
         {
             if (string.IsNullOrWhiteSpace(language))

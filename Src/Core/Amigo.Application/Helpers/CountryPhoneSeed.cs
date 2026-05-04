@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Customer;
+﻿using Amigo.Domain.DTO.User;
 using System;
 using System.Collections.Generic;
 using System.Text;

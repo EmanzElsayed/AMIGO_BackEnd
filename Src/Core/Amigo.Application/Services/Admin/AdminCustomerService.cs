@@ -1,7 +1,7 @@
 ﻿using Amigo.Application.Specifications.BookingSpecification;
-using Amigo.Application.Specifications.CustomerSpecification;
+using Amigo.Application.Specifications.UserSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
-using Amigo.Domain.DTO.Customer;
+using Amigo.Domain.DTO.User;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -86,7 +86,7 @@ namespace Amigo.Application.Services.Admin
                     Id: u.Id,
                     CustomerCode: $"CUST-{u.Id[..Math.Min(4, u.Id.Length)].ToUpper()}",
                     FullName: u.FullName ?? "User",
-                    AvatarUrl: u.Image,
+                    AvatarUrl: u.ImageUrl,
                     Email: u.Email ?? "",
                     PhoneNumber: u.PhoneNumber,
                     Country: country,

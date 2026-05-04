@@ -1,4 +1,5 @@
 ﻿using Amigo.Domain.Enum;
+using PhoneNumbers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,10 +10,23 @@ namespace Amigo.Application.Validation.Common.Rules
 {
     public static class BusinessRules
     {
+
+        
+
         public static bool BeAValidCountry(string countryCode)
         {
             return Enum.TryParse(typeof(CountryCode), countryCode, true, out _);
         }
+
+        public static bool BeAValidGender(string gender)
+        {
+            return Enum.TryParse(typeof(Gender), gender, true, out _);
+        }
+        public static bool BeAValidOrderStatus(string orderStatus)
+        {
+            return Enum.TryParse(typeof(OrderStatus), orderStatus, true, out _);
+        }
+
         public static bool BeAValidCancellation(string cancellationCode)
         {
             return Enum.TryParse(typeof(CancelationPolicyType), cancellationCode, true, out _);
@@ -74,6 +88,8 @@ namespace Amigo.Application.Validation.Common.Rules
         }
 
 
+
+
         public static bool IsValidFlagsEnum<T>(T value) where T : Enum
         {
             var allValues = Enum.GetValues(typeof(T))
@@ -94,5 +110,8 @@ namespace Amigo.Application.Validation.Common.Rules
 
             return ((int)(object)value & ~allValues) == 0;
         }
+
+
+        
     }
 }

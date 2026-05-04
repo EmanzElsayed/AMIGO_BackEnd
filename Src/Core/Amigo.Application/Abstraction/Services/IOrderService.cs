@@ -8,7 +8,10 @@ namespace Amigo.Application.Abstraction.Services
     public interface IOrderService
     {
         Task<Result<OrderDetailsDTO>> GetOrderDetailsAsync(
-            Guid orderId,
+            string orderId,
             string userId);
+
+        Task<Result<PaginatedResponse<OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query);
+
     }
 }

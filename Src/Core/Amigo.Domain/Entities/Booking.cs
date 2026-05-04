@@ -24,7 +24,7 @@ public class Booking:BaseEntity<Guid>
     public string? CommentForProvider { get; set; }
 
     public bool IsVoucherCreated { get; set; } = false;
-  
 
+    public bool ReminderSent { get; set; } = false;
     public ICollection<Traveler> Travelers { get; set; } = new List<Traveler>(); 
 }

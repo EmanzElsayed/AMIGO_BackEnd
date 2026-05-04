@@ -1,5 +1,5 @@
 using Amigo.Application.Abstraction.Services.Admin;
-using Amigo.Domain.DTO.Customer;
+using Amigo.Domain.DTO.User;
 
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Authorization;

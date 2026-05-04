@@ -9,6 +9,8 @@ namespace Amigo.Application.Abstraction.Services
     {
         Task SendVoucherEmail(Booking booking, Voucher voucher);
         Task<Result<GetValidateVoucherDTO>> ValidateVoucher(string token);
+        Task SendReminderEmail(Booking booking);
+
 
     }
 }

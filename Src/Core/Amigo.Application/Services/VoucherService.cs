@@ -1,5 +1,6 @@
 ﻿using Amigo.Application.Specifications.VoucherConfiguration;
 using Amigo.Domain.DTO.Voucher;
+using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using PayPalCheckoutSdk.Orders;
 using System;
@@ -14,9 +15,21 @@ namespace Amigo.Application.Services
         :IVoucherService
     {
         private string? _cachedTemplate;
+        private string? _cachedReminderTemplate;
 
         private readonly IWebHostEnvironment _env = env;
 
+
+        public async Task SendReminderEmail(Booking booking)
+        {
+            var html = BuildReminderHtml(booking);
+
+            await emailService.SendEmailAsync(
+               booking.CustomerEmail,
+               "Reminder: Your tour is tomorrow – Amigo Tours",
+               html
+               );
+        }
         public async Task SendVoucherEmail(Booking booking, Voucher voucher)
         {
             var html = BuildVoucherHtml(booking, voucher);
@@ -57,6 +70,19 @@ namespace Amigo.Application.Services
                 .Replace("{{TravelerCount}}", booking.Travelers.Count.ToString())
                 .Replace("{{TravelersRows}}", GenerateTravelersRows(booking.Travelers.ToList()))
                 .Replace("{{QRCode}}", voucher.QRCodeBase64);
+        }
+
+        private string BuildReminderHtml(Booking booking)
+        {
+            var template = LoadReminderTemplate();
+
+            return template
+                .Replace("{{CustomerName}}", booking.CustomerName)
+                .Replace("{{TourName}}", booking.OrderItem.TourTitle)
+                .Replace("{{TourDate}}", booking.OrderItem.TourDate.ToString("dd MMM yyyy"))
+                .Replace("{{StartTime}}", booking.OrderItem.StartTime.ToString(@"hh\:mm"))
+                .Replace("{{DestinationName}}", booking.OrderItem.DestinationName)
+                .Replace("{{MeetingPoint}}", booking.OrderItem.MeetingPoint ?? "");
         }
         private string GenerateTravelersRows(List<Traveler> travelers)
         {
@@ -99,6 +125,15 @@ namespace Amigo.Application.Services
 
             return _cachedTemplate;
         }
+        private string LoadReminderTemplate()
+        {
+            if (_cachedReminderTemplate != null)
+                return _cachedReminderTemplate;
 
+            var path = Path.Combine(_env.ContentRootPath, "Templates", "reminder.html");
+            _cachedReminderTemplate = File.ReadAllText(path);
+
+            return _cachedReminderTemplate;
+        }
     }
 }

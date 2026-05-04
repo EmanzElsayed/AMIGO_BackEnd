@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Customer;
+﻿using Amigo.Domain.DTO.User;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,12 +7,12 @@ namespace Amigo.Application.Abstraction.Services.Admin
 {
     public interface IAdminCustomerService
     {
-        // Get Customer 
+        // Get User 
 
         Task<Result<PaginatedResponse<AdminCustomerResponseDTO>>> GetCustomersAsync(GetAllCustomersQuery query);
         Task<Result<UpdateVipResponseDTO>> UpdateVipStatusAsync(string id, UpdateVipStatusRequestDTO request);
         Task<Result<GetCustomersDashboardResponseDTO>> GetadminCustomerDashboardAsync();
 
-        //update Customer Status 
+        //update User Status 
     }
 }

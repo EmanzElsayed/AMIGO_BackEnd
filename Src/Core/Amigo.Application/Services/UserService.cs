@@ -1,5 +1,6 @@
-﻿using Amigo.Application.Specifications.CustomerSpecification;
-using Amigo.Domain.DTO.Customer;
+﻿using Amigo.Application.Specifications.UserSpecification;
+using Amigo.Domain.DTO.User;
+using Amigo.Domain.Entities;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Identity;
 using PhoneNumbers;
@@ -9,12 +10,16 @@ using System.Text;
 
 namespace Amigo.Application.Services
 {
-    public class CustomerService(IValidationService _validationService,
+    public class UserService(IValidationService _validationService,
                                     IUserRepo _userRepo,
                                     IConfiguration _configuration,
                                     IJWTTokenService _jWTTokenService,
-                                    UserManager<ApplicationUser> _userManager, IEmailService _emailService) 
-                                                    : ICustomerService
+                                    UserManager<ApplicationUser> _userManager,
+                                    IEmailService _emailService,
+                                    ImageCloudService _imageCloud,
+                                    IUnitOfWork _unitOfWork
+                                    ) 
+                                                    : IUserService
     {
         private readonly PhoneNumberUtil _phoneUtil  = PhoneNumberUtil.GetInstance();
 
@@ -75,6 +80,79 @@ namespace Amigo.Application.Services
 
 
         }
+
+
+        public async Task<Result<UserInfoResponseDTO>> GetUserProfile(string userId)
+        {
+            var user = await _userRepo.GetByIdAsync(new GetUserByIdSpecification(userId));
+            if (user is null)
+            {
+                return Result.Fail(new NotFoundError("Your Account is Missing"));
+
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            var primaryRole = roles.FirstOrDefault() ?? "Public";
+
+            var mappedUser = user.ToUserDTO(primaryRole);
+
+            return Result.Ok(mappedUser);
+
+        }
+        public async Task<Result> UpdateUserProfile(UpdateUserProfileRequestDTO requestDTO, string userId)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestDTO);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
+
+            var user = await _userRepo.GetByIdAsync(new GetUserByIdSpecification(userId));
+            if (user is null)
+            {
+                return Result.Fail(new NotFoundError("Your Account is Missing"));
+
+            }
+            if(!string.IsNullOrWhiteSpace(requestDTO.FullName)) user.FullName = requestDTO.FullName;
+            if (!string.IsNullOrWhiteSpace(requestDTO.Nationality)) user.Nationality = requestDTO.Nationality;
+            if (!string.IsNullOrWhiteSpace(requestDTO.BuildingNumber)) user.Address.BuildingNumber = requestDTO.BuildingNumber;
+            if (!string.IsNullOrWhiteSpace(requestDTO.City)) user.Address.City = requestDTO.City;
+            if (!string.IsNullOrWhiteSpace(requestDTO.Country)) user.Address.Country = requestDTO.Country;
+
+            if (!string.IsNullOrWhiteSpace(requestDTO.Language)) user.Language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            if (!string.IsNullOrWhiteSpace(requestDTO.Gender)) user.Gender = EnumsMapping.ToEnum<Gender>(requestDTO.Gender,false);
+            
+            //create validate for birth date
+            if (requestDTO.BirthDate is not null) user.BirthDate = requestDTO.BirthDate;
+
+            if (!string.IsNullOrWhiteSpace(requestDTO.PhoneNumber) && !string.IsNullOrWhiteSpace(requestDTO.CountryIsoCode))
+            {
+                user.PhoneNumber = FormatPhone(requestDTO.PhoneNumber, requestDTO.CountryIsoCode);
+
+            }
+            if (requestDTO.ImageUrl is not null)
+            {
+                user.ImageUrl = requestDTO.ImageUrl;
+
+                if (user.ImagePublicId is not null)
+                    _imageCloud.DeleteImage(user.ImagePublicId);
+
+                if (requestDTO.ImagePublicId is not null)
+                    user.ImagePublicId = requestDTO.ImagePublicId;
+            }
+
+            try {
+                await _unitOfWork.SaveChangesAsync();
+                return Result.Ok()
+                                 .WithSuccess(new Success("Your Profile Updated Successfully"));
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+
+            }
+
+           
+        }
         private async Task<LoginResponseDTO> BuildLoginResponse(ApplicationUser user)
         {
             return new LoginResponseDTO(
@@ -133,5 +211,6 @@ namespace Amigo.Application.Services
             return _phoneUtil.Format(number, PhoneNumberFormat.E164);
         }
 
+        
     }
 }

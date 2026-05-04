@@ -44,21 +44,19 @@ namespace Amigo.Presentation.Controllers
             try
             {
 
-                //var json = await new StreamReader(Request.Body).ReadToEndAsync();
+                var json = await new StreamReader(Request.Body).ReadToEndAsync();
                 //_logger.LogInformation("PayPal webhook received: {json}", json);
 
-                //var provider = _resolver.Resolve(PaymentProvider.Paypal);
+                var provider = _resolver.Resolve(PaymentProvider.Paypal);
 
-                //var isValid = await provider.VerifyWebhookAsync(Request, json);
+                var isValid = await provider.VerifyWebhookAsync(Request, json);
 
 
-                //if (!isValid)
-                //    return Unauthorized();
-                var json = "emanmohamed";
-                //var eventType = JsonDocument.Parse(json)
-                //    .RootElement.GetProperty("event_type").GetString();
+                if (!isValid)
+                    return Unauthorized();
+                var eventType = JsonDocument.Parse(json)
+                    .RootElement.GetProperty("event_type").GetString();
                 //_logger.LogInformation("PayPal event type: {type}", eventType);
-                var eventType = "PAYMENT.CAPTURE.COMPLETED";
                 switch (eventType)
                 {
                     case "PAYMENT.CAPTURE.COMPLETED":

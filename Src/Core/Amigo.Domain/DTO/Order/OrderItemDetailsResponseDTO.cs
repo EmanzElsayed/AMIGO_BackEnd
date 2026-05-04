@@ -7,6 +7,7 @@ namespace Amigo.Domain.DTO.Order
     public record OrderItemDetailsDTO
     (
         Guid OrderItemId,
+        Guid? TourId,
         string TourTitle,
         string DestinationName,
         DateOnly TourDate,
@@ -14,7 +15,7 @@ namespace Amigo.Domain.DTO.Order
         string? MeetingPoint,
         string? NameAndAddressOfAccomodation,
         string? CommentForProvider,
-        CancelationPolicyType CancelationPolicyType,
+        string CancelationPolicyType,
          TimeSpan CancellationBefore,
          decimal RefundPercentage,
          List<OrderedPricesResponseDTO> Prices

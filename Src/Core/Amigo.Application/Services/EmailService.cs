@@ -40,10 +40,18 @@ namespace Amigo.Application.Services
             email.Body = builder.ToMessageBody();
             int.TryParse(PortValue, out int Port);
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(Host, Port, SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(SenderEmail, Password);
-            await smtp.SendAsync(email);
-            await smtp.DisconnectAsync(true);
+            try
+            {
+               await smtp.ConnectAsync(Host, Port, SecureSocketOptions.SslOnConnect);
+                await smtp.AuthenticateAsync(SenderEmail, Password);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+           
         }
     }
 }

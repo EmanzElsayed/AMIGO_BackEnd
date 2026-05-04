@@ -6,14 +6,13 @@ namespace Amigo.Domain.DTO.Order
 {
     public record PaymentResponseDTO
     (
-        Guid PaymentId,
-         decimal TotalAmount,
-         PaymentMethod? PaymentMethod,
-          PaymentStatus Status,
-          CurrencyCode Currency,
+         Guid PaymentId,
+         decimal PaidAmount,
+          string? PaymentMethod,
+          string PaymentStatus,
+          string PaidCurrency,
           DateTime PaidAt,
-          PaymentProvider Provider,
-          string? RawResponseJson,
+          string? Provider,
           string? FailureReason
     );
 }

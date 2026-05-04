@@ -62,7 +62,7 @@ public sealed class BookingBackgroundService(
         await SlodOutSlots(unitOfWork);
         await CreateVouchers(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
-
+        await SendTourReminderEmails(voucherService, unitOfWork);
 
     }
 
@@ -243,9 +243,30 @@ public sealed class BookingBackgroundService(
     }
 
 
-    
 
-   
+    private async Task SendTourReminderEmails(
+    IVoucherService voucherService,
+    IUnitOfWork unitOfWork)
+    {
+        var now = DateTime.UtcNow;
+
+        var from = now.AddHours(23);
+        var to = now.AddHours(25);
+
+        var bookings = await unitOfWork
+            .GetRepository<Booking, Guid>()
+            .GetAllAsync(new GetBookingsForReminderSpecification(from, to));
+
+        foreach (var booking in bookings)
+        {
+            await voucherService.SendReminderEmail(booking);
+
+            booking.ReminderSent = true;
+        }
+
+        await unitOfWork.SaveChangesAsync();
+    }
+
     private string GenerateVoucherNumber()
     {
         return $"AMG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";

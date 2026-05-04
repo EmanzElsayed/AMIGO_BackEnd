@@ -1,5 +1,5 @@
 ﻿using Amigo.Application.Helpers;
-using Amigo.Domain.DTO.Customer;
+using Amigo.Domain.DTO.User;
 using Amigo.Domain.DTO.PhoneNumber;
 using System;
 using System.Collections.Generic;

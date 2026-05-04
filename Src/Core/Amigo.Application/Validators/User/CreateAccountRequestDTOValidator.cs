@@ -1,14 +1,15 @@
-﻿using Amigo.Domain.DTO.Customer;
+﻿using Amigo.Domain.DTO.User;
 using PhoneNumbers;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Validators.Customer
+namespace Amigo.Application.Validators.User
 {
     public class CreateAccountRequestDTOValidator:AbstractValidator<CreateAccountRequestDTO>
     {
         private readonly PhoneNumberUtil _phoneUtil;
+
         public CreateAccountRequestDTOValidator()
         {
             _phoneUtil = PhoneNumberUtil.GetInstance();
@@ -38,8 +39,8 @@ namespace Amigo.Application.Validators.Customer
               .Must((model, phone) => BeValidPhone(phone, model.CountryIsoCode))
               .WithMessage("Phone Number is invalid.");
 
-        }   
-        private bool BeValidPhone(string phone, string region)
+        }
+        private  bool BeValidPhone(string phone, string region)
         {
             try
             {

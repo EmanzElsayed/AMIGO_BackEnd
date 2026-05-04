@@ -17,7 +17,7 @@ public class AuthService(
                         IValidationService _validationService,
                          IConfiguration _configuration,
                          IEmailService _emailService,
-                         IUserMapping _userMapping,IUnitOfWork _unitOfWork,
+                         IUnitOfWork _unitOfWork,
                          IJWTTokenService _jWTTokenService
     ) : IAuthService
 {
@@ -187,7 +187,7 @@ public class AuthService(
         }
         #endregion
 
-        var user = _userMapping.ToEntity(requestDTO);
+        var user = requestDTO.ToEntity();
 
         var createResult = await _userManager.CreateAsync(user, requestDTO.Password);
 
@@ -195,7 +195,7 @@ public class AuthService(
         {
             return FluentValidationExtension.FromIdentityErrors(createResult.Errors);
         }
-        await _userManager.AddToRoleAsync(user, "Customer");
+        await _userManager.AddToRoleAsync(user, "User");
 
        
        
@@ -310,7 +310,7 @@ public class AuthService(
     private async Task<string> GetRole(ApplicationUser user)
     {
         var roles = await _userManager.GetRolesAsync(user);
-        var primaryRole = roles.FirstOrDefault() ?? "Customer";
+        var primaryRole = roles.FirstOrDefault() ?? "Public";
         return primaryRole;
 
     }
@@ -510,7 +510,7 @@ public class AuthService(
                 return FluentValidationExtension.FromIdentityErrors(createResult.Errors);
             }
 
-            await _userManager.AddToRoleAsync(user, "Customer");
+            await _userManager.AddToRoleAsync(user, "User");
             isNewAccount = true;
 
             

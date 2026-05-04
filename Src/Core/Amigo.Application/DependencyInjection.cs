@@ -34,7 +34,6 @@ public static class DependencyInjection
     {
         // Mapping
 
-        services.AddScoped<IUserMapping, UserMapping>();
         services.AddScoped<IDestinationMapping, DestinationMapping>();
         services.AddScoped<ITourMapping, TourMapping>();
         services.AddScoped<IImageMapping, ImageMapping>();
@@ -67,7 +66,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminCustomerService, AdminCustomerService>();
 
         services.AddScoped<ICurrencyService, CurrencyService>();
-        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICountryInfoService, CountryInfoService>();
 
         services.AddScoped<IImageService, ImageService>();
@@ -171,6 +170,7 @@ public static class DependencyInjection
 
         services.AddScoped<IVoucherService, VoucherService>();
 
+        services.AddScoped<IOrderService, OrderService>();
         return services;
     }
 }

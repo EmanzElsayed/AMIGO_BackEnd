@@ -1,0 +1,111 @@
+﻿using Amigo.Domain.DTO.Order;
+using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text;
+
+namespace Amigo.Application.Mapping
+{
+    public static class OrderMapping
+    {
+        public static List<OrderDetailsDTO> ToDTOs(this IEnumerable<Order> orders)
+        {
+            return orders.Select(o => new OrderDetailsDTO(
+                     OrderId: o.Id,
+                     Status: o.Status.ToString(),
+                     TotalAmount: o.TotalAmount,
+                     Currency: o.Currency.ToString(),
+                     OrderDate: o.OrderDate,
+                     ExpiresAt:o.ExpiresAt,
+                     Payments: o.Payments.Select(p => new PaymentResponseDTO(
+                         PaymentId : p.Id,
+                         PaidAmount:p.TotalAmount,
+                         PaymentMethod:p.PaymentMethod.ToString(),
+                         PaymentStatus:p.Status.ToString(),
+                         PaidCurrency:p.Currency.ToString(),
+                         PaidAt:p.PaidAt,
+                         Provider:p.Provider.ToString(),
+                         FailureReason:p.FailureReason
+
+
+                         )).ToList(),
+                     Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
+                            OrderItemId: item.Id,
+                            TourId: item.TourId,
+                            TourTitle: item.TourTitle,
+                            DestinationName: item.DestinationName,
+                            TourDate: item.TourDate,
+                            StartTime: item.StartTime,
+                            MeetingPoint: item.MeetingPoint,
+                            NameAndAddressOfAccomodation: item.NameAndAddressOfAccomodation,
+                            CommentForProvider: item.CommentForProvider,
+                            CancelationPolicyType: item.CancelationPolicyType.ToString(),
+                            CancellationBefore: item.CancellationBefore,
+                            RefundPercentage: item.RefundPercentage,
+
+                            Prices: item.OrderedPrice.Select(price => new OrderedPricesResponseDTO(
+
+                                    PriceId: price.Id,
+                                    Type: price.Type,
+                                    RetailPrice: price.RetailPrice,
+                                    Quantity: price.Quantity,
+                                    FinalPrice: price.FinalPrice
+                            )).ToList()
+                     )).ToList()
+
+
+            )).ToList();
+        
+        }
+
+
+        public static OrderDetailsDTO ToDTO(this Order o)
+        {
+            return new OrderDetailsDTO( 
+
+                  OrderId: o.Id,
+                     Status: o.Status.ToString(),
+                     TotalAmount: o.TotalAmount,
+                     Currency: o.Currency.ToString(),
+                     OrderDate: o.OrderDate,
+                      ExpiresAt: o.ExpiresAt,
+                     Payments: o.Payments.Select(p => new PaymentResponseDTO(
+                         PaymentId: p.Id,
+                         PaidAmount: p.TotalAmount,
+                         PaymentMethod: p.PaymentMethod.ToString(),
+                         PaymentStatus: p.Status.ToString(),
+                         PaidCurrency: p.Currency.ToString(),
+                         PaidAt: p.PaidAt,
+                         Provider: p.Provider.ToString(),
+                         FailureReason: p.FailureReason
+
+
+                         )).ToList(),
+                     Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
+                            OrderItemId: item.Id,
+                            TourId: item.TourId,
+                            TourTitle: item.TourTitle,
+                            DestinationName: item.DestinationName,
+                            TourDate: item.TourDate,
+                            StartTime: item.StartTime,
+                            MeetingPoint: item.MeetingPoint,
+                            NameAndAddressOfAccomodation: item.NameAndAddressOfAccomodation,
+                            CommentForProvider: item.CommentForProvider,
+                            CancelationPolicyType: item.CancelationPolicyType.ToString(),
+                            CancellationBefore: item.CancellationBefore,
+                            RefundPercentage: item.RefundPercentage,
+                            Prices: item.OrderedPrice.Select(price => new OrderedPricesResponseDTO(
+
+                                    PriceId: price.Id,
+                                    Type: price.Type,
+                                    RetailPrice: price.RetailPrice,
+                                    Quantity: price.Quantity,
+                                    FinalPrice: price.FinalPrice
+                            )).ToList()
+                     )).ToList()
+
+            );
+        
+        }
+    }
+}

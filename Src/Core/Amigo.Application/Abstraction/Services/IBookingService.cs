@@ -7,10 +7,7 @@ namespace Amigo.Application.Abstraction.Services
 {
     public interface IBookingService
     {
-        Task<Result<TravelersSavedResponseDTO>> AddTravelersAsync(
-        Guid bookingId,
-        string userId,
-        AddTravelersRequestDTO dto);
+       
         Task<Result<IEnumerable<UserBookingDTO>>> GetUserBookingsAsync(string userId, string? paymentStatus = null);
 
         Task FinalizeBooking(Guid paymentId);

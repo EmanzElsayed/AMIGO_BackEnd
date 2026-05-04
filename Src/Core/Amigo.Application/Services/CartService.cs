@@ -127,7 +127,7 @@ namespace Amigo.Application.Services
             if (userId is null) return UserType.Public;
             var user = await _userManager.FindByIdAsync(userId);
 
-            string role = "Customer";
+            string role = "User";
 
             if (user is not null)
             {

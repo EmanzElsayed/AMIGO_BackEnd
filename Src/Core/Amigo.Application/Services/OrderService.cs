@@ -1,61 +1,84 @@
-﻿//using Amigo.Application.Specifications.BookingSpecification;
-//using Amigo.Application.Specifications.OrderSpecification;
-//using Amigo.Domain.Abstraction;
-//using Amigo.Domain.DTO.Order;
-//using Amigo.Domain.Entities;
-//using System;
-//using System.Collections.Generic;
-//using System.Text;
+﻿using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.ImagesSpecification;
+using Amigo.Application.Specifications.OrderSpecification;
+using Amigo.Domain.Abstraction;
+using Amigo.Domain.DTO.Order;
+using Amigo.Domain.Entities;
+using Amigo.SharedKernal.DTOs.Tour;
+using PayPalCheckoutSdk.Orders;
+using Stripe.Climate;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using Order = Amigo.Domain.Entities.Order;
 
-//namespace Amigo.Application.Services
-//{
-//    public class OrderService(IUnitOfWork _unitOfWork):IOrderService
-//    {
-//        public async Task<Result<OrderDetailsDTO>> GetOrderDetailsAsync(
-//     Guid orderId,
-//     string userId)
-//        {
-//            var repo = _unitOfWork.GetRepository<Order, Guid>();
+namespace Amigo.Application.Services
+{
+    public class OrderService(IUnitOfWork _unitOfWork) : IOrderService
+    {
+        public async Task<Result<PaginatedResponse<OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query)
+        {
+            if (string.IsNullOrWhiteSpace(query.OrderStatus))
+            {
+                if (!BusinessRules.BeAValidOrderStatus(query.OrderStatus))
+                    return Result.Fail("Invalid Order Status");
+            }
 
-//            var order = await repo.GetByIdAsync(
-//                new GetOrderByIdSpecification(orderId));
+            var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
+            var orders = await orderRepo.GetAllAsync(new GetAllOrdersSpecification(userId, query));
+            var totalItems = await orderRepo.GetCountSpecificationAsync(new GetCountOfOrdersSpecification(userId, query));
 
-//            if (order is null)
-//                return Result.Fail("Order not found");
+            var orderItems = orders.Select(o => o.OrderItems);
 
-//            // Authorization
-//            if (order.UserId != userId)
-//                return Result.Fail("Unauthorized");
 
-//            var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
 
-//            var items = new List<OrderItemDetailsDTO>();
+            var mappedOrders = orders.ToDTOs();
 
-//            foreach (var item in order.OrderItems)
-//            {
-//                var booking = await bookingRepo.GetByIdAsync(
-//                    new GetBookingByItemIdSpecification(item.Id));
+            var totalPages = query.PageSize <= 0
+                ? 0
+                : (int)Math.Ceiling(totalItems / (double)query.PageSize);
 
-//                items.Add(new OrderItemDetailsDTO(
-//                    OrderItemId: item.Id,
-//                    TourTitle: item.TourTitle,
-//                    TourDate: item.TourDate,
-//                    StartTime: item.StartTime,
-                  
-//                    BookingId: booking?.Id,
-//                    BookingNumber: booking?.BookingNumber
-//                ));
-                
-//            }
+            var response = new PaginatedResponse<OrderDetailsDTO>
+            {
+                Data = mappedOrders,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+            };
+            return Result.Ok(response);
 
-//            return Result.Ok(new OrderDetailsDTO(
-//                OrderId: order.Id,
-//                Status: order.Status.ToString(),
-//                TotalAmount: order.TotalAmount,
-//                Currency: order.Currency.ToString(),
-//                OrderDate: order.OrderDate,
-//                Items: items
-//            ));
-//        }
-//    }
-//}
+        }
+
+        public async Task<Result<OrderDetailsDTO>> GetOrderDetailsAsync(string Id, string userId)
+        {
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid OrderId = guid;
+            var order = await _unitOfWork.GetRepository<Domain.Entities.Order, Guid>().GetByIdAsync(new GetNotDeletedOrderByIdSpecification(OrderId));
+
+            if (order is null)
+            {
+                return Result.Fail(new NotFoundError("This Order Not Found"));
+
+            }
+
+           
+            var tourIds = order.OrderItems.Where(i => i.TourId.HasValue).Select(i => i.TourId!.Value).Distinct().ToList();
+            var imageRepo = _unitOfWork.GetRepository<TourImage, Guid>();
+            var images = await imageRepo.GetAllAsync(new GetAllImagesWithToursIdsSpecification(tourIds));
+
+            var imageMap = images
+              .GroupBy(img => img.TourId)
+              .ToDictionary(g => g.Key, g => g.OrderBy(x => x.CreatedDate).Select(x => x.ImageUrl).FirstOrDefault());
+
+
+            var mappedOrder = order.ToDTO();
+
+            return Result.Ok(mappedOrder);
+
+        }
+    }
+}

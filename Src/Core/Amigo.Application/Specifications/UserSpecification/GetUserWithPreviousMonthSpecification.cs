@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Specifications.CustomerSpecification
+namespace Amigo.Application.Specifications.UserSpecification
 {
     public class GetUserWithPreviousMonthSpecification : UserBaseSpecification
     {

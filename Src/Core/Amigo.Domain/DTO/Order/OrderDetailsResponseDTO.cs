@@ -11,6 +11,8 @@ namespace Amigo.Domain.DTO.Order
         decimal TotalAmount,
         string Currency,
         DateTime? OrderDate,
+        DateTime ExpiresAt,
+        List<PaymentResponseDTO> Payments,
         List<OrderItemDetailsDTO> Items
     );
 }
