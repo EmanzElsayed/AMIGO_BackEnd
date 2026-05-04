@@ -1,4 +1,4 @@
-﻿namespace Amigo.Domain.Entities;
+namespace Amigo.Domain.Entities;
 
 [Table($"{nameof(Booking)}", Schema = SchemaConstants.booking_schema)]
 
@@ -19,9 +19,6 @@ public class Booking:BaseEntity<Guid>
     public string? BookingNumber { get; set; }
     public BookingStatus Status { get; set; }
     public DateTime? ConfirmedAt { get; set; }
-
-    public string? NameAndAddressOfAccomodation { get; set; }
-    public string? CommentForProvider { get; set; }
 
     public bool IsVoucherCreated { get; set; } = false;
 

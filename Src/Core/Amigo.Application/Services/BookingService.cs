@@ -122,8 +122,6 @@ namespace Amigo.Application.Services
                     BookingNumber = GenerateBookingNumber(),
                     Status = BookingStatus.Confirmed,
                     ConfirmedAt = DateTime.UtcNow,
-                    NameAndAddressOfAccomodation = item.NameAndAddressOfAccomodation,
-                    CommentForProvider = item.CommentForProvider,
                     Travelers = BuildTravelers(item)
                 };
                 bookingList.Add(booking);

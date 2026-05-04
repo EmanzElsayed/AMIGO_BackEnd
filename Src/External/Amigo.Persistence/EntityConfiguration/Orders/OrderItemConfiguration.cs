@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -17,11 +17,6 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                            .HasMaxLength(400)
                            .IsRequired();
 
-            builder.Property(x => x.NameAndAddressOfAccomodation)
-                          .HasMaxLength(500);
-
-            builder.Property(x => x.CommentForProvider)
-                          .HasMaxLength(500);
 
             builder.Property(x => x.DestinationName)
                    .HasMaxLength(300)

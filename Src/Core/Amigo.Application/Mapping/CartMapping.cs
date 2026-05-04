@@ -57,12 +57,7 @@ namespace Amigo.Application.Mapping
                                 PassportNumber: t.PassportNumber ?? "", 
                                 BirthDate: t.BirthDate ?? DateOnly.FromDateTime(DateTime.Today)
                             ))
-                            .ToList() ?? new List<CheckoutTravelersRequestDTO>(),
-                        
-                        PhoneCode: item.PhoneCode,
-                        PhoneNumber: item.PhoneNumber,
-                        HotelNameAddress: item.HotelNameAddress,
-                        CommentForProvider: item.CommentForProvider
+                            .ToList() ?? new List<CheckoutTravelersRequestDTO>()
                     ))
                     .ToList() ?? new List<CartItemDTO>()
             );

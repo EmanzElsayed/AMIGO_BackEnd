@@ -22,11 +22,6 @@ public class OrderItem:BaseEntity<Guid>
     public string? MeetingPoint { get; set; }
     public TimeSpan Duration { get; set; }
 
-    public string? NameAndAddressOfAccomodation { get; set; }
-    public string? CommentForProvider { get; set; }
-
-    public string? PhoneCode { get; set; } // why you make this eman el sayed
-    public string? PhoneNumber { get; set; }// why you make this eman el sayed
 
     // Cancellation Info :
     public CancelationPolicyType CancelationPolicyType { get; set; }

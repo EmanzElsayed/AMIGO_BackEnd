@@ -21,10 +21,6 @@ namespace Amigo.Domain.DTO.Cart
      decimal TotalAmount          ,
                                    
       List<CartPriceDTO>? Prices,
-      List<CheckoutTravelersRequestDTO>? Travelers,
-      string? PhoneCode = null,
-      string? PhoneNumber = null,
-      string? HotelNameAddress = null,
-      string? CommentForProvider = null
+      List<CheckoutTravelersRequestDTO>? Travelers
    );
 }
