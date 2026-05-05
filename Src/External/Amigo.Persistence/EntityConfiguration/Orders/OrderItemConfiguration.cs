@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Text;
 
 namespace Amigo.Persistence.EntityConfiguration.Orders
@@ -43,6 +44,11 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                    .WithOne(x => x.OrderItem)
                    .HasForeignKey(x => x.OrderItemId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            
+                    builder.HasOne(o => o.Booking)
+                    .WithOne(b => b.OrderItem)
+                    .HasForeignKey<Booking>(b => b.OrderItemId);
 
             builder.HasMany(x => x.TravelersDraft)
                        .WithOne(x => x.OrderItem)

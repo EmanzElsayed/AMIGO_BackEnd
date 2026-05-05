@@ -13,13 +13,21 @@ namespace Amigo.Application.Validation.Common.Specifications
 
             var tourName = string.IsNullOrWhiteSpace(query.TourTitle) ? "": query.TourTitle.Trim().ToLower() ;
             
-            OrderStatus? status = string.IsNullOrWhiteSpace(query.OrderStatus)
+            OrderStatus? orderStatus = string.IsNullOrWhiteSpace(query.OrderStatus)
                 ? null
                 : EnumsMapping.ToEnum<OrderStatus>(query.OrderStatus, false);
 
+            PaymentStatus? paymentStatus = string.IsNullOrWhiteSpace(query.PaymentStatus)
+                        ? null
+                    : EnumsMapping.ToEnum<PaymentStatus>(query.OrderStatus, false);
+
+            BookingStatus? bookingStatus = string.IsNullOrWhiteSpace(query.BookingStatus)
+                       ? null
+                   : EnumsMapping.ToEnum<BookingStatus>(query.BookingStatus, false);
+
             return o => o.UserId == userId &&
 
-                  (string.IsNullOrWhiteSpace(query.OrderStatus) || o.Status == status)
+                  (string.IsNullOrWhiteSpace(query.OrderStatus) || o.Status == orderStatus)
                   &&
                   (query.OrderDate != null || o.OrderDate == query.OrderDate)
 
@@ -28,7 +36,13 @@ namespace Amigo.Application.Validation.Common.Specifications
                   o.OrderItems.Any(i =>
                       !string.IsNullOrWhiteSpace(i.TourTitle) &&
                       i.TourTitle.Trim().ToLower().Contains(tourName)
-                  ));
+                  ))
+
+                 && (string.IsNullOrWhiteSpace(query.PaymentStatus) || o.Payments.Any(p => !p.IsDeleted && p.Status == paymentStatus))
+
+                && (string.IsNullOrWhiteSpace(query.BookingStatus) || o.OrderItems.Any(o => !o.IsDeleted && o.Booking != null && o.Booking.Status == bookingStatus))
+
+                && (query.OrderExpiresAt != null || o.ExpiresAt == query.OrderExpiresAt);
         }
     }
 }

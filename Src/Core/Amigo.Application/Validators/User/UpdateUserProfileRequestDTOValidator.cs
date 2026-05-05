@@ -35,7 +35,7 @@ namespace Amigo.Application.Validators.User
             RuleFor(x => x.ImagePublicId)
               .NotEmpty()
               .When(x => !string.IsNullOrEmpty(x.ImageUrl))
-              .WithMessage("PublicId is required when ImageUrl is provided");
+              .WithMessage("ImagePublicId is required when ImageUrl is provided");
 
             RuleFor(x => x.Gender)
                 .Must(BusinessRules.BeAValidGender)

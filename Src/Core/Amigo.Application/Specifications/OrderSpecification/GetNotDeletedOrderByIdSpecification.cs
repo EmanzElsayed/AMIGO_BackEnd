@@ -15,6 +15,11 @@ namespace Amigo.Application.Specifications.OrderSpecification
                .ThenInclude(t => t.OrderedPrice)
 
                );
+            AddInclude(t => t
+              .Include(t => t.OrderItems)
+              .ThenInclude(t => t.Booking)
+
+              );
             AddInclude(o => o.Payments);
 
         }

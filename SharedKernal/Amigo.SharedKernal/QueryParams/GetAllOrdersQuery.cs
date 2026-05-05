@@ -8,6 +8,12 @@ namespace Amigo.SharedKernal.QueryParams
     {
         public string? OrderStatus { get; set; }
         public DateTime? OrderDate { get; set; }
+        public DateTime? OrderExpiresAt { get; set; }
+        
+        public string? BookingStatus { get; set; }
+
+        public string? PaymentStatus { get; set; }
+
         public string? TourTitle { get; set; }
 
         #region Pagination
