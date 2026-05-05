@@ -31,6 +31,9 @@ namespace Amigo.Application.Mapping
                          )).ToList(),
                      Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
                             OrderItemId: item.Id,
+                            BookingNumber:item.Booking is null?"":  item.Booking.BookingNumber,
+                             BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
+
                             TourId: item.TourId,
                             TourTitle: item.TourTitle,
                             DestinationName: item.DestinationName,
@@ -83,6 +86,8 @@ namespace Amigo.Application.Mapping
                          )).ToList(),
                      Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
                             OrderItemId: item.Id,
+                            BookingNumber: item.Booking is null ? "" : item.Booking.BookingNumber,
+                             BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
                             TourId: item.TourId,
                             TourTitle: item.TourTitle,
                             DestinationName: item.DestinationName,

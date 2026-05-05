@@ -18,6 +18,14 @@ namespace Amigo.Application.Validation.Common.Rules
             return Enum.TryParse(typeof(CountryCode), countryCode, true, out _);
         }
 
+        public static bool BeAValidPaymentStatus(string paymentStatus)
+        {
+            return Enum.TryParse(typeof(PaymentStatus), paymentStatus, true, out _);
+        }
+        public static bool BeAValidBookingStatus(string bookingStatus)
+        {
+            return Enum.TryParse(typeof(BookingStatus), bookingStatus, true, out _);
+        }
         public static bool BeAValidGender(string gender)
         {
             return Enum.TryParse(typeof(Gender), gender, true, out _);

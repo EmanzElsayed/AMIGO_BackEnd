@@ -15,21 +15,20 @@ using Order = Amigo.Domain.Entities.Order;
 
 namespace Amigo.Application.Services
 {
-    public class OrderService(IUnitOfWork _unitOfWork) : IOrderService
+    public class OrderService(IUnitOfWork _unitOfWork, IValidationService _validationService) : IOrderService
     {
         public async Task<Result<PaginatedResponse<OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query)
         {
-            if (string.IsNullOrWhiteSpace(query.OrderStatus))
+            var validationResult = await _validationService.ValidateAsync(query);
+            if (!validationResult.IsSuccess)
             {
-                if (!BusinessRules.BeAValidOrderStatus(query.OrderStatus))
-                    return Result.Fail("Invalid Order Status");
+                return validationResult;
             }
 
             var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
             var orders = await orderRepo.GetAllAsync(new GetAllOrdersSpecification(userId, query));
             var totalItems = await orderRepo.GetCountSpecificationAsync(new GetCountOfOrdersSpecification(userId, query));
 
-            var orderItems = orders.Select(o => o.OrderItems);
 
 
 

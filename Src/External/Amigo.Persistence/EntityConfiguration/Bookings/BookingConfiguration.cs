@@ -31,14 +31,13 @@ namespace Amigo.Persistence.EntityConfiguration.Bookings
                 builder.Property(x => x.Status)
                        .HasConversion<int>();
 
-                builder.HasIndex(x => x.OrderItemId).IsUnique();
+                builder.HasIndex(x => x.OrderItemId).IsUnique(); 
+
                 builder.HasIndex(x => x.UserId);
                 builder.HasIndex(x => x.BookingNumber);
 
-                builder.HasOne(x => x.OrderItem)
-                       .WithMany()
-                       .HasForeignKey(x => x.OrderItemId)
-                       .OnDelete(DeleteBehavior.Restrict);
+
+
 
 
             builder.HasOne(x => x.User)

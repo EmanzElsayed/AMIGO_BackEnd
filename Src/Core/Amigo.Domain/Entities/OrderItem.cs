@@ -7,6 +7,8 @@ public class OrderItem:BaseEntity<Guid>
     public Guid OrderId { get; set; }
     public Order Order { get; set; } = null!;
 
+    public Booking? Booking { get; set; }
+
     // original refs
     public Guid? TourId { get; set; }
     public Guid? SlotId { get; set; }
