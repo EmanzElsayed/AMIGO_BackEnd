@@ -1,4 +1,4 @@
-using Amigo.Application.Specifications.VoucherConfiguration;
+using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Domain.DTO.Voucher;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
@@ -30,11 +30,11 @@ namespace Amigo.Application.Services
                html
                );
         }
-        public async Task SendVoucherEmail(Booking booking, Voucher voucher)
+        public async Task SendVoucherEmail(Booking booking)
         {
-            var html = BuildVoucherHtml(booking, voucher);
-            var qrBytes = Convert.FromBase64String(voucher.QRCodeBase64);
-
+            var html = BuildVoucherHtml(booking);
+            var qrBytes = booking.QRCodeBase64 is not null? Convert.FromBase64String(booking.QRCodeBase64):null;
+            
             await emailService.SendEmailAsync(
                 booking.CustomerEmail,
                 "Your Voucher - Amigo Arabe Tours",
@@ -43,18 +43,18 @@ namespace Amigo.Application.Services
 
         public async Task<Result<GetValidateVoucherDTO>> ValidateVoucher(string token)
         {
-            var voucher = await _unitOfWork.GetRepository<Voucher, Guid>().GetByIdAsync(new GetVoucherWithTokenSpecification(token));
+            var voucher = await _unitOfWork.GetRepository<Booking, Guid>().GetByIdAsync(new GetBookingWithVoucherTokenSpecification(token));
             if (voucher is null)
             {
                 return Result.Fail(new NotFoundError("This Voucher Not Found"));
 
             }
-            var result = new GetValidateVoucherDTO(voucher.VoucherNumber, voucher.Status.ToString(), voucher.IssuedAt);
+            var result = new GetValidateVoucherDTO(voucher.BookingNumber?? "" , voucher.Status.ToString(), voucher.ConfirmedAt.Value);
             return Result.Ok(result);
         }
 
 
-        private string BuildVoucherHtml(Booking booking, Voucher voucher)
+        private string BuildVoucherHtml(Booking booking)
         {
             var template = LoadTemplate();
 
@@ -68,7 +68,7 @@ namespace Amigo.Application.Services
                 .Replace("{{MeetingPoint}}", booking.OrderItem.MeetingPoint ?? "")
                 .Replace("{{TravelerCount}}", booking.Travelers.Count.ToString())
                 .Replace("{{TravelersRows}}", GenerateTravelersRows(booking.Travelers.ToList()))
-                .Replace("{{QRCode}}", voucher.QRCodeBase64);
+                .Replace("{{QRCode}}", booking.QRCodeBase64);
         }
 
         private string BuildReminderHtml(Booking booking)

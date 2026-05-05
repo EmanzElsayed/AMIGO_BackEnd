@@ -2,7 +2,6 @@
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.GetBackGroundServicesSpecification;
-using Amigo.Application.Specifications.VoucherConfiguration;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
@@ -60,7 +59,7 @@ public sealed class BookingBackgroundService(
         await ExpireReservations(unitOfWork);
         await ExpireOrders(unitOfWork);
         await SlodOutSlots(unitOfWork);
-        await CreateVouchers(unitOfWork);
+        //await CreateVouchers(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
         await SendTourReminderEmails(voucherService, unitOfWork);
 
@@ -174,70 +173,49 @@ public sealed class BookingBackgroundService(
 
 
 
-    private async Task CreateVouchers(IUnitOfWork uow)
-    {
-        var bookingRepo = uow.GetRepository<Booking, Guid>();
-        var bookings = await bookingRepo.GetAllAsync(new GetBookingNotSendVoucherSpecifciation());
-
-        var result = new List<Voucher>();
-
-        foreach (var b in bookings)
-        {
-            var token = GenerateToken();
-            var validationUrl = $"{_config["FrontendAPIs:ValidateVoucher"]}/voucher?token={token}";
-
-            var voucher = new Voucher
-            {
-                Id = Guid.NewGuid(),
-                BookingId = b.Id,
-                Booking = b,
-                IssuedAt = DateTime.UtcNow,
-                Status = VoucherStatus.Active,
-                VoucherNumber = GenerateVoucherNumber(),
-                Token = token,
-                QRCodeBase64 = GenerateQrCode(validationUrl)
-            };
-
-            b.IsVoucherCreated = true;
-
-            result.Add(voucher);
-        }
-
-        await uow.GetRepository<Voucher, Guid>().AddRangeAsync(result);
-        await uow.SaveChangesAsync();
-
-    }
-
     private async Task SendVoucherEmails(
     IVoucherService _voucherService,
     IUnitOfWork _unitOfWork
     )
     {
+        var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
+        var bookings = await bookingRepo.GetAllAsync(new GetBookingNotSendVoucherSpecifciation());
+        if (!bookings.Any()) return;
+
         var semaphore = new SemaphoreSlim(5);
 
-        var vouchers = await _unitOfWork.GetRepository<Voucher, Guid>().GetAllAsync(new GetVoucherNotSendEmailSpecification());
-        if (!vouchers.Any()) return; 
+       
+       
 
-        var tasks = vouchers.Select(async voucher =>
+        var tasks = bookings.Select(async booking =>
         {
             await semaphore.WaitAsync();
 
             try
             {
+                var voucherToken = GenerateToken();
+                var validationUrl = $"{_config["FrontendAPIs:ValidateVoucher"]}/voucher?token={voucherToken}";
 
-                await _voucherService.SendVoucherEmail(voucher.Booking, voucher);
-                voucher.IsSentByEmail = true;
-                voucher.SentAt = DateTime.UtcNow;
+
+                booking.QRCodeBase64 = GenerateQrCode(validationUrl);
+                booking.VoucherToken  = voucherToken;
+                await _voucherService.SendVoucherEmail(booking);
+
+                booking.IsVoucherSentByEmail = true;
+                booking.VoucherSentAt = DateTime.UtcNow;
                 await _unitOfWork.SaveChangesAsync();
+
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Background job failed");
             }
             finally
             {
                 semaphore.Release();
             }
         });
+
 
         await Task.WhenAll(tasks);
     }
@@ -267,18 +245,8 @@ public sealed class BookingBackgroundService(
         await unitOfWork.SaveChangesAsync();
     }
 
-    private string GenerateVoucherNumber()
-    {
-        return $"AMG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
-    }
-    private string GenerateToken()
-    {
-        var bytes = RandomNumberGenerator.GetBytes(32);
-        return Convert.ToBase64String(bytes)
-            .Replace("+", "")
-            .Replace("/", "")
-            .Replace("=", "");
-    }
+    
+   
 
     private string GenerateQrCode(string text)
     {
@@ -288,5 +256,10 @@ public sealed class BookingBackgroundService(
         var qrBytes = qrCode.GetGraphic(20);
 
         return Convert.ToBase64String(qrBytes);
+    }
+
+    private string GenerateToken()
+    { 
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
     }
 }

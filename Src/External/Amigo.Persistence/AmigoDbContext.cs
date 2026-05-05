@@ -48,7 +48,6 @@ namespace Amigo.Persistence
         public DbSet<OrderedPrice> OrderedPrices { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<CancellationRequest> CancellationRequests { get; set; }
-        public DbSet<Voucher> vouchers { get; set; }
         public DbSet<Refund> Refunds { get; set; }
 
 

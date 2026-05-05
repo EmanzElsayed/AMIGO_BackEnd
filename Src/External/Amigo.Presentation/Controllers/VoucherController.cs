@@ -11,7 +11,7 @@ namespace Amigo.Presentation.Controllers
     public class VoucherController(IVoucherService voucherService):BaseController
     {
         [HttpGet("validate")]
-        public async Task<IResultBase> validateVoucher([FromBody]string token)
+        public async Task<IResultBase> validateVoucher([FromQuery] string token)
         {
             return await voucherService.ValidateVoucher(token);
         }

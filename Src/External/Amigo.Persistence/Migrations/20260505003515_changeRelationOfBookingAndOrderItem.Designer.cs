@@ -127,7 +127,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<bool>("IsVoucherCreated")
+                    b.Property<bool>("IsVoucherSentByEmail")
                         .HasColumnType("boolean");
 
                     b.Property<int?>("ModifiedBy")

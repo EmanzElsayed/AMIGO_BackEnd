@@ -17,6 +17,9 @@ namespace Amigo.Persistence.EntityConfiguration.Bookings
                .HasMaxLength(450)
                .IsRequired();
 
+            builder.Property(b => b.IsVoucherSentByEmail)
+                        .HasDefaultValue(false);
+                            
                 builder.Property(x => x.CustomerName)
                        .HasMaxLength(250)
                        .IsRequired();

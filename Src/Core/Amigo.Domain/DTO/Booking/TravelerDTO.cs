@@ -8,6 +8,7 @@ namespace Amigo.Domain.DTO.Booking
      (
          string FullName,
          string Nationality,
+         string Type,
          DateOnly? BirthDate,
          string? PassportNumber,
          string? PhoneNumber

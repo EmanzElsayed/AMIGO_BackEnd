@@ -57,7 +57,7 @@ namespace Amigo.Persistence.Migrations
                 defaultValue: "");
 
             migrationBuilder.AddColumn<bool>(
-                name: "IsVoucherCreated",
+                name: "IsVoucherSentByEmail",
                 schema: "booking",
                 table: "Booking",
                 type: "boolean",
@@ -103,7 +103,7 @@ namespace Amigo.Persistence.Migrations
                 table: "Voucher");
 
             migrationBuilder.DropColumn(
-                name: "IsVoucherCreated",
+                name: "IsVoucherSentByEmail",
                 schema: "booking",
                 table: "Booking");
 
