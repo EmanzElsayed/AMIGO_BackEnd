@@ -8,9 +8,9 @@ using System.Text;
 namespace Amigo.Application.Specifications.OrderSpecification
 {
     public class GetAllOrdersSpecification : BaseSpecification<Order, Guid>
-    {
+    { 
         public GetAllOrdersSpecification(string userId , GetAllOrdersQuery query)
-            : base(
+            : base( 
               OrderCommonSpecifciation.BuildCriteriaForUser(query,userId)
             )
         {
@@ -19,6 +19,7 @@ namespace Amigo.Application.Specifications.OrderSpecification
             AddInclude(o => o.Include(i => i.OrderItems).ThenInclude(i => i.Booking ));
 
             AddInclude(o => o.Payments);
+            ApplyPagination(query.PageSize, query.PageNumber);    
         }
     }
 }

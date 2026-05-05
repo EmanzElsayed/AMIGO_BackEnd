@@ -3,6 +3,7 @@ using System;
 using Amigo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    partial class AmigoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260505003515_changeRelationOfBookingAndOrderItem")]
+    partial class changeRelationOfBookingAndOrderItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1153,6 +1156,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("OrderId1")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1182,6 +1188,8 @@ namespace Amigo.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("OrderId1");
 
                     b.ToTable("Payment", "payment");
                 });
@@ -2757,10 +2765,14 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.Payment", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Order", "Order")
-                        .WithMany("Payments")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Amigo.Domain.Entities.Order", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId1");
 
                     b.Navigation("Order");
                 });

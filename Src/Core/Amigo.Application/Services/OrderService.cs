@@ -26,7 +26,9 @@ namespace Amigo.Application.Services
             }
 
             var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
-            var orders = await orderRepo.GetAllAsync(new GetAllOrdersSpecification(userId, query));
+            var orderSpec = new GetAllOrdersSpecification(userId, query);
+            var orders = await orderRepo.GetAllAsync(orderSpec);
+            
             var totalItems = await orderRepo.GetCountSpecificationAsync(new GetCountOfOrdersSpecification(userId, query));
 
 

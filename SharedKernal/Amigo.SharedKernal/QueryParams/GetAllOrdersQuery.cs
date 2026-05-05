@@ -10,6 +10,7 @@ namespace Amigo.SharedKernal.QueryParams
         public DateTime? OrderDate { get; set; }
         public DateTime? OrderExpiresAt { get; set; }
         
+        public string? BookingNumber { get; set; }
         public string? BookingStatus { get; set; }
 
         public string? PaymentStatus { get; set; }
@@ -22,7 +23,13 @@ namespace Amigo.SharedKernal.QueryParams
         private const int MaxPageSize = 10;
 
 
-        public int PageNumber = 1;
+        private int _pageNumber = 1;
+
+        public int PageNumber
+        {
+            get => _pageNumber;
+            set => _pageNumber = value < 1 ? 1 : value;
+        }
 
         private int pageSize = DefaultPageSize;
 

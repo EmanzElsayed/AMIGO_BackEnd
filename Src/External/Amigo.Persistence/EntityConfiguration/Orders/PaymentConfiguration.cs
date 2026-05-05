@@ -45,7 +45,7 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
             builder.HasIndex(x => x.OrderId);
 
             builder.HasOne(x => x.Order)
-                   .WithMany()
+                   .WithMany(o => o.Payments)
                    .HasForeignKey(x => x.OrderId)
                    .OnDelete(DeleteBehavior.Restrict);
         }

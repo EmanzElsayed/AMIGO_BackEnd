@@ -8,7 +8,7 @@ namespace Amigo.Domain.DTO.Order
     (
         Guid OrderItemId,
         string? BookingNumber,
-        string?BookingStatus,
+        string? BookingStatus,
         Guid? TourId,
         string TourTitle,
         string DestinationName,
