@@ -1,9 +1,10 @@
 using Amigo.SharedKernal.DTOs.Destination;
+using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.QueryParams;
 
 namespace Amigo.Application.Abstraction.Services;
 
 public interface ITopDestinationsReader
 {
-    Task<IReadOnlyList<TopDestinationSummaryResponseDTO>> GetTopAsync(GetTopDestinationsQuery query, CancellationToken cancellationToken = default);
+    Task<PaginatedResponse<TopDestinationSummaryResponseDTO>> GetTopAsync(GetTopDestinationsQuery query, CancellationToken cancellationToken = default);
 }

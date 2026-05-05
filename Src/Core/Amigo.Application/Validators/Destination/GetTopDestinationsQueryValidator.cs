@@ -7,8 +7,11 @@ public class GetTopDestinationsQueryValidator : AbstractValidator<GetTopDestinat
 {
     public GetTopDestinationsQueryValidator()
     {
-        RuleFor(x => x.Take)
+        RuleFor(x => x.PageSize)
             .InclusiveBetween(1, 50);
+
+        RuleFor(x => x.PageNumber)
+            .GreaterThanOrEqualTo(1);
 
         RuleFor(x => x.Language)
             .Must(BusinessRules.BeAValidLanguage)
