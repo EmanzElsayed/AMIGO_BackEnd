@@ -1,4 +1,4 @@
-﻿namespace Amigo.Application.Services
+namespace Amigo.Application.Services
 {
     public class DestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork ,
@@ -59,7 +59,7 @@
             return Result.Ok(mappedDestinationData);
         }
 
-        public async Task<Result<IReadOnlyList<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery)
+        public async Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery)
         {
             var validationResult = await _validationService.ValidateAsync(requestQuery);
             if (!validationResult.IsSuccess)

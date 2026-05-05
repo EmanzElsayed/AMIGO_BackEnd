@@ -4,13 +4,14 @@ using Amigo.Application.Specifications.DestinationSpecification.User;
 using Amigo.Domain.Enum;
 using Amigo.SharedKernal.DTOs.Destination;
 using Amigo.SharedKernal.QueryParams;
+using Amigo.SharedKernal.DTOs.Results;
 using Microsoft.EntityFrameworkCore;
 
 namespace Amigo.Persistence.Services;
 
 public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
 {
-    public async Task<IReadOnlyList<TopDestinationSummaryResponseDTO>> GetTopAsync(
+    public async Task<PaginatedResponse<TopDestinationSummaryResponseDTO>> GetTopAsync(
         GetTopDestinationsQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -49,13 +50,7 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
                 AverageRating = activeTours
                     .SelectMany(t => t.Reviews.Where(r => !r.IsDeleted))
                     .Average(r => (double?)r.Rate),
-                TravelerCount = 0/*_db.Bookings
-                    .Where(b =>
-                        !b.IsDeleted
-                        && b.AvailableSlots.TourSchedule.Tour.DestinationId == d.Id
-                        && !b.AvailableSlots.TourSchedule.Tour.IsDeleted)
-                    .SelectMany(b => b.PeopleBookings.Where(pb => !pb.IsDeleted))
-                    .Sum(pb => (int?)pb.NoOfPeopleBooking) ?? 0*/,
+                TravelerCount = 0,
                 MinFromPrice = currencyFilter == null
                     ? null
                     : activeTours
@@ -70,15 +65,27 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
         var stats = await statsQuery.ToListAsync(cancellationToken);
 
         var ranked = stats
-            .OrderByDescending(x => x.TravelerCount)
-            .ThenByDescending(x => x.ReviewCount)
-            .ThenByDescending(x => x.ActivityCount)
-            .Take(query.Take)
+            .OrderByDescending(x => x.ActivityCount)
             .ToList();
 
-        var ids = ranked.Select(x => x.Id).ToList();
+        var totalItems = ranked.Count;
+
+        var pagedItems = ranked
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToList();
+
+        var ids = pagedItems.Select(x => x.Id).ToList();
         if (ids.Count == 0)
-            return Array.Empty<TopDestinationSummaryResponseDTO>();
+        {
+            return new PaginatedResponse<TopDestinationSummaryResponseDTO>
+            {
+                Data = Array.Empty<TopDestinationSummaryResponseDTO>(),
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                TotalItems = totalItems
+            };
+        }
 
         var translationSpec = new DestinationTranslationsByDestinationIdsSpecification(ids);
         var translations = await SpeceficationEvaluator
@@ -100,7 +107,7 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
             return list.OrderBy(t => t.Language).FirstOrDefault()?.Name ?? "";
         }
 
-        return ranked
+        var resultData = pagedItems
             .Select(x => new TopDestinationSummaryResponseDTO(
                 DestinationId: x.Id,
                 Name: ResolveName(x.Id),
@@ -110,8 +117,15 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
                 ReviewCount: x.ReviewCount,
                 TravelerCount: x.TravelerCount,
                 AverageRating: x.AverageRating
-
             ))
             .ToList();
+
+        return new PaginatedResponse<TopDestinationSummaryResponseDTO>
+        {
+            Data = resultData,
+            PageNumber = query.PageNumber,
+            PageSize = query.PageSize,
+            TotalItems = totalItems
+        };
     }
 }

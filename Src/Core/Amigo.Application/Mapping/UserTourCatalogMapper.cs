@@ -276,7 +276,7 @@ public static class UserTourCatalogMapper
             ? null
             : prices.Min(p => p.Cost * (1 - p.Discount / 100m));
 
-        var currency = tour.CurrencyCode.ToString();
+        var currency = "USD";
         string? fromDisplay = minRetail.HasValue ? $"{currency} {minRetail.Value:0.##}" : null;
 
         string? originalDisplay = null;

@@ -305,7 +305,7 @@ public class UserTourCatalogService(
                     Item = item,
                     DestinationSlug = SlugHelper.ToUrlSlug(destinationName),
                     Rating = item.AverageRating ?? 0m,
-                    BaseCurrency = t.CurrencyCode.ToString(),
+                    BaseCurrency = "USD",
                     BaseAmount = baseAmount
                 };
             })

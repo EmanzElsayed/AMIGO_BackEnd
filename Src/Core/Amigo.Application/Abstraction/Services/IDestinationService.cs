@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Destination;
+using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.Entities;
 using Amigo.SharedKernal.DTOs.Destination;
 using Amigo.SharedKernal.DTOs.Results;
@@ -14,6 +14,6 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery );
         Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string destinationId ,GetLanuageQuery requestQuery);
 
-        Task<Result<IReadOnlyList<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery);
+        Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery);
     }
 }
