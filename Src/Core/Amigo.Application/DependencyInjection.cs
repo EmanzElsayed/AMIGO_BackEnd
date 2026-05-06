@@ -171,6 +171,8 @@ public static class DependencyInjection
         services.AddScoped<IVoucherService, VoucherService>();
 
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IAdminOrderService, AdminOrderService>();
+
         return services;
     }
 }

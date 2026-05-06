@@ -65,8 +65,13 @@ namespace Amigo.Application.Services
                 return Result.Fail(new NotFoundError("This Order Not Found"));
 
             }
+            if (order.UserId != userId)
+            {
+                return Result.Fail(new UnauthorizedError("Unauthorized"));
 
-           
+            }
+
+
             var tourIds = order.OrderItems.Where(i => i.TourId.HasValue).Select(i => i.TourId!.Value).Distinct().ToList();
             var imageRepo = _unitOfWork.GetRepository<TourImage, Guid>();
             var images = await imageRepo.GetAllAsync(new GetAllImagesWithToursIdsSpecification(tourIds));
