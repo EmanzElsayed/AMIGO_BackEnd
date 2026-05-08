@@ -64,6 +64,9 @@ public static class DependencyInjection
 
         services.AddScoped<ISlotsRepo, SlotsRepo>();
 
+        services.AddSingleton<ICacheRepo, MemoryCacheRepo>();
+
+        services.AddMemoryCache();
         return services;
     }
 }

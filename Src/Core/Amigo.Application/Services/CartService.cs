@@ -12,6 +12,7 @@ namespace Amigo.Application.Services
     public class CartService(IUnitOfWork _unitOfWork ,
         EncryptionService _encryptionService,
         IPaymentOrchestrator _paymentOrchestrator,
+        ICurrencyRateService _currencyRateService,
         ISlotsRepo _slotsRepo,
         Microsoft.AspNetCore.Identity.UserManager<Amigo.Domain.Entities.Identity.ApplicationUser> _userManager
         ) 
@@ -27,7 +28,7 @@ namespace Amigo.Application.Services
                     Guid.Empty,
                     userId,
                     cartToken,
-                    "USD",
+                    null,
                     0,
                     0,
                     DateTime.UtcNow,
@@ -46,6 +47,15 @@ namespace Amigo.Application.Services
                 AddCartItemRequestDTO requestDTO)
         {
             var cart = await GetOrCreateCart(userId, cartToken);
+
+            CurrencyCode requestedCurrency = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.RequestedCurrencyCode, false);
+
+            if (!cart.Items.Any())
+            {
+                cart.CurrencyCode = requestedCurrency;
+
+
+            }
 
 
             var tour = await _unitOfWork.GetRepository<Tour,Guid>().GetByIdAsync(new GetTourByIdSpecification(requestDTO.TourId));
@@ -93,6 +103,14 @@ namespace Amigo.Application.Services
 
             var userType = await GetUserType(userId);
 
+            var rate = await _currencyRateService.GetRateAsync(
+                    CurrencyConstants.BaseCurrency,
+                    cart.CurrencyCode.Value);
+
+            if (!rate.IsSuccess)
+                return Result.Fail(rate.Errors);
+
+
             foreach (var p in requestDTO.Prices)
             {
                 var retailPrice = GetPriceFromTour(tour, p.Type,requestDTO.Language,userType);
@@ -102,7 +120,10 @@ namespace Amigo.Application.Services
                     
                     Type = p.Type,
                     Quantity = p.Quantity,
-                    RetailPrice = retailPrice
+                    BaseRetailPrice = retailPrice,
+                    ConvertedRetailPrice = retailPrice * rate.ValueOrDefault,
+                    ExchangeRate = rate.ValueOrDefault
+
                 });
             }
 
@@ -164,6 +185,13 @@ namespace Amigo.Application.Services
 
                 var userType = await GetUserType(userId);
 
+                var rate = await _currencyRateService.GetRateAsync(
+                CurrencyConstants.BaseCurrency,
+                cart.CurrencyCode.Value);
+
+                if (!rate.IsSuccess)
+                    return Result.Fail(rate.Errors);
+
                 foreach (var p in dto.Prices)
                 {
                     var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language, userType);
@@ -174,7 +202,9 @@ namespace Amigo.Application.Services
                         CartItemId = item.Id,
                         Type = p.Type,
                         Quantity = p.Quantity,
-                        RetailPrice = retailPrice
+                        BaseRetailPrice = retailPrice,
+                        ConvertedRetailPrice = retailPrice * rate.ValueOrDefault,
+                        ExchangeRate = rate.ValueOrDefault
                     });
                 }
 
@@ -248,7 +278,7 @@ namespace Amigo.Application.Services
                     {
                         Id = Guid.NewGuid(),
                         UserId = userId,
-                        Currency = cart.CurrencyCode,
+                        Currency = cart.CurrencyCode.GetValueOrDefault(),
                         Status = OrderStatus.PendingPayment,
                         OrderDate = DateTime.UtcNow,
                         TotalAmount = 0,
@@ -426,7 +456,7 @@ namespace Amigo.Application.Services
                             SlotId = item.SlotId,
                             TourDate = item.TourDate,
                             StartTime = item.StartTime,
-                            CurrencyCode = cart.CurrencyCode,
+                            //CurrencyCode = cart.CurrencyCode,
                             Language = item.Language,
                             MeetingPoint = tour.MeetingPoint,
                             Duration = tour.Duration,
@@ -442,6 +472,13 @@ namespace Amigo.Application.Services
                         };
 
                         decimal itemTotal = 0;
+                        var rate = await _currencyRateService.GetRateAsync(
+                        CurrencyConstants.BaseCurrency,
+                        cart.CurrencyCode.Value);
+
+                        if (!rate.IsSuccess)
+                            return Result.Fail(rate.Errors);
+
 
                         foreach (var cartPrice in prices)
                         {
@@ -454,7 +491,7 @@ namespace Amigo.Application.Services
 
                             var currentRetailPrice = priceEntity.RetailPrice;
 
-                            if (cartPrice.RetailPrice != currentRetailPrice)
+                            if (cartPrice.BaseRetailPrice != currentRetailPrice)
                             {
                                 response.ChangedPrices.Add(
                                     new CheckoutPriceResponseDTO(
@@ -467,10 +504,12 @@ namespace Amigo.Application.Services
                                 Id = Guid.NewGuid(),
                                 Type = cartPrice.Type,
                                 Quantity = cartPrice.Quantity,
-                                RetailPrice = currentRetailPrice
+                                BaseRetailPrice = currentRetailPrice,
+                                ExchangeRate = rate.ValueOrDefault,
+                                ConvertedRetailPrice = rate.ValueOrDefault * currentRetailPrice,
                             });
 
-                            itemTotal += currentRetailPrice * cartPrice.Quantity;
+                            itemTotal += rate.ValueOrDefault * currentRetailPrice * cartPrice.Quantity;
                         }
 
                         total += itemTotal;
@@ -497,7 +536,7 @@ namespace Amigo.Application.Services
                         OrderId = order.Id,
                         TotalAmount = total,
                         Status = PaymentStatus.Pending,
-                        Currency = cart.CurrencyCode
+                        Currency = cart.CurrencyCode.GetValueOrDefault()
                     };
 
                     await _unitOfWork
@@ -581,7 +620,7 @@ namespace Amigo.Application.Services
                     p.Translations.Any(t =>
                         t.Type == type &&
                         t.Language == lang));
-
+            
             if (price == null)
                 return 0;
 
@@ -636,7 +675,7 @@ namespace Amigo.Application.Services
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 CartToken = cartToken ?? Guid.NewGuid().ToString(),
-                CurrencyCode = CurrencyCode.USD,
+                CurrencyCode = null,
                 LastUpdatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(15)
             };

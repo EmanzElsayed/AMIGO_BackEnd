@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Amigo.Application.Services
+namespace Amigo.Application.Services.BackGroundServices
 {
     public class OutboxWorker : BackgroundService
     {

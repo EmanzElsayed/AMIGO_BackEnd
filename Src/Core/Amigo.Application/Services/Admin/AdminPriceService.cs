@@ -32,7 +32,7 @@ namespace Amigo.Application.Services.Admin
         //        await _unitOfWork.GetRepository<Price,Guid>().AddAsync(price);
         //        await _unitOfWork.SaveChangesAsync();
 
-        //        return Result.Ok(new CreatePriceResponseDTO(price.RetailPrice))
+        //        return Result.Ok(new CreatePriceResponseDTO(price.BaseRetailPrice))
         //                    .WithSuccess(new Success("Price Created Successfully")
         //                    .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
         //    }

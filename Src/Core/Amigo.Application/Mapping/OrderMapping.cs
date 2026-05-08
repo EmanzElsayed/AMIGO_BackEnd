@@ -48,7 +48,7 @@ namespace Amigo.Application.Mapping
 
                                     PriceId: price.Id,
                                     Type: price.Type,
-                                    RetailPrice: price.RetailPrice,
+                                    ConvertedRetailPrice: price.ConvertedRetailPrice,
                                     Quantity: price.Quantity,
                                     FinalPrice: price.FinalPrice
                             )).ToList()
@@ -102,7 +102,7 @@ namespace Amigo.Application.Mapping
 
                                     PriceId: price.Id,
                                     Type: price.Type,
-                                    RetailPrice: price.RetailPrice,
+                                    ConvertedRetailPrice: price.BaseRetailPrice,
                                     Quantity: price.Quantity,
                                     FinalPrice: price.FinalPrice
                             )).ToList()
@@ -154,7 +154,7 @@ namespace Amigo.Application.Mapping
 
                                     PriceId: price.Id,
                                     Type: price.Type,
-                                    RetailPrice: price.RetailPrice,
+                                    ConvertedRetailPrice: price.BaseRetailPrice,
                                     Quantity: price.Quantity,
                                     FinalPrice: price.FinalPrice
                             )).ToList()
@@ -207,7 +207,7 @@ namespace Amigo.Application.Mapping
 
                                     PriceId: price.Id,
                                     Type: price.Type,
-                                    RetailPrice: price.RetailPrice,
+                                    ConvertedRetailPrice: price.BaseRetailPrice,
                                     Quantity: price.Quantity,
                                     FinalPrice: price.FinalPrice
                             )).ToList()

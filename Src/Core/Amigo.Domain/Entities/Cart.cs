@@ -9,7 +9,7 @@ public class Cart:BaseEntity<Guid>
 
     public string? CartToken { get; set; } //cookie/localStorage token
 
-    public CurrencyCode CurrencyCode { get; set; }
+    public CurrencyCode? CurrencyCode { get; set; }
 
     public decimal TotalAmount { get; set; }
 

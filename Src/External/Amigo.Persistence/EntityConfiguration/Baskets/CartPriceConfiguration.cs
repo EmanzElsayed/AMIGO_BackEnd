@@ -14,8 +14,14 @@ namespace Amigo.Persistence.EntityConfiguration.Baskets
                    .HasMaxLength(100)
                    .IsRequired();
 
-            builder.Property(x => x.RetailPrice)
-                   .HasColumnType("decimal(18,2)");
+            builder.Property(x => x.BaseRetailPrice)
+                   .HasColumnType("decimal(18,4)");
+
+            builder.Property(x => x.ConvertedRetailPrice)
+                  .HasColumnType("decimal(18,4)");
+
+            builder.Property(x => x.ExchangeRate)
+                .HasColumnType("decimal(18,4)");
 
             builder.Ignore(x => x.FinalPrice);
 

@@ -9,7 +9,7 @@ namespace Amigo.Domain.DTO.Cart
 
             Guid Id,
             string Type,
-            decimal RetailPrice,
+            decimal ConvertedRetailPrice,
             int Quantity,
             decimal FinalPrice
         );

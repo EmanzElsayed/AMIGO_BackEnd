@@ -41,7 +41,7 @@ namespace Amigo.Application.Mapping
                             (
                                 Id: price.Id,
                                 Type: price.Type,
-                                RetailPrice: price.RetailPrice,
+                                ConvertedRetailPrice: price.ConvertedRetailPrice,
                                 Quantity: price.Quantity,
                                 FinalPrice: price.FinalPrice
                             ))

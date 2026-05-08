@@ -23,8 +23,7 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                    .HasMaxLength(300)
                    .IsRequired();
 
-            builder.Property(x => x.CurrencyCode)
-                   .HasConversion<int>();
+         
 
             builder.Property(x => x.Language)
                    .HasConversion<int>();

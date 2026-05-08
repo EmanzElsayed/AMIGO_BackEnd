@@ -12,7 +12,7 @@ using QRCoder;
 using System.Security.Cryptography;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
-namespace Amigo.Application.Services;
+namespace Amigo.Application.Services.BackGroundServices;
 
 /// <summary>
 /// Production Background Worker
@@ -59,11 +59,14 @@ public sealed class BookingBackgroundService(
         await ExpireReservations(unitOfWork);
         await ExpireOrders(unitOfWork);
         await SlodOutSlots(unitOfWork);
-        //await CreateVouchers(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
         await SendTourReminderEmails(voucherService, unitOfWork);
 
     }
+
+
+
+
 
     // =====================================================
     // 1) Expire Pending Reservations

@@ -217,46 +217,46 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         var Euro = new Currency
         {
             Id = Guid.NewGuid(),
-            CurrencyCode = CurrencyCode.Euro,
+            CurrencyCode = CurrencyCode.EUR,
             Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776216203/euro_ngyshv.png",
             Translations =
                 {
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Euro",
+                        Name = "EUR",
                         Language = Language.en
                     },
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Euro",
+                        Name = "EUR",
                         Language = Language.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Euro",
+                        Name = "EUR",
                         Language = Language.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Euro",
+                        Name = "EUR",
                         Language = Language.fr
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Euro",
+                        Name = "EUR",
                         Language = Language.pt
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Euro",
+                        Name = "EUR",
                         Language = Language.br
                     },
             }

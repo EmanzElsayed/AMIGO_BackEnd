@@ -485,7 +485,7 @@ namespace Amigo.Persistence.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("RetailPrice")
+                    b.Property<decimal>("BaseRetailPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Type")
@@ -1048,7 +1048,7 @@ namespace Amigo.Persistence.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("RetailPrice")
+                    b.Property<decimal>("BaseRetailPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Type")

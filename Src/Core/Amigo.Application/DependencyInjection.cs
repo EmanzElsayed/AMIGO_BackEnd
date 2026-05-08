@@ -7,6 +7,7 @@ using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
 using Amigo.Application.Services.AutoTranslation;
+using Amigo.Application.Services.BackGroundServices;
 using Amigo.Application.Validators.Checkout;
 using Amigo.Application.Validators.CountryInfo;
 using Amigo.Application.Validators.Tour;
@@ -165,6 +166,7 @@ public static class DependencyInjection
 
         services.AddHostedService<BookingBackgroundService>();
         services.AddHostedService<OutboxWorker>();
+        services.AddHostedService<CurrencyBackgroundService>();
 
         services.AddSingleton<EncryptionService>();
 
@@ -172,6 +174,9 @@ public static class DependencyInjection
 
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IAdminOrderService, AdminOrderService>();
+        services.AddScoped<ICacheService, CacheService>();
+        services.AddScoped<ICurrencyRateService, CurrencyRateService>();
+        services.AddScoped<ICurrencyProvider, CurrencyApiProvider>();
 
         return services;
     }

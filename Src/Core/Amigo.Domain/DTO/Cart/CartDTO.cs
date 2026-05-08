@@ -9,7 +9,7 @@ namespace Amigo.Domain.DTO.Cart
          Guid Id, 
          string? UserId, 
          string? CartToken, 
-         string CurrencyCode, 
+         string? CurrencyCode, 
          decimal TotalAmount,
          int TotalItems,
          DateTime LastUpdatedAt, 

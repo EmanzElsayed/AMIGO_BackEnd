@@ -16,7 +16,7 @@ public enum CurrencyCode
 
     USD = 6,
     
-    Euro = 7,
+    EUR = 7,
     
     CLP = 8,
 

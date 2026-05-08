@@ -13,10 +13,13 @@ public class CartPrice : BaseEntity<Guid>
     [Required]
     public string Type { get; set; } = null!;   // Adult / Child
 
-    public decimal RetailPrice { get; set; }
+    public decimal BaseRetailPrice { get; set; }
+    public decimal ConvertedRetailPrice { get; set; }
+    public decimal ExchangeRate { get; set; }
+
 
     public int Quantity { get; set; }
 
-    public decimal FinalPrice => RetailPrice * Quantity;
+    public decimal FinalPrice => ConvertedRetailPrice * Quantity;
 }
 

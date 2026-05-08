@@ -8,7 +8,7 @@ namespace Amigo.Domain.DTO.Order
     (
         Guid PriceId,
         string Type,
-        decimal RetailPrice,
+        decimal ConvertedRetailPrice,
         int Quantity,
         decimal FinalPrice
      );

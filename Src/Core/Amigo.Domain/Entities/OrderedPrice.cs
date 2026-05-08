@@ -13,10 +13,11 @@ public class OrderedPrice :BaseEntity<Guid>
     [Required]
     public string Type { get; set; } = null!;
 
-    public decimal RetailPrice { get; set; } //price after discount
-
+    public decimal BaseRetailPrice { get; set; } //price after discount
+    public decimal ConvertedRetailPrice { get; set; }
+    public decimal ExchangeRate { get; set; }
     public int Quantity { get; set; }
 
-    public decimal FinalPrice => RetailPrice * Quantity;
+    public decimal FinalPrice => ConvertedRetailPrice * Quantity;
 }
 

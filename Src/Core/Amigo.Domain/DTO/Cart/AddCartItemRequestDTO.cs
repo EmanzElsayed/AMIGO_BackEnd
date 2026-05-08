@@ -11,7 +11,7 @@ namespace Amigo.Domain.DTO.Cart
          Guid SlotId ,
        
          Language Language ,
-
+         string RequestedCurrencyCode,
          DateOnly TourDate ,
          TimeOnly StartTime,
          
