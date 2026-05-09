@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 
 namespace Amigo.Application.Services.AutoTranslation
@@ -68,6 +68,6 @@ namespace Amigo.Application.Services.AutoTranslation
 
     public class TranslationResponse
     {
-        public List<string> Results { get; set; }
+        public required List<string> Results { get; set; }
     }
 }
