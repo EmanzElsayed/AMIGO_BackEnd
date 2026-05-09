@@ -1,6 +1,8 @@
-﻿using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.User;
+using Amigo.Application.Specifications.OrderSpecification;
+using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Images;
@@ -452,6 +454,76 @@ namespace Amigo.Application.Services.Admin
                 IsPitsAllowed: tour.IsPitsAllowed,
                 IsWheelchairAvailable: tour.IsWheelchairAvailable
             );
+        }
+        public async Task<Result<object>> GetActivityStatsAsync()
+        {
+            var now = DateTime.UtcNow;
+            var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var nextMonthStart = monthStart.AddMonths(1);
+
+            var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
+            var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
+            var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+            var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+
+            var bookingsThisMonth = await bookingRepo.GetAllAsync(new GetBookingsByDateSpecification(monthStart, nextMonthStart));
+            var bookingsCount = bookingsThisMonth.Count();
+
+            var orders = await orderRepo.GetAllAsync(new GetOrdersByDateAndStatusSpecification(monthStart, nextMonthStart, OrderStatus.Paid));
+            var grossRevenue = orders.Sum(o => o.TotalAmount);
+
+            var slotsThisMonth = await slotRepo.GetAllAsync(new GetSlotsByDateSpecification(monthStart, nextMonthStart));
+            var totalCapacity = slotsThisMonth.Sum(s => s.MaxCapacity);
+
+            var confirmedReservationsThisMonth = await reservationRepo.GetAllAsync(new GetConfirmedReservationsByDateSpecification(monthStart, nextMonthStart));
+            var totalBookedSeats = confirmedReservationsThisMonth.Sum(r => r.Quantity);
+
+            var avgCapacity = totalCapacity <= 0
+                ? 0
+                : Math.Clamp((int)Math.Round((decimal)totalBookedSeats * 100m / totalCapacity, MidpointRounding.AwayFromZero), 0, 100);
+
+            var status = avgCapacity >= 90 ? "Low Stock" : "Active";
+
+            var dailyRevenue = new decimal[DateTime.DaysInMonth(now.Year, now.Month)];
+            foreach (var order in orders)
+            {
+                if (order.OrderDate.HasValue)
+                {
+                    int day = order.OrderDate.Value.Day;
+                    dailyRevenue[day - 1] += order.TotalAmount;
+                }
+            }
+
+            var bookingsPerDestination = bookingsThisMonth
+                .Where(b => b.OrderItem != null && b.OrderItem.DestinationName != null)
+                .GroupBy(b => b.OrderItem.DestinationName)
+                .Select(g => new { Label = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .Take(4)
+                .ToList();
+
+            int totalBookings = bookingsCount > 0 ? bookingsCount : 1;
+            var regionalMix = bookingsPerDestination.Select(x => new
+            {
+                Label = x.Label,
+                Pct = (int)Math.Round((decimal)x.Count * 100m / totalBookings), 
+                Count = x.Count
+            }).ToList();
+
+            if (!regionalMix.Any())
+            {
+                regionalMix.Add(new { Label = "Global", Pct = 100, Count = 0 });
+            }
+
+            return Result.Ok<object>(new
+            {
+                bookingsThisMonth = bookingsCount,
+                avgCapacity,
+                grossRevenue,
+                status,
+                dailyRevenue,
+                regionalMix
+            });
         }
     }
 }

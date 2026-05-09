@@ -16,7 +16,7 @@ namespace Amigo.Presentation.Controllers.User;
 
 [Authorize]
 [Route("api/v1/user")]
-public class UserAccountController(IUserService _userService) 
+public class UserAccountController(IUserService _userService, AmigoDbContext _db) 
     : BaseController
 {
 
@@ -42,87 +42,107 @@ public class UserAccountController(IUserService _userService)
 
 
     }
-    //[HttpGet("favorites")]
-    //public async Task<IResultBase> GetFavorites()
-    //{
-    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-    //    var rows = await db.Favorites.AsNoTracking()
-    //        .Where(f => f.UserId == userId && !f.IsDeleted)
-    //        .Join(db.Tours.AsNoTracking().Where(t => !t.IsDeleted),
-    //            f => f.TourId,
-    //            t => t.Id,
-    //            (f, t) => new { f, t })
-    //        .Select(x => new
-    //        {
-    //            tourId = x.t.Id,
-    //            title = x.t.Translations
-    //                .Where(tr => !tr.IsDeleted)
-    //                .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
-    //                .Select(tr => tr.Title)
-    //                .FirstOrDefault() ?? "Tour",
-    //            destinationId = x.t.DestinationId,
-    //            coverImageUrl = db.TourImages
-    //                .Where(img => img.TourId == x.t.Id && !img.IsDeleted)
-    //                .Select(img => img.ImageUrl)
-    //                .FirstOrDefault()
-    //        })
-    //        .ToListAsync();
+    [HttpGet("favorites")]
+    public async Task<IResultBase> GetFavorites()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-    //    return Result.Ok(rows);
-    //}
+        var rows = await _db.Favorites.AsNoTracking()
+            .Where(f => f.UserId == userId && !f.IsDeleted)
+            .Join(_db.Tours.AsNoTracking().Where(t => !t.IsDeleted),
+                f => f.TourId,
+                t => t.Id,
+                (f, t) => new { f, t })
+            .Join(_db.Destinations.AsNoTracking().Where(d => !d.IsDeleted),
+                combined => combined.t.DestinationId,
+                d => d.Id,
+                (combined, d) => new { combined.f, combined.t, d })
+            .Select(x => new
+            {
+                tourId = x.t.Id,
+                title = x.t.Translations
+                    .Where(tr => !tr.IsDeleted)
+                    .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
+                    .Select(tr => tr.Title)
+                    .FirstOrDefault() ?? "Tour",
+                destinationId = x.t.DestinationId,
+                destinationName = x.d.Translations
+                    .Where(dt => !dt.IsDeleted)
+                    .OrderBy(dt => dt.Language == Language.en ? 0 : 1)
+                    .Select(dt => dt.Name)
+                    .FirstOrDefault() ?? "Destination",
+                coverImageUrl = _db.TourImages
+                    .Where(img => img.TourId == x.t.Id && !img.IsDeleted)
+                    .Select(img => img.ImageUrl)
+                    .FirstOrDefault()
+            })
+            .ToListAsync();
 
-    //[HttpPost("favorites")]
-    //public async Task<IResultBase> AddFavorite([FromBody] FavoriteRequest body)
-    //{
-    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        return Result.Fail(new UnauthorizedError("Not authenticated"));
-    //    if (body is null || body.TourId == Guid.Empty)
-    //        return Result.Fail("tourId is required");
+        var result = rows.Select(r => new
+        {
+            r.tourId,
+            r.title,
+            r.destinationId,
+            destinationSlug = SlugHelper.ToUrlSlug(r.destinationName),
+            tourSlug = SlugHelper.ToUrlSlug(r.title),
+            r.coverImageUrl
+        });
 
-    //    var exists = await db.Favorites.AnyAsync(f =>
-    //        f.UserId == userId && f.TourId == body.TourId && !f.IsDeleted);
-    //    if (exists)
-    //        return Result.Ok(new { tourId = body.TourId, isFavorite = true });
+        return Result.Ok(result);
+    }
 
-    //    var tourExists = await db.Tours.AnyAsync(t => t.Id == body.TourId && !t.IsDeleted);
-    //    if (!tourExists)
-    //        return Result.Fail(new NotFoundError("Tour not found"));
+    [HttpPost("favorites")]
+    public async Task<IResultBase> AddFavorite([FromBody] FavoriteRequest body)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Result.Fail(new UnauthorizedError("Not authenticated"));
+        if (body is null || body.TourId == Guid.Empty)
+            return Result.Fail("tourId is required");
 
-    //    var entity = new Favorites
-    //    {
-    //        UserId = userId,
-    //        TourId = body.TourId,
-    //        User = null!,
-    //        Tour = null!,
-    //    };
+        var exists = await _db.Favorites.AnyAsync(f =>
+            f.UserId == userId && f.TourId == body.TourId && !f.IsDeleted);
+        if (exists)
+            return Result.Ok(new { tourId = body.TourId, isFavorite = true });
 
-    //    await db.Favorites.AddAsync(entity);
-    //    await db.SaveChangesAsync();
-    //    return Result.Ok(new { tourId = body.TourId, isFavorite = true });
-    //}
+        var tourExists = await _db.Tours.AnyAsync(t => t.Id == body.TourId && !t.IsDeleted);
+        if (!tourExists)
+            return Result.Fail(new NotFoundError("Tour not found"));
 
-    //[HttpDelete("favorites/{tourId:guid}")]
-    //public async Task<IResultBase> RemoveFavorite([FromRoute] Guid tourId)
-    //{
-    //    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //    if (string.IsNullOrWhiteSpace(userId))
-    //        return Result.Fail(new UnauthorizedError("Not authenticated"));
+        var entity = new Favorites
+        {
+            UserId = userId,
+            TourId = body.TourId,
+            User = null!,
+            Tour = null!,
+        };
 
-    //    var row = await db.Favorites
-    //        .FirstOrDefaultAsync(f => f.UserId == userId && f.TourId == tourId && !f.IsDeleted);
-    //    if (row is null)
-    //        return Result.Ok(new { tourId, isFavorite = false });
+        await _db.Favorites.AddAsync(entity);
+        await _db.SaveChangesAsync();
+        return Result.Ok(new { tourId = body.TourId, isFavorite = true });
+    }
 
-    //    row.SetIsDeleted(true);
-    //    db.Favorites.Update(row);
-    //    await db.SaveChangesAsync();
+    [HttpDelete("favorites/{tourId:guid}")]
+    public async Task<IResultBase> RemoveFavorite([FromRoute] Guid tourId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+            return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-    //    return Result.Ok(new { tourId, isFavorite = false });
-    //}
+        var row = await _db.Favorites
+            .FirstOrDefaultAsync(f => f.UserId == userId && f.TourId == tourId && !f.IsDeleted);
+        if (row is null)
+            return Result.Ok(new { tourId, isFavorite = false });
+
+        row.SetIsDeleted(true);
+        _db.Favorites.Update(row);
+        await _db.SaveChangesAsync();
+
+        return Result.Ok(new { tourId, isFavorite = false });
+    }
 
     //[HttpGet("bookings")]
     //public async Task<IResultBase> GetBookings([FromQuery] string? paymentStatus = null)
