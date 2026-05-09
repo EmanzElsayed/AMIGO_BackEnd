@@ -664,8 +664,8 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<int>("CountryCode")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("CountryInfoId")
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer")
@@ -707,7 +707,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CountryCode");
+                    b.HasIndex("CountryInfoId");
 
                     b.HasIndex("IsActive");
 
@@ -2665,6 +2665,16 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("CartItem");
                 });
 
+            modelBuilder.Entity("Amigo.Domain.Entities.Destination", b =>
+                {
+                    b.HasOne("Amigo.Domain.Entities.CountryInfo", "CountryInfo")
+                        .WithMany("Destinations")
+                        .HasForeignKey("CountryInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CountryInfo");
+                });
+
             modelBuilder.Entity("Amigo.Domain.Entities.Favorites", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
@@ -3081,6 +3091,8 @@ namespace Amigo.Persistence.Migrations
 
             modelBuilder.Entity("Amigo.Domain.Entities.CountryInfo", b =>
                 {
+                    b.Navigation("Destinations");
+
                     b.Navigation("Translations");
                 });
 

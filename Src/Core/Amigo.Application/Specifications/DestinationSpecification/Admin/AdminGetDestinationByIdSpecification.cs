@@ -13,6 +13,8 @@ namespace Amigo.Application.Specifications.DestinationSpecification.Admin
                     d.Id == destinationId && !d.IsDeleted
             )
         {
+            AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations));
+
             if (requestQuery.Language is null)
             {
                 AddInclude(d => d.Translations.Take(1));

@@ -1,5 +1,6 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.Entities.Identity;
+using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,7 @@ public class UserTourController(
                      : BaseController
 {
     [HttpGet]
+    [Cache(900)]
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
@@ -25,6 +27,7 @@ public class UserTourController(
 
 
     [HttpGet("by-public-path")]
+    [Cache(900)]
     public async Task<IResultBase> GetTourByPublicPath([FromQuery] GetTourByPublicPathQuery query)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
@@ -33,18 +36,23 @@ public class UserTourController(
     }
 
     [HttpGet("categories")]
+    [Cache(900)]
     public async Task<IResultBase> GetCategories([FromQuery] Guid destinationId, [FromQuery] string? language)
     {
         return await _catalog.GetTourCategoriesAsync(destinationId, language);
     }
 
     [HttpGet("max-duration-hours")]
+    [Cache(900)]
+
     public async Task<IResultBase> GetMaxDurationHours([FromQuery] Guid destinationId)
     {
         return await _catalog.GetMaxDurationHoursForDestinationAsync(destinationId);
     }
 
     [HttpGet("trending")]
+    [Cache(900)]
+
     public async Task<IResultBase> GetTrendingTours([FromQuery] string? language, [FromQuery] string? currency, [FromQuery] int take = 6)
     {
         var userType = await ResolveEffectiveUserTypeAsync();

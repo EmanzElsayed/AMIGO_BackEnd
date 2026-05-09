@@ -49,7 +49,7 @@ namespace Amigo.Application.Validation.Common.Specifications
                         (
                             string.IsNullOrWhiteSpace(requestQuery.CountryCode)
                             ||
-                            d.CountryCode == EnumsMapping.ToCountryCodeEnum(requestQuery.CountryCode)
+                            d.CountryInfo.CountryCode == EnumsMapping.ToCountryCodeEnum(requestQuery.CountryCode)
                          )
 
                     &&

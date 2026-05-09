@@ -23,7 +23,7 @@ public static class TourCatalogCriteria
             && !t.IsDeleted
 
             && (!destinationCountryFilter.HasValue
-                || t.Destination.CountryCode == destinationCountryFilter.Value)
+                || t.Destination.CountryInfo.CountryCode == destinationCountryFilter.Value)
 
             && (!currencyFilter.HasValue
                 || t.CurrencyCode == currencyFilter.Value)

@@ -28,7 +28,7 @@ namespace Amigo.Presentation.Attributes
                 return;
             }
             var executedContext = await next.Invoke();
-            if (executedContext.Result is OkObjectResult result)
+            if (executedContext.Result is ObjectResult result)
                 await _cacheService.SetAsync(cachKey, result.Value, TimeSpan.FromSeconds(duration));
         }
         private string CreateCacheKey(HttpRequest request)

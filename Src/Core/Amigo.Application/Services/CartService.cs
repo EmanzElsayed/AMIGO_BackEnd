@@ -104,7 +104,7 @@ namespace Amigo.Application.Services
             var userType = await GetUserType(userId);
 
             var rate = await _currencyRateService.GetRateAsync(
-                    CurrencyConstants.BaseCurrency,
+                    Constants.BaseCurrency,
                     cart.CurrencyCode.Value);
 
             if (!rate.IsSuccess)
@@ -186,7 +186,7 @@ namespace Amigo.Application.Services
                 var userType = await GetUserType(userId);
 
                 var rate = await _currencyRateService.GetRateAsync(
-                CurrencyConstants.BaseCurrency,
+                Constants.BaseCurrency,
                 cart.CurrencyCode.Value);
 
                 if (!rate.IsSuccess)
@@ -473,7 +473,7 @@ namespace Amigo.Application.Services
 
                         decimal itemTotal = 0;
                         var rate = await _currencyRateService.GetRateAsync(
-                        CurrencyConstants.BaseCurrency,
+                        Constants.BaseCurrency,
                         cart.CurrencyCode.Value);
 
                         if (!rate.IsSuccess)

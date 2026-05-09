@@ -1,6 +1,7 @@
 ﻿using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.Errors.BusinessErrors;
+using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.QueryParams;
 using FluentResults;
 
@@ -13,12 +14,15 @@ namespace Amigo.Presentation.Controllers.User
         IDestinationSlugResolver _slugResolver) : BaseController
     {
         [HttpGet]
+        [Cache(900)]
         public async Task<IResultBase> GetAllDestination([FromQuery] GetAllDestinationQuery requestQuery)
         {
             return await _destinationService.GetAllDestinationAsync(requestQuery);
         }
 
         [HttpGet("by-slug/{slug}")]
+        [Cache(900)]
+
         public async Task<IResultBase> GetDestinationBySlug(string slug, [FromQuery] GetLanuageQuery requestQuery)
         {
             var id = await _slugResolver.ResolveDestinationIdAsync(slug);
@@ -28,12 +32,14 @@ namespace Amigo.Presentation.Controllers.User
         }
 
         [HttpGet("{id:guid}")]
+        [Cache(900)]
         public async Task<IResultBase> GetDestinationById(string id, [FromQuery] GetLanuageQuery requestQuery)
         {
             return await _destinationService.GetDestinationByIdAsync(id, requestQuery);
         }
 
         [HttpGet("top")]
+        [Cache(900)]
         public async Task<IResultBase> GetTopDestinations([FromQuery] GetTopDestinationsQuery requestQuery)
         {
             return await _destinationService.GetTopDestinationsAsync(requestQuery);

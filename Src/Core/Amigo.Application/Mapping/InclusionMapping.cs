@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class InclusionMapping : IInclusionMapping
+    public static class InclusionMapping 
     {
-        public List<TourInclusion>? TourInclusionToEntity(
+        public static List<TourInclusion>? TourInclusionToEntity(
              List<string>? includedList,
              List<string>? excludedList,
              Tour tour,

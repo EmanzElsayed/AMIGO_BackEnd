@@ -2,6 +2,7 @@ using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.Enum;
+using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Authorization;
 using System;
@@ -30,6 +31,7 @@ namespace Amigo.Presentation.Controllers.Admin
 
         }
         [HttpGet]
+
         public async Task<IResultBase> GetTours([FromQuery] GetAllAdminTourQuery requestDTO)
         {
 
@@ -37,6 +39,7 @@ namespace Amigo.Presentation.Controllers.Admin
 
         }
         [HttpGet("{id}")]
+
         public async Task<IResultBase> GetTourById(string id, [FromQuery] GetTourByIdRequestDTO requestDTO)
         {
 

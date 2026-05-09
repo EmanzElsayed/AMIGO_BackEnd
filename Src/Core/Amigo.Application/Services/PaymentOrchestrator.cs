@@ -32,7 +32,8 @@ namespace Amigo.Application.Services
         public async Task HandleSuccessAsync(PaymentProvider provider, string payload)
         {
             var (providerRefId,eventId ,rawData ) = ExtractProviderData(provider, payload);
-            
+
+           
             var strategy = _unitOfWork.CreateExecutionStrategy();
 
             await strategy.ExecuteAsync(async () =>

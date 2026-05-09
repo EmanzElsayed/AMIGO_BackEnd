@@ -7,9 +7,9 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public  class PriceMapping : IPriceMapping
+    public static class PriceMapping 
     {
-        public  List<Price> PricesDTOToEntity(List<CreatePriceRequestDTO> requestDTO, Tour tour,string language)
+        public static List<Price> PricesDTOToEntity(List<CreatePriceRequestDTO> requestDTO, Tour tour,string language)
         {
             Language mappedlanguage = EnumsMapping.ToLanguageEnum(language);
             return

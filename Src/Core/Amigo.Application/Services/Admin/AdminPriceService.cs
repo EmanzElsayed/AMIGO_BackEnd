@@ -8,8 +8,8 @@ using System.Text;
 namespace Amigo.Application.Services.Admin
 {
     public class AdminPriceService(IValidationService _validationService,
-                                    IUnitOfWork _unitOfWork,
-                                    IPriceMapping _priceMapping) : IAdminPriceService
+                                    IUnitOfWork _unitOfWork
+                                    ) : IAdminPriceService
     {
         //public async Task<Result<CreatePriceResponseDTO>> CreatePriceAsync(CreatePriceRequestDTO requestDTO)
         //{
@@ -32,7 +32,7 @@ namespace Amigo.Application.Services.Admin
         //        await _unitOfWork.GetRepository<Price,Guid>().AddAsync(price);
         //        await _unitOfWork.SaveChangesAsync();
 
-        //        return Result.Ok(new CreatePriceResponseDTO(price.BaseRetailPrice))
+        //        return Result.Ok(new CreatePriceResponseDTO(price.RetailPrice))
         //                    .WithSuccess(new Success("Price Created Successfully")
         //                    .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
         //    }

@@ -14,6 +14,12 @@ namespace Amigo.Persistence.EntityConfiguration
                    .HasConversion<int>();
 
             builder.HasIndex(d => d.CountryCode);
+
+            builder.HasMany(c => c.Destinations)
+                .WithOne(d => d.CountryInfo)
+                .HasForeignKey(d => d.CountryInfoId)
+                 .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }
