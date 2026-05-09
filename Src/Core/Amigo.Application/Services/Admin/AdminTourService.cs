@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Specifications.BookingSpecification;
+﻿using Amigo.Application.Helpers;
+using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.Domain.DTO.AvailableSlots;
@@ -19,17 +20,12 @@ namespace Amigo.Application.Services.Admin
 {
     public class AdminTourService (IValidationService _validationService,
                                     IUnitOfWork _unitOfWork,
-                                    ITourMapping _tourMapping,
-                                    IImageMapping _imageMapping,
-                                    IPriceMapping _priceMapping,
-                                    ITourScheduleMapping _tourScheduleMapping,
-                                    IInclusionMapping _inclusionMapping,
-                                    ICancellationMapping _cancellationMapping,
                                     IAdminPriceService _adminPriceService,
                                     IAdminTourScheduleService _adminTourScheduleService,
                                     IAdminTourInclusionService _adminTourInclusionService,
                                     IAdminTourCancellationService _adminTourCancellationService,
-                                    IImageService _imageService
+                                    IImageService _imageService,
+                                    ImageCloudService _imageCloud
                                     ) 
                                 : IAdminTourService
     {
@@ -56,30 +52,38 @@ namespace Amigo.Application.Services.Admin
                 return Result.Fail("Invalid pricing tiers: tier user type must match selected tour audience.");
             }
 
-            var tour = _tourMapping.TourToEntity(requestDTO, destination);
+            var tour = TourMapping.TourToEntity(requestDTO, destination);
 
-            var tourTranslation = _tourMapping.TourTranslationToEntity(requestDTO, tour);
+            var tourTranslation = TourMapping.TourTranslationToEntity(requestDTO, tour);
+            
+            var tourImages = new List<TourImage>();
 
-            var tourImages = requestDTO.Images is not null && requestDTO.Images.Any()
-                                ? _imageMapping.ImagesToEntity(requestDTO.Images, tour).ToList()
-                                : new List<TourImage>();
+            if (requestDTO.Images is not null && requestDTO.Images.Any())
+            {
+                tourImages = ImageMapping.ImagesToEntity(requestDTO.Images, tour).ToList();
+                tour.Images.Select(
+                    i => _imageCloud.DeleteImage(i.ImagePublicId)
 
+                );
+            }
+            
              
              var tourPrices = requestDTO.Prices is not null && requestDTO.Prices.Any()
-                              ? _priceMapping.PricesDTOToEntity(requestDTO.Prices, tour,requestDTO.Language)
+                              ? PriceMapping.PricesDTOToEntity(requestDTO.Prices, tour,requestDTO.Language)
                               :new List<Price>();
             
+
             var tourSchedule = requestDTO.Schedule is not null && requestDTO.Schedule.Any()
-                                ?_tourScheduleMapping.TourSchedulesDTOToEntity(requestDTO.Schedule, tour)
+                                ? TourScheduleMapping.TourSchedulesDTOToEntity(requestDTO.Schedule, tour)
                                 :new List<TourSchedule>();
                 
             var tourInclusion = (requestDTO.Includes is not null && requestDTO.Includes.Any()) || (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any())
-                                ? _inclusionMapping.TourInclusionToEntity(requestDTO.Includes,requestDTO.NotIncludes ,tour, requestDTO.Language)
+                                ? InclusionMapping.TourInclusionToEntity(requestDTO.Includes,requestDTO.NotIncludes ,tour, requestDTO.Language)
                                 :new List<TourInclusion>();
 
            
             var cancellation = requestDTO.Cancellation is not null ?
-                                    _cancellationMapping.CancellationToEntity(requestDTO.Cancellation, tour,requestDTO.Language)
+                                    CancellationMapping.CancellationToEntity(requestDTO.Cancellation, tour,requestDTO.Language)
                                     :new Cancellation();
 
            
@@ -141,7 +145,7 @@ namespace Amigo.Application.Services.Admin
         {
             var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
             var tours = await tourRepo.GetAllAsync(new GetAllToursForAdminSpecification(requestQuery));
-            Language language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
+            Language language = !string.IsNullOrWhiteSpace(requestQuery.Language)? EnumsMapping.ToLanguageEnum(requestQuery.Language):Constants.BaseLanguage;
 
 
 
@@ -233,7 +237,7 @@ namespace Amigo.Application.Services.Admin
 
             Guid tourId = guid;
 
-            Language language = Language.en;
+            Language language = Constants.BaseLanguage;
             if (!string.IsNullOrWhiteSpace(requestDTO.Language)) language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
 
 
@@ -309,7 +313,7 @@ namespace Amigo.Application.Services.Admin
                         tour.Destination = destination;
                         tour.DestinationId = destination.Id;
                     }
-                    _tourMapping.UpdateTour(requestDTO, tour, translation, languageEnum);
+                    TourMapping.UpdateTour(requestDTO, tour, translation, languageEnum);
 
                     if (requestDTO.Prices is not null && requestDTO.Prices.Any())
                         await _adminPriceService.UpdatePricesAsync(tour, requestDTO.Prices, languageEnum);

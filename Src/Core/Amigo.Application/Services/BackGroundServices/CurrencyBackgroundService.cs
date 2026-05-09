@@ -55,14 +55,14 @@ public  class CurrencyBackgroundService(
            scope.ServiceProvider
                .GetRequiredService<ICurrencyProvider>();
 
-        var rates = await currencyProvider.GetRatesAsync(CurrencyConstants.BaseCurrency);
+        var rates = await currencyProvider.GetRatesAsync(Constants.BaseCurrency);
 
         if (rates.IsSuccess)
         {
             var bulk = rates.Value
-                .Where(x => x.Key != CurrencyConstants.BaseCurrency)
+                .Where(x => x.Key != Constants.BaseCurrency)
                 .Select(x => new CurrencyRateBulkItemDTO(
-                    CurrencyConstants.BaseCurrency,
+                    Constants.BaseCurrency,
                     x.Key,
                     x.Value))
                 .ToList();

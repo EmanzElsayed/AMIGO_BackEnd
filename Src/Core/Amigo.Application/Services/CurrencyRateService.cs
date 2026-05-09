@@ -20,13 +20,13 @@ namespace Amigo.Application.Services
                 return 1m;
 
             // direct from base
-            if (from == CurrencyConstants.BaseCurrency)
+            if (from == Constants.BaseCurrency)
             {
                 return await GetDirectRateAsync(from, to);
             }
 
             // to base
-            if (to == CurrencyConstants.BaseCurrency)
+            if (to == Constants.BaseCurrency)
             {
                 var rate = await GetDirectRateAsync(to, from);
                 if (!rate.IsSuccess)
@@ -37,11 +37,11 @@ namespace Amigo.Application.Services
 
             // cross currency
             var fromRate = await GetDirectRateAsync(
-                CurrencyConstants.BaseCurrency,
+                Constants.BaseCurrency,
                 from);
 
             var toRate = await GetDirectRateAsync(
-                CurrencyConstants.BaseCurrency,
+                Constants.BaseCurrency,
                 to);
 
             if (!fromRate.IsSuccess)

@@ -1,10 +1,13 @@
 ﻿
 
+using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Domain.Enum;
+
 namespace Amigo.Application.Services.Admin
 {
     public class AdminDestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork,
-                                    IDestinationMapping _destinationMapping,
+                                    
                                     ImageCloudService _imageCloud) : IAdminDestinationService
     {
         public async Task<Result> CreateDestinationAsync(CreateDestinationRequestDTO requestDTO)
@@ -14,35 +17,32 @@ namespace Amigo.Application.Services.Admin
             {
                 return validationResult;
             }
-            var destination = _destinationMapping.DestinationToEntity(requestDTO);
+            CountryCode countryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
+            Language language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            var countryInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetByIdAsync(new GetCountryByCountryCodeSpecification(countryCode,language));
 
-            var destinationTranslation = _destinationMapping.DestinationTranslationToEntity(requestDTO, destination);
-
-
-
-            var strategy = _unitOfWork.CreateExecutionStrategy();
-
-            return await strategy.ExecuteAsync(async () =>
+            if (countryInfo is null)
             {
-                await using var transaction = await _unitOfWork.BeginTransactionAsync();
-                try
-                {
-                    await _unitOfWork.GetRepository<Destination, Guid>().AddAsync(destination);
-                    await _unitOfWork.GetRepository<DestinationTranslation, Guid>().AddAsync(destinationTranslation);
-                    await _unitOfWork.SaveChangesAsync();
+                return Result.Fail(new NotFoundError("This County Not Found"));
+            }
+            var destination = requestDTO.DestinationToEntity(countryInfo);
 
-                    await transaction.CommitAsync();
+            try
+            {
+                await _unitOfWork.GetRepository<Destination, Guid>().AddAsync(destination);
 
-                    return Result.Ok()
-                                 .WithSuccess(new Success("Destination Created Successfully")
-                                 .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    return FluentValidationExtension.FromException(details: ex.Message);
-                }
-            });
+                await _unitOfWork.SaveChangesAsync();
+
+
+                return Result.Ok()
+                                .WithSuccess(new Success("Destination Created Successfully")
+                                .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+            }
+            
         }
 
 
@@ -80,25 +80,37 @@ namespace Amigo.Application.Services.Admin
             }
 
 
-            //var hasBookings = await _bookingRepo.AnyAsync(
-            //                     new ActiveBookingsForDestinationSpecification(destinationId)
-            //                );
-
-            //if (hasBookings)
-            //{
+            
 
 
-            //    if (
-            //        requestDTO.CountryCode != destination.CountryCode.ToString()
-            //        || (requestDTO.Language is not null && requestDTO.Name is not null && translation is not null))
-            //    {
-            //        return Result.Fail(new ConfilctError("Cannot update destination (Name, Language, Country) with active bookings"));
-            //    }
+            if (!string.IsNullOrWhiteSpace(requestDTO.CountryCode) && languageEnum is not null)
+            { 
+                CountryCode countryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
+                var countryInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetByIdAsync(new GetCountryByCountryCodeSpecification(countryCode, languageEnum.Value));
 
-            //}
+                if (countryInfo is null)
+                {
+                    return Result.Fail(new NotFoundError("This County Not Found"));
+                }
+                destination.CountryInfoId = countryInfo.Id;
+                destination.CountryInfo = countryInfo;
+
+            }
 
 
-            _destinationMapping.UpdateDestination(requestDTO, destination, translation, languageEnum);
+            // image logic
+            if (!string.IsNullOrWhiteSpace(requestDTO.ImageUrl) )
+            {
+                destination.ImageUrl = requestDTO.ImageUrl;
+
+                if (destination.ImagePublicId is not null)
+                    _imageCloud.DeleteImage(destination.ImagePublicId);
+
+                if (requestDTO.PublicId is not null)
+                    destination.ImagePublicId = requestDTO.PublicId;
+            }
+
+            DestinationMapping.UpdateDestination(requestDTO, destination, translation, languageEnum);
 
             try
             {
@@ -223,7 +235,9 @@ namespace Amigo.Application.Services.Admin
             var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery, true);
             var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification);
 
-            var mappedDestinationData = _destinationMapping.EntitiesToDestinations(destinationData);
+            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
+            
+            var mappedDestinationData = DestinationMapping.EntitiesToDestinations(destinationData,language);
             var paginatedResult = new PaginatedResponse<GetDestinationResponseDTO>
             {
                 Data = mappedDestinationData,
@@ -254,7 +268,9 @@ namespace Amigo.Application.Services.Admin
             {
                 return Result.Fail(new NotFoundError($"This Destination Not Found"));
             }
-            var mappedDestinationData = _destinationMapping.EntityToAdminDestination(destinationData, requestQuery.Language);
+            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
+
+            var mappedDestinationData = DestinationMapping.EntityToAdminDestination(destinationData, language);
             return Result.Ok(mappedDestinationData);
         }
 

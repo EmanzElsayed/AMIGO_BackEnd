@@ -18,6 +18,14 @@ namespace Amigo.Application.Validators.Destination
                 )
                 .WithMessage("Name and Language must be provided together");
 
+
+            RuleFor(x => x)
+                .Must(x =>
+                    (string.IsNullOrEmpty(x.CountryCode) && string.IsNullOrEmpty(x.Language)) ||
+                    (!string.IsNullOrEmpty(x.CountryCode) && !string.IsNullOrEmpty(x.Language))
+                )
+                .WithMessage("Country Code and Language must be provided together");
+
             RuleFor(x => x.Name)
                .MaximumLength(300)
                .When(x => x.Name is not null)

@@ -15,13 +15,13 @@ namespace Amigo.Persistence.Migrations
                name: "RetailPrice",
                schema: "booking",
                table: "CartPrice",
-               newName: "BaseRetailPrice");
+               newName: "RetailPrice");
 
             migrationBuilder.RenameColumn(
               name: "RetailPrice",
               schema: "booking",
               table: "OrderedPrice",
-              newName: "BaseRetailPrice");
+              newName: "RetailPrice");
 
             migrationBuilder.DropColumn(
                 name: "CurrencyCode",
@@ -29,7 +29,7 @@ namespace Amigo.Persistence.Migrations
                 table: "OrderItem");
 
             migrationBuilder.AlterColumn<decimal>(
-                name: "BaseRetailPrice",
+                name: "RetailPrice",
                 schema: "booking",
                 table: "OrderedPrice",
                 type: "numeric(18,4)",
@@ -54,7 +54,7 @@ namespace Amigo.Persistence.Migrations
                 defaultValue: 0m);
 
             migrationBuilder.AlterColumn<decimal>(
-                name: "BaseRetailPrice",
+                name: "RetailPrice",
                 schema: "booking",
                 table: "CartPrice",
                 type: "numeric(18,4)",
@@ -154,7 +154,7 @@ namespace Amigo.Persistence.Migrations
                 defaultValue: 0);
 
             migrationBuilder.AlterColumn<decimal>(
-                name: "BaseRetailPrice",
+                name: "RetailPrice",
                 schema: "booking",
                 table: "OrderedPrice",
                 type: "numeric(18,2)",
@@ -163,7 +163,7 @@ namespace Amigo.Persistence.Migrations
                 oldType: "numeric(18,4)");
 
             migrationBuilder.AlterColumn<decimal>(
-                name: "BaseRetailPrice",
+                name: "RetailPrice",
                 schema: "booking",
                 table: "CartPrice",
                 type: "numeric(18,2)",

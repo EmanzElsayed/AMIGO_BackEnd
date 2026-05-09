@@ -5,16 +5,11 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class TourMapping : ITourMapping
+    public static class TourMapping 
     {
-        public Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination)
+        public static Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination)
         {
-            //Language? guideLanguage = null;
-            //if (requestDTO.GuideLanguage is not null)
-            //{ 
-            //    guideLanguage = EnumsMapping.ToLanguageEnum(requestDTO.GuideLanguage);
-
-            //}
+            
             CurrencyCode currency = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.Currency, false);
             return new Tour()
             {
@@ -32,7 +27,7 @@ namespace Amigo.Application.Mapping
             };
         }
 
-        public TourTranslation TourTranslationToEntity(CreateTourRequestDTO requestDTO, Tour tour)
+        public static TourTranslation TourTranslationToEntity(CreateTourRequestDTO requestDTO, Tour tour)
         {
             Language language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
             return new TourTranslation()
@@ -46,7 +41,7 @@ namespace Amigo.Application.Mapping
             };
         }
 
-        public void UpdateTour(
+        public static void UpdateTour(
                 UpdateTourRequestDTO requestDTO,
                 Tour tour,
                 TourTranslation? translation,

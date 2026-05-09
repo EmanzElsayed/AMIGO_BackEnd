@@ -1,5 +1,4 @@
 ﻿using Amigo.Application.Abstraction;
-using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Application.Abstraction.Services.Authentication;
@@ -33,16 +32,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationDependencyInjection(this IServiceCollection services, IConfiguration configuration)
     {
-        // Mapping
 
-        services.AddScoped<IDestinationMapping, DestinationMapping>();
-        services.AddScoped<ITourMapping, TourMapping>();
-        services.AddScoped<IImageMapping, ImageMapping>();
-        services.AddScoped<IPriceMapping, PriceMapping>();
-        services.AddScoped<ITourScheduleMapping, TourScheduleMapping>();
-        services.AddScoped<IAvailableSlotsMapping, AvailableSlotsMapping>();
-        services.AddScoped<IInclusionMapping, InclusionMapping>();
-        services.AddScoped<ICancellationMapping, CancellationMapping>();
+       
 
         //Services
 

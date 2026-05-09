@@ -1,21 +1,23 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Application.Mapping;
+using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
 using Amigo.Domain.Errors.BusinessErrors;
-using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
+using System.Linq;
 
 namespace Amigo.Application.Services;
 
 public class UserTourCatalogService(
             IValidationService _validationService,
             IUnitOfWork _unitOfWork,
-            IDestinationSlugResolver _slugResolver) 
+            IDestinationSlugResolver _slugResolver,
+            ICurrencyRateService _currencyRateService) 
                 : IUserTourCatalogService
 {
     public async Task<Result<PaginatedResponse<UserTourListItemDto>>> GetToursAsync(GetUserToursQuery query)
@@ -171,7 +173,7 @@ public class UserTourCatalogService(
             return Result.Fail(new NotFoundError("Destination not found for this link."));
 
         var listingLang = string.IsNullOrWhiteSpace(query.Language)
-            ? Language.en
+            ? Constants.BaseLanguage
             : EnumsMapping.ToLanguageEnum(query.Language!);
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
 
@@ -274,7 +276,7 @@ public class UserTourCatalogService(
     public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 6)
     {
         var listingLang = string.IsNullOrWhiteSpace(language)
-            ? Language.en
+            ? Constants.BaseLanguage
             : EnumsMapping.ToLanguageEnum(language!);
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
         var top = take <= 0 ? 6 : Math.Min(take, 24);
@@ -286,7 +288,21 @@ public class UserTourCatalogService(
 
         if (rows.Count == 0)
             return Result.Ok<IEnumerable<UserTrendingTourItemDto>>([]);
+        var mappedCurrency = string.IsNullOrWhiteSpace(currency) ? Constants.BaseCurrency: EnumsMapping.ToEnum<CurrencyCode>(currency, false);
+        decimal exchangeRate = 1m;
 
+        if (!string.IsNullOrWhiteSpace(currency) && mappedCurrency != Constants.BaseCurrency)
+        {
+
+            var rate = await _currencyRateService.GetRateAsync(
+                  Constants.BaseCurrency,
+                  mappedCurrency);
+
+            if (!rate.IsSuccess)
+                return Result.Fail(rate.Errors);
+
+            exchangeRate = rate.ValueOrDefault;
+        }
         var mapped = rows
             .Select(t =>
             {
@@ -294,18 +310,19 @@ public class UserTourCatalogService(
                 var allowedUserType = effectiveUserType == UserType.VIP ? UserType.VIP : UserType.Public;
                 var baseAmount = t.Prices
                     .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType)
-                    .Select(p => (decimal?)(p.Cost * (1 - p.Discount / 100m)))
+                    .Select(p => (decimal?)p.RetailPrice)
                     .Min();
                 var tr = t.Destination.Translations
                     .FirstOrDefault(x => x.Language == listingLang)
                     ?? t.Destination.Translations.FirstOrDefault();
                 var destinationName = tr?.Name ?? string.Empty;
+
                 return new
                 {
                     Item = item,
                     DestinationSlug = SlugHelper.ToUrlSlug(destinationName),
                     Rating = item.AverageRating ?? 0m,
-                    BaseCurrency = "USD",
+                    BaseCurrency = Constants.BaseCurrency.ToString(),
                     BaseAmount = baseAmount
                 };
             })
@@ -320,7 +337,7 @@ public class UserTourCatalogService(
                 HeroImageUrl: x.Item.HeroImageUrl,
                 AverageRating: x.Item.AverageRating,
                 ReviewCount: x.Item.ReviewCount,
-                FromPrice: x.Item.FromPrice,
+                FromPrice: x.BaseAmount * exchangeRate,
                 BaseCurrency: x.BaseCurrency,
                 BaseAmount: x.BaseAmount,
                 TourSlug: x.Item.TourSlug,

@@ -10,7 +10,7 @@ namespace Amigo.Application.Services.Admin
 {
     public class AdminTourScheduleService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork,
-                                    ITourScheduleMapping _tourScheduleMapping,
+                                    
                                      IAdminAvailableSlotsService _adminAvailableSlotsService) 
                             : IAdminTourScheduleService
     {

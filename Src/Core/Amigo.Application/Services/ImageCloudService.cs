@@ -39,6 +39,7 @@ public class ImageCloudService
     }
     public bool DeleteImage(string publicId)
     {
+        if(string.IsNullOrWhiteSpace(publicId)) return false;
         var deletionParams = new DeletionParams(publicId) { ResourceType = ResourceType.Image };
         var result = _cloudinary.Destroy(deletionParams);
         return result.Result == "ok";

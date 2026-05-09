@@ -446,7 +446,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<decimal>("BaseRetailPrice")
+                    b.Property<decimal>("RetailPrice")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<Guid>("CartItemId")
@@ -1063,7 +1063,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<decimal>("BaseRetailPrice")
+                    b.Property<decimal>("RetailPrice")
                         .HasColumnType("decimal(18,4)");
 
                     b.Property<decimal>("ConvertedRetailPrice")

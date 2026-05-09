@@ -9,7 +9,7 @@ namespace Amigo.Application.Specifications.CurrencyRateSpecification
     public class GetAllCurrencyWithTargetSpecification : BaseSpecification<CurrencyRate, Guid>
     {
         public GetAllCurrencyWithTargetSpecification(List<CurrencyCode> targets) 
-            : base(c => !c.IsDeleted && c.BaseCurrency == CurrencyConstants.BaseCurrency && targets.Contains(c.TargetCurrency))
+            : base(c => !c.IsDeleted && c.BaseCurrency == Constants.BaseCurrency && targets.Contains(c.TargetCurrency))
         {
         }
     }

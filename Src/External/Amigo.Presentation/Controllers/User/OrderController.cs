@@ -1,6 +1,7 @@
 ﻿using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Services;
 using Amigo.Domain.Errors.BusinessErrors;
+using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Authorization;
 using System;
@@ -16,6 +17,7 @@ namespace Amigo.Presentation.Controllers.User
     {
         [HttpGet]
         [Authorize]
+        [Cache(900)]
         public async Task<IResultBase> getAllOrders([FromQuery] GetAllOrdersQuery query)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

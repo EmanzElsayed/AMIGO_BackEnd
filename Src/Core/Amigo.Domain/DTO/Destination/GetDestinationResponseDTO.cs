@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Amigo.Domain.DTO.CountryInfo;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,11 +8,11 @@ namespace Amigo.SharedKernal.DTOs.Destination
     public record GetDestinationResponseDTO
     (
         Guid DestinationId,
-        string CountryCode,
+        GetCountryInfoResponseDTO Country,
         bool IsActive,
         string? ImageUrl,
-        IEnumerable<GetTranslationDestinationResponseDTO> DestinationTranslation ,
-        bool IsFullyTranslated = false
+         string? Name,
+        string? Language
         
     );
 }

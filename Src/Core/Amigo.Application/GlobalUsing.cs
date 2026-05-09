@@ -34,7 +34,6 @@ global using Amigo.Application.Abstraction.Services;
 global using Amigo.SharedKernal.DTOs.Enum;
 
 
-global using Amigo.Application.Abstraction.MappingInterfaces;
 global using Amigo.Application.Mapping;
 global using Amigo.Application.Specifications.DestinationSpecification;
 global using Amigo.Application.Validation.Common.Rules;
