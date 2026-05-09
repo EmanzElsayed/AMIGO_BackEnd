@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Abstraction;
+using Amigo.Application.Abstraction;
 using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
@@ -51,7 +51,7 @@ public static class DependencyInjection
         services.AddScoped<IEnumService, EnumService>();
         services.AddScoped<IDestinationService , DestinationService>();
         services.AddScoped<IUserTourCatalogService, UserTourCatalogService>();
-        //services.AddScoped<IUserTourReviewService, UserTourReviewService>();
+        services.AddScoped<IUserTourReviewService, UserTourReviewService>();
 
         //services.AddScoped<ITopDestinationsReader, Topde>();
 

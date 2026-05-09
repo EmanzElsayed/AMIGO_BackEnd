@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Amigo.Persistence.EntityConfiguration.Reviews
 
            
             builder.Property(r => r.Rate)
-                   .HasColumnType("decimal(3,2)");
+                   .HasColumnType("decimal(4,2)");
 
             builder.Property(r => r.Date)
                    .HasColumnType("date");

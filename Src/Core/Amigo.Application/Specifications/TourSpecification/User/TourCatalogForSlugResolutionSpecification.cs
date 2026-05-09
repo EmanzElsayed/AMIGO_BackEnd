@@ -17,5 +17,9 @@ public class TourCatalogForSlugResolutionSpecification : BaseSpecification<Tour,
                .Include(t => t.TourInclusions)
                .ThenInclude(t => t.Translations)
                );
+        AddInclude(t => t
+               .Include(t => t.Destination)
+               .ThenInclude(d => d.Translations)
+               );
     }
 }

@@ -19,10 +19,15 @@ public record UserTourScheduleDayDto(
     IReadOnlyList<UserTourSlotDto> Slots);
 
 public record UserTourReviewItemDto(
+    Guid ReviewId,
     decimal Rating,
     string? Comment,
     string? AuthorLabel,
     string Date,
+    int HelpfulCount,
+    string? TravelWith,
+    bool VotedHelpful,
+    bool IsOwner,
     IReadOnlyList<string> ImageUrls);
 
 public record UserTourTravelerPhotoDto(
@@ -55,6 +60,9 @@ public record UserTourDetailDto(
     string TourSlug,
     string CurrencyCode,
     
+    string? DestinationName,
+    string? CountryName,
+
     IReadOnlyList<UserTourPriceTierDto> PriceTiers,
     IReadOnlyList<UserTourScheduleDayDto> ScheduleDays,
     IReadOnlyList<UserTourReviewItemDto> RecentReviews,

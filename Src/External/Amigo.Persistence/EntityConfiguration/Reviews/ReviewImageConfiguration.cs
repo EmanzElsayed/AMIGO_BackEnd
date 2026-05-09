@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace Amigo.Persistence.EntityConfiguration.Reviews
             builder.HasIndex(x => x.ReviewId);
 
             builder.HasOne(x => x.Review)
-                   .WithMany()
+                   .WithMany(r => r.Images)
                    .HasForeignKey(x => x.ReviewId)
                    .OnDelete(DeleteBehavior.Cascade);
         }

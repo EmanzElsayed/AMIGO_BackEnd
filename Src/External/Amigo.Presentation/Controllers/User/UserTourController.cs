@@ -28,7 +28,8 @@ public class UserTourController(
     public async Task<IResultBase> GetTourByPublicPath([FromQuery] GetTourByPublicPathQuery query)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
-        return await _catalog.GetTourByPublicPathAsync(query, userType);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return await _catalog.GetTourByPublicPathAsync(query, userType, userId);
     }
 
     [HttpGet("categories")]

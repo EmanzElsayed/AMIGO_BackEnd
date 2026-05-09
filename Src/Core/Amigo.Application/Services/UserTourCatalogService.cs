@@ -160,7 +160,7 @@ public class UserTourCatalogService(
         return Result.Ok(new MaxDurationHoursResponseDto { MaxDurationHours = hours });
     }
 
-    public async Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType)
+    public async Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null)
     {
         var validationResult = await _validationService.ValidateAsync(query);
         if (!validationResult.IsSuccess)
@@ -253,7 +253,8 @@ public class UserTourCatalogService(
             reviews,
             reviewTranslations,
             todayUtc,
-            cancellationPolicyDescription
+            cancellationPolicyDescription,
+            currentUserId
         );
 
         return Result.Ok(detail);
