@@ -1,14 +1,16 @@
-﻿using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.UserSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Domain.DTO.User;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Amigo.Application.Specifications.TourSpecification;
+using Amigo.SharedKernal.QueryParams;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Amigo.Application.Services.Admin
 {
@@ -21,22 +23,103 @@ namespace Amigo.Application.Services.Admin
     {
         public async Task<Result<GetCustomersDashboardResponseDTO>> GetadminCustomerDashboardAsync()
         {
-            var vipIds = await _userRepo.GetUserIdsInRoleAsync("VIP");
-            var booking = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetAllBookingSpecification());
+            var now = DateTime.UtcNow;
+            var currentMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var nextMonthStart = currentMonthStart.AddMonths(1);
 
-            int vipNumber = vipIds.Count();
-            int globalTravelars = booking.Sum(b => b.Travelers.Count());
+            // Get all necessary data
             var adminIds = await _userRepo.GetUserIdsInRoleAsync("Admin");
+            var vipIds = await _userRepo.GetUserIdsInRoleAsync("VIP");
 
-            string growthText = await ComputeMonthlyGrowth(adminIds);
+            var allBookings = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetAllBookingSpecification());
+            var allPayments = await _unitOfWork.GetRepository<Payment, Guid>().GetAllAsync(new GetAllSucceedPaymentSpecification());
+            var allUsers = await _userRepo.GetAllAsync(new GetAllUserSpecification());
+
+            var currentMonthBookings = allBookings.Where(b => 
+                b.CreatedDate >= currentMonthStart && b.CreatedDate < nextMonthStart).ToList();
+
+            var previousMonthStart = currentMonthStart.AddMonths(-1);
+            var previousMonthBookings = allBookings.Where(b =>
+                b.CreatedDate >= previousMonthStart && b.CreatedDate < currentMonthStart).ToList();
+
+            var currentMonthPayments = allPayments.Where(p => 
+                p.CreatedDate >= currentMonthStart && p.CreatedDate < nextMonthStart).ToList();
+
+            int totalCustomers = allUsers.Count(u => !adminIds.Contains(u.Id));
+            int vipMembers = vipIds.Count();
+            int bookingsThisMonth = currentMonthBookings.Count();
+            decimal grossRevenue = currentMonthPayments.Sum(p => p.TotalAmount);
+
+            string monthlyGrowthText = await ComputeMonthlyGrowth(adminIds);
+
+            var dailyRevenue = CalculateDailyRevenue(currentMonthPayments);
+
+            var regionalMix = CalculateRegionalMix(currentMonthBookings);
+
+            var initialQuery = new GetAllAdminTourQuery { PageNumber = 1, PageSize = 5 };
+            var topActivitiesResult = await GetDashboardActivitiesAsync(initialQuery);
+            var topActivities = topActivitiesResult.IsSuccess ? topActivitiesResult.Value.Data.ToList() : new List<TopPerformingActivityDTO>();
 
             return Result.Ok(new GetCustomersDashboardResponseDTO
             {
-                GlobalTravelers = globalTravelars,
-                VipSegments = vipNumber,
-                GrowthText = growthText,
-            }
-           );
+                BookingsThisMonth = bookingsThisMonth,
+                GrossRevenue = grossRevenue,
+                TotalCustomers = totalCustomers,
+                VipMembers = vipMembers,
+                MonthlyGrowthText = monthlyGrowthText,
+                DailyRevenue = dailyRevenue,
+                RegionalMix = regionalMix,
+                TopPerformingActivities = topActivities
+            });
+        }
+
+        public async Task<Result<PaginatedResponse<TopPerformingActivityDTO>>> GetDashboardActivitiesAsync(GetAllAdminTourQuery query)
+        {
+            var now = DateTime.UtcNow;
+            var currentMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var nextMonthStart = currentMonthStart.AddMonths(1);
+            var previousMonthStart = currentMonthStart.AddMonths(-1);
+
+            var spec = new GetAllToursForAdminSpecification(query);
+            var tours = await _unitOfWork.GetRepository<Tour, Guid>().GetAllAsync(spec);
+            var totalCount = await _unitOfWork.GetRepository<Tour, Guid>().GetCountSpecificationAsync(new CountAllToursForAdminSpecification(query));
+
+            var allBookings = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetAllBookingSpecification());
+
+            var items = tours.Select(t => {
+                var translation = t.Translations.FirstOrDefault(tr => tr.Language.ToString().Equals(query.Language, StringComparison.OrdinalIgnoreCase))
+                                 ?? t.Translations.FirstOrDefault()
+                                 ?? new TourTranslation { Title = "Unknown" };
+
+                var destTranslation = t.Destination?.Translations.FirstOrDefault(tr => tr.Language.ToString().Equals(query.Language, StringComparison.OrdinalIgnoreCase))
+                                     ?? t.Destination?.Translations.FirstOrDefault()
+                                     ?? new DestinationTranslation { Name = "Unknown" };
+
+                var tourBookings = allBookings.Where(b => b.OrderItem?.TourId == t.Id).ToList();
+                var currentMonthCount = tourBookings.Count(b => b.CreatedDate >= currentMonthStart && b.CreatedDate < nextMonthStart);
+                var previousMonthCount = tourBookings.Count(b => b.CreatedDate >= previousMonthStart && b.CreatedDate < currentMonthStart);
+
+                return new TopPerformingActivityDTO
+                {
+                    ActivityName = translation.Title,
+                    ActivityImage = t.Images.FirstOrDefault()?.ImageUrl ?? "",
+                    MarketDemand = DetermineMarketDemand(currentMonthCount),
+                    Bookings = currentMonthCount,
+                    Location = destTranslation.Name,
+                    Trend = CalculateTrend(currentMonthCount, previousMonthCount)
+                };
+            }).ToList();
+
+            var totalPages = query.PageSize <= 0 ? 0 : (int)Math.Ceiling(totalCount / (double)query.PageSize);
+
+            return Result.Ok(new PaginatedResponse<TopPerformingActivityDTO>
+            {
+                Data = items,
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                TotalPages = totalPages,
+                TotalItems = totalCount
+            });
         }
 
         public async Task<Result<PaginatedResponse<AdminCustomerResponseDTO>>> GetCustomersAsync(GetAllCustomersQuery query)
@@ -160,7 +243,7 @@ namespace Amigo.Application.Services.Admin
 
 
             var previousMonthCustomers = await _userRepo.GetCountSpecificationAsync(new GetUserWithPreviousMonthSpecification(currentMonthStart, previousMonthStart, adminIds));
-           
+
 
             decimal growthPercent;
             if (previousMonthCustomers <= 0)
@@ -176,6 +259,102 @@ namespace Amigo.Application.Services.Admin
             return growthText;
         }
 
+        private List<DailyRevenueDTO> CalculateDailyRevenue(List<Payment> payments)
+        {
+            var dailyRevenue = new List<DailyRevenueDTO>();
+            var daysInMonth = DateTime.UtcNow.Month switch
+            {
+                2 => DateTime.IsLeapYear(DateTime.UtcNow.Year) ? 29 : 28,
+                4 or 6 or 9 or 11 => 30,
+                _ => 31
+            };
 
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var revenueForDay = payments
+                    .Where(p => p.CreatedDate.Day == day)
+                    .Sum(p => p.TotalAmount);
+
+                dailyRevenue.Add(new DailyRevenueDTO
+                {
+                    Day = day,
+                    Revenue = revenueForDay
+                });
+            }
+
+            return dailyRevenue;
+        }
+
+        private List<RegionalMixDTO> CalculateRegionalMix(List<Booking> bookings)
+        {
+            var totalRevenue = bookings.Sum(b => b.OrderItem?.Order?.TotalAmount ?? 0);
+
+            var regionalData = bookings
+                .GroupBy(b => b.OrderItem?.DestinationName ?? "Unknown")
+                .Select(g => new RegionalMixDTO
+                {
+                    Location = g.Key,
+                    Percentage = (int)(totalRevenue > 0 ? (g.Sum(b => b.OrderItem?.Order?.TotalAmount ?? 0) * 100 / totalRevenue) : 0)
+                })
+                .OrderByDescending(r => r.Percentage)
+                .Take(10)
+                .ToList();
+
+            return regionalData;
+        }
+
+        private List<TopPerformingActivityDTO> GetTopPerformingActivities(List<Booking> currentBookings, List<Booking> previousBookings)
+        {
+            var previousCounts = previousBookings
+                .GroupBy(b => b.OrderItem?.TourTitle)
+                .ToDictionary(g => g.Key ?? "Unknown", g => g.Count());
+
+            var topActivities = currentBookings
+                .GroupBy(b => new { b.OrderItem?.TourTitle, b.OrderItem?.DestinationName })
+                .Select(g =>
+                {
+                    var tourTitle = g.Key?.TourTitle ?? "Unknown";
+                    int currentCount = g.Count();
+                    previousCounts.TryGetValue(tourTitle, out int previousCount);
+
+                    return new TopPerformingActivityDTO
+                    {
+                        ActivityName = tourTitle,
+                        ActivityImage = "",
+                        MarketDemand = DetermineMarketDemand(currentCount),
+                        Bookings = currentCount,
+                        Location = g.Key?.DestinationName ?? "Unknown",
+                        Trend = CalculateTrend(currentCount, previousCount)
+                    };
+                })
+                .OrderByDescending(a => a.Bookings)
+                .Take(5)
+                .ToList();
+
+            return topActivities;
+        }
+
+        private string CalculateTrend(int current, int previous)
+        {
+            if (previous == 0) return current > 0 ? "↑100%" : "↑0.0%";
+
+            decimal growth = ((current - previous) / (decimal)previous) * 100m;
+            string arrow = growth >= 0 ? "↑" : "↓";
+            return $"{arrow}{Math.Abs(Math.Round(growth, 1)):0.#}%";
+        }
+
+        private string DetermineMarketDemand(int bookingCount)
+        {
+            return bookingCount switch
+            {
+                >= 100 => "VERY HIGH",
+                >= 50 => "HIGH",
+                >= 20 => "RISING",
+                >= 10 => "MODERATE",
+                _ => "LOW"
+            };
+        }
+
+   
     }
 }

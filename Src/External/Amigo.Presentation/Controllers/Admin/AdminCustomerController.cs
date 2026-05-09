@@ -22,6 +22,11 @@ public class AdminCustomerController(
     {
         return await _adminCustomerService.GetadminCustomerDashboardAsync();
     }
+    [HttpGet("dashboard/activities")]
+    public async Task<IResultBase> GetDashboardActivities([FromQuery] GetAllAdminTourQuery query)
+    {
+        return await _adminCustomerService.GetDashboardActivitiesAsync(query);
+    }
     [HttpPatch("{id}/vip-status")]
     public async Task<IResultBase> UpdateVipStatus(
          string id,
