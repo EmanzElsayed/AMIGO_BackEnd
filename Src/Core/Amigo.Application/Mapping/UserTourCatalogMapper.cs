@@ -54,7 +54,7 @@ public static class UserTourCatalogMapper
             TourSlug: baseItem.TourSlug,
             CurrencyCode: tour.CurrencyCode.ToString(),
             DestinationName: destTr?.Name,
-            CountryName: tour.Destination?.CountryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
+            CountryName: tour.Destination?.CountryInfo is null? null: tour.Destination?.CountryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
             PriceTiers: tiers,
             ScheduleDays: days,
             RecentReviews: recent,

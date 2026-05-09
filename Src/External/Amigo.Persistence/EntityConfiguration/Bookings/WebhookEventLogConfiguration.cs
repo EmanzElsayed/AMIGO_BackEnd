@@ -27,9 +27,12 @@ namespace Amigo.Persistence.EntityConfiguration.Payments
 
             builder.Property(x => x.Processed)
                    .IsRequired();
-           
-            builder.HasIndex(x => x.ProviderEventId)
-                   .IsUnique();
+
+            builder.HasIndex(x => new
+            {
+                x.Provider,
+                x.ProviderEventId
+            }).IsUnique();
 
             builder.HasIndex(x => x.Processed);
 

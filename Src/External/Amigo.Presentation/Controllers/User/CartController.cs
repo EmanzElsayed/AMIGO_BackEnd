@@ -1,6 +1,7 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.DTO.Cart;
 using Amigo.SharedKernal.QueryParams;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -12,6 +13,7 @@ namespace Amigo.Presentation.Controllers.User
 
     public class CartController(ICartService _cartService) : BaseController
     {
+        [EnableRateLimiting("token")]
         [HttpGet]
         public async Task<IResultBase> GetOrCreateCart()
         {
@@ -19,6 +21,7 @@ namespace Amigo.Presentation.Controllers.User
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
             return await _cartService.GetCurrentCartAsync(userId, cartToken);
         }
+        [EnableRateLimiting("token")]
         [HttpPost("item")]
         public async Task<IResultBase> AddItem([FromBody] AddCartItemRequestDTO requestDTO)
         {
@@ -26,7 +29,7 @@ namespace Amigo.Presentation.Controllers.User
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
             return await _cartService.AddItemAsync(userId, cartToken, requestDTO);
         }
-
+        [EnableRateLimiting("token")]
         [HttpPost("item/{id}")]
         public async Task<IResultBase> UpdateItem(Guid id,[FromBody] UpdateCartItemRequestDTO requestDTO)
         {
@@ -35,7 +38,7 @@ namespace Amigo.Presentation.Controllers.User
             return await _cartService.UpdateItemAsync(id,userId, cartToken, requestDTO);
         }
 
-
+        [EnableRateLimiting("booking")]
         [HttpPost("checkout")]
         public async Task<IResultBase> Checkout([FromBody] CheckoutRequestDTO requestDTO)
         {
@@ -45,7 +48,7 @@ namespace Amigo.Presentation.Controllers.User
         }
 
 
-
+        [EnableRateLimiting("token")]
         [HttpDelete("item/{id}")]
         public async Task<IResultBase> RemoveItem(Guid id)
         {
@@ -54,7 +57,7 @@ namespace Amigo.Presentation.Controllers.User
 
             return await _cartService.RemoveItemAsync(id, userId, cartToken);
         }
-
+        [EnableRateLimiting("token")]
         [HttpDelete]
         public async Task<IResultBase> ClearCart()
         {

@@ -1,4 +1,6 @@
-﻿using Amigo.Domain.DTO.Payment;
+﻿using Amigo.Application.Specifications.PaymentSpecification;
+using Amigo.Domain.Abstraction;
+using Amigo.Domain.DTO.Payment;
 using Microsoft.AspNetCore.Http;
 using PayPalCheckoutSdk.Core;
 using PayPalCheckoutSdk.Orders;
@@ -6,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Text.Json;
 
@@ -17,19 +20,44 @@ public class PaypalPaymentProvider : IPaymentProvider
 
     private readonly PayPalHttpClient _client;
     private readonly IConfiguration _config;
-
-    public PaypalPaymentProvider(PayPalHttpClient client, IConfiguration config)
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IHttpClientFactory _httpClientFactory;
+    public PaypalPaymentProvider(PayPalHttpClient client, IConfiguration config, IUnitOfWork unitOfWork, IHttpClientFactory httpClientFactory)
     {
         _client = client;
         _config = config;
+        _unitOfWork = unitOfWork;
+        _httpClientFactory = httpClientFactory;
+
     }
 
-    public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Domain.Entities.Order order)
+    public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Domain.Entities.Order order,string requestId)
     {
+
+        var repo =
+        _unitOfWork
+            .GetRepository<PaymentRequestLog, Guid>();
+
+        // CHECK EXISTING REQUEST
+
+        var existing = await repo.GetByIdAsync(
+          new GetPaymentRequestLogByRequestIdSpecification(requestId));
+
+        if (existing != null)
+        {
+            return JsonSerializer.Deserialize<
+                CreatePaymentResponseDTO>(
+                    existing.ResponseJson)!;
+        }
+
+
         var request = new OrdersCreateRequest();
 
         request.Prefer("return=representation");
 
+        request.Headers.Add(
+         "PayPal-Request-Id",
+            requestId);
         request.RequestBody(new OrderRequest
         {
             CheckoutPaymentIntent = "CAPTURE",
@@ -55,13 +83,43 @@ public class PaypalPaymentProvider : IPaymentProvider
         var approveUrl = result.Links
             .First(x => x.Rel == "approve")
             .Href;
-
-        return new CreatePaymentResponseDTO(
+        var dto = new CreatePaymentResponseDTO(
             PaymentIntentId: result.Id, // PayPal Order ID
             RequiresRedirect: true,
             ClientSecret: null,
             RedirectUrl: approveUrl
         );
+        try
+        {
+            await repo.AddAsync(new PaymentRequestLog
+            {
+                Id = Guid.NewGuid(),
+
+                RequestId = requestId,
+
+                OrderId = order.Id,
+
+                ProviderPaymentId = result.Id,
+
+                ResponseJson =
+                 JsonSerializer.Serialize(dto),
+
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            var existingRequest = await repo.GetByIdAsync(
+          new GetPaymentRequestLogByRequestIdSpecification(requestId));
+
+            return JsonSerializer.Deserialize<
+                CreatePaymentResponseDTO>(
+                    existingRequest!.ResponseJson)!;
+        }
+     
+        return dto;
     }
 
     public async Task<CapturePaymentResponseDTO> CapturePaymentAsync(string orderId)

@@ -7,7 +7,7 @@ namespace Amigo.Application.Abstraction.Services
 {
     public interface IPaymentService
     {
-        Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto);
+        Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto, string requestId);
 
         Task<Result<CapturePaymentResponseDTO>> CapturePaymentAsync(Guid paymentId);
 

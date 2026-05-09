@@ -9,6 +9,7 @@ using Amigo.Persistence;
 using FluentResults;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -19,7 +20,7 @@ namespace Amigo.Presentation.Controllers.User;
 public class UserAccountController(IUserService _userService, AmigoDbContext _db) 
     : BaseController
 {
-
+    [EnableRateLimiting("token")]
     [HttpGet("profile")]
     public async Task<IResultBase> GetProfile()
     {
@@ -31,6 +32,7 @@ public class UserAccountController(IUserService _userService, AmigoDbContext _db
 
 
     }
+    [EnableRateLimiting("token")]
     [HttpPatch("profile")]
     public async Task<IResultBase> UpdateProfile([FromBody] UpdateUserProfileRequestDTO requestDTO)
     {
@@ -42,6 +44,7 @@ public class UserAccountController(IUserService _userService, AmigoDbContext _db
 
 
     }
+    [EnableRateLimiting("token")]
 
     [HttpGet("favorites")]
     public async Task<IResultBase> GetFavorites()
@@ -93,6 +96,7 @@ public class UserAccountController(IUserService _userService, AmigoDbContext _db
 
         return Result.Ok(result);
     }
+    [EnableRateLimiting("token")]
 
     [HttpPost("favorites")]
     public async Task<IResultBase> AddFavorite([FromBody] FavoriteRequest body)
@@ -124,6 +128,7 @@ public class UserAccountController(IUserService _userService, AmigoDbContext _db
         await _db.SaveChangesAsync();
         return Result.Ok(new { tourId = body.TourId, isFavorite = true });
     }
+    [EnableRateLimiting("token")]
 
     [HttpDelete("favorites/{tourId:guid}")]
     public async Task<IResultBase> RemoveFavorite([FromRoute] Guid tourId)

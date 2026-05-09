@@ -3,6 +3,7 @@ using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.SharedKernal.DTOs.Tour;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace Amigo.Presentation.Controllers.User;
@@ -10,6 +11,8 @@ namespace Amigo.Presentation.Controllers.User;
 [Route("api/v1/user/tours")]
 public class UserTourReviewController(IUserTourReviewService reviews) : BaseController
 {
+    [EnableRateLimiting("token")]
+
     [HttpGet("{tourId:guid}/review-eligibility")]
     [AllowAnonymous]
     public async Task<IResultBase> GetReviewEligibility([FromRoute] Guid tourId)
@@ -17,6 +20,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return await reviews.GetEligibilityAsync(userId, tourId);
     }
+    [EnableRateLimiting("token")]
 
     [HttpPost("reviews")]
     [Authorize]
@@ -28,6 +32,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
 
         return await reviews.SubmitReviewAsync(userId, body);
     }
+    [EnableRateLimiting("token")]
 
     [HttpPost("reviews/{reviewId:guid}/helpful")]
     [AllowAnonymous]
@@ -37,6 +42,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         return await reviews.MarkAsHelpfulAsync(reviewId, userId, ip);
     }
+    [EnableRateLimiting("token")]
 
     [HttpPut("reviews/{reviewId:guid}")]
     [Authorize]
@@ -48,6 +54,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
 
         return await reviews.UpdateReviewAsync(userId, reviewId, body);
     }
+    [EnableRateLimiting("token")]
 
     [HttpDelete("reviews/{reviewId:guid}")]
     [Authorize]

@@ -4,6 +4,7 @@ using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ namespace Amigo.Presentation.Controllers.User
 
     public class OrderController(IOrderService _orderService) :BaseController
     {
+        [EnableRateLimiting("token")]
         [HttpGet]
         [Authorize]
         [Cache(900)]
@@ -27,7 +29,7 @@ namespace Amigo.Presentation.Controllers.User
             }
             return await _orderService.GetAllOrders(userId,query);
         }
-
+        [EnableRateLimiting("token")]
         [HttpGet("{id}")]
         [Authorize]
         public async Task<IResultBase> getOrderById(string id)

@@ -3,6 +3,7 @@ using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Payment;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
+using Microsoft.AspNetCore.RateLimiting;
 using Stripe;
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,20 @@ namespace Amigo.Presentation.Controllers
 
     public class PaymentController(IPaymentService _service ):BaseController
     {
+        [EnableRateLimiting("booking")]
         [HttpPost("create")]
         public async Task<IResultBase> Create(CreatePaymentRequestDTO dto)
         {
-            return await _service.CreatePaymentAsync(dto);
+            var requestId = Request.Headers["PayPal-Request-Id"]
+             .FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(requestId))
+            {
+                return Result.Fail(
+                    "Missing PayPal-Request-Id");
+            }
+            return await _service.CreatePaymentAsync(dto,requestId);
         }
-
+        [EnableRateLimiting("booking")]
         [HttpPost("{paymentId:guid}/capture")]
         public async Task<IResultBase> Capture(Guid paymentId)
         {

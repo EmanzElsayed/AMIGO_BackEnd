@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Polly;
+using Polly.Extensions.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace Amigo.API;
 
@@ -77,6 +81,69 @@ public static class DependencyInjection
 
         #endregion
 
+
+        //polly
+        //services.AddHttpClient("PayPal")
+        //        .AddPolicyHandler(GetRetryPolicy())
+        //        .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+        //static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        //{
+        //    return HttpPolicyExtensions
+        //        .HandleTransientHttpError() // 5xx + network errors + timeout
+        //        .WaitAndRetryAsync(
+        //            retryCount: 3,
+        //            retryAttempt =>
+        //                TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)) // 2s, 4s, 8s
+        //        );
+        //}
+       
+
+        //static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+        //{
+        //    return HttpPolicyExtensions
+        //        .HandleTransientHttpError()
+        //        .CircuitBreakerAsync(
+        //            handledEventsAllowedBeforeBreaking: 5,
+        //            durationOfBreak: TimeSpan.FromSeconds(30)
+        //        );
+        //}
+
+
+        services.AddRateLimiter(options =>
+        {
+            options.AddTokenBucketLimiter("token", limiterOptions =>
+            {
+                limiterOptions.TokenLimit = 20;
+
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
+
+                limiterOptions.QueueLimit = 10;
+
+                limiterOptions.ReplenishmentPeriod =
+                    TimeSpan.FromSeconds(10);
+
+                limiterOptions.TokensPerPeriod = 10;
+
+                limiterOptions.AutoReplenishment = true;
+            });
+
+            options.RejectionStatusCode = 429;
+        });
+
+        services.AddRateLimiter(options =>
+        {
+            options.AddConcurrencyLimiter("booking", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = 10;
+
+                limiterOptions.QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst;
+
+                limiterOptions.QueueLimit = 20;
+            });
+        });
         return services;
     }
 }
