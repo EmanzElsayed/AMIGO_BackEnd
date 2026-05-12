@@ -76,6 +76,13 @@ namespace Amigo.Application.Services
                 return Result.Fail("This Slot Not Available Now");
 
             }
+
+            var requestedQty = requestDTO.Prices.Sum(x => x.Quantity);
+            var remaining = slot.MaxCapacity - slot.ReservedCount;
+            if (requestedQty > remaining)
+            {
+                return Result.Fail($"Sorry, only {remaining} spots are available for this time slot.");
+            }
             var translatedTitle = tour.Translations
                    .FirstOrDefault(x => x.Language == requestDTO.Language)?.Title
                    ?? tour.Translations.FirstOrDefault()?.Title
@@ -179,6 +186,19 @@ namespace Amigo.Application.Services
 
             if (dto.Prices != null && dto.Prices.Any())
             {
+                var requestedQty = dto.Prices.Sum(x => x.Quantity);
+                var currentItemQty = item.Prices.Sum(x => x.Quantity);
+                
+                // We check if the INCREASE exceeds the remaining capacity
+                // Slot is already attached to item
+                var slot = item.Slot; 
+                var remaining = slot.MaxCapacity - slot.ReservedCount;
+                
+                if (requestedQty > currentItemQty && (requestedQty - currentItemQty) > remaining)
+                {
+                    return Result.Fail($"Sorry, only {remaining + currentItemQty} total spots are available.");
+                }
+
                 var priceRepo = _unitOfWork.GetRepository<CartPrice, Guid>();
 
                 item.Prices.Clear();
