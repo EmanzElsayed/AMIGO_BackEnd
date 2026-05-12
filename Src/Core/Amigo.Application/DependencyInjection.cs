@@ -1,4 +1,3 @@
-using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Abstraction;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
