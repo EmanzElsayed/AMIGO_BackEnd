@@ -664,8 +664,8 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<int>("CountryCode")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("CountryInfoId")
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer")
@@ -707,7 +707,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CountryCode");
+                    b.HasIndex("CountryInfoId");
 
                     b.HasIndex("IsActive");
 
@@ -1268,6 +1268,72 @@ namespace Amigo.Persistence.Migrations
                     b.ToTable("Payment", "payment");
                 });
 
+            modelBuilder.Entity("Amigo.Domain.Entities.PaymentRequestLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnOrder(1)
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(2);
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(3)
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnOrder(6);
+
+                    b.Property<int?>("ModifiedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(4);
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(5)
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProviderPaymentId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("RequestId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ResponseJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProviderPaymentId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("PaymentRequestLog", "payment");
+                });
+
             modelBuilder.Entity("Amigo.Domain.Entities.Price", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1404,6 +1470,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<int>("HelpfulCount")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1421,7 +1490,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
                     b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(3,2)");
+                        .HasColumnType("decimal(4,2)");
 
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
@@ -1484,16 +1553,59 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("ReviewId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ReviewId1")
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReviewId");
+
+                    b.ToTable("ReviewImage", "review");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.ReviewVote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnOrder(1);
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(2);
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(3);
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnOrder(6);
+
+                    b.Property<int?>("ModifiedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(4);
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(5);
+
+                    b.Property<Guid>("ReviewId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReviewId");
 
-                    b.HasIndex("ReviewId1");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("ReviewImage", "review");
+                    b.ToTable("ReviewVote", "review");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.SlotReservation", b =>
@@ -2163,9 +2275,14 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("ReviewId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ReviewId1")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Language");
+
+                    b.HasIndex("ReviewId1");
 
                     b.HasIndex("ReviewId", "Language")
                         .IsUnique();
@@ -2427,7 +2544,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasIndex("Provider");
 
-                    b.HasIndex("ProviderEventId")
+                    b.HasIndex("Provider", "ProviderEventId")
                         .IsUnique();
 
                     b.ToTable("WebhookEventLog", "booking");
@@ -2665,6 +2782,16 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("CartItem");
                 });
 
+            modelBuilder.Entity("Amigo.Domain.Entities.Destination", b =>
+                {
+                    b.HasOne("Amigo.Domain.Entities.CountryInfo", "CountryInfo")
+                        .WithMany("Destinations")
+                        .HasForeignKey("CountryInfoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CountryInfo");
+                });
+
             modelBuilder.Entity("Amigo.Domain.Entities.Favorites", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
@@ -2813,16 +2940,29 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.ReviewImage", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Review", "Review")
-                        .WithMany()
+                        .WithMany("Images")
                         .HasForeignKey("ReviewId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Amigo.Domain.Entities.Review", null)
-                        .WithMany("Images")
-                        .HasForeignKey("ReviewId1");
+                    b.Navigation("Review");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.ReviewVote", b =>
+                {
+                    b.HasOne("Amigo.Domain.Entities.Review", "Review")
+                        .WithMany("Votes")
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Amigo.Domain.Entities.Identity.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Review");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.SlotReservation", b =>
@@ -2962,6 +3102,10 @@ namespace Amigo.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Amigo.Domain.Entities.Review", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("ReviewId1");
+
                     b.Navigation("Review");
                 });
 
@@ -3081,6 +3225,8 @@ namespace Amigo.Persistence.Migrations
 
             modelBuilder.Entity("Amigo.Domain.Entities.CountryInfo", b =>
                 {
+                    b.Navigation("Destinations");
+
                     b.Navigation("Translations");
                 });
 
@@ -3125,6 +3271,10 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.Review", b =>
                 {
                     b.Navigation("Images");
+
+                    b.Navigation("Translations");
+
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Tour", b =>

@@ -11,3 +11,9 @@ public record CreateUserTourReviewRequestDto(
     string? Language,
     string? TravelWith,
     List<string>? ImageUrls);
+
+public record UpdateUserTourReviewRequestDto(
+    decimal Rating,
+    string Comment,
+    string? TravelWith,
+    List<string>? ImageUrls);

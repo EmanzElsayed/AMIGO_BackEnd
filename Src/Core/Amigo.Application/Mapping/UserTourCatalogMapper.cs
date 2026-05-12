@@ -17,12 +17,13 @@ public static class UserTourCatalogMapper
         IReadOnlyList<Review> reviews,
         IReadOnlyList<ReviewTranslation> reviewTranslations,
         DateOnly todayUtc,
-        string? cancellationPolicyDescription)
+        string? cancellationPolicyDescription,
+        string? currentUserId = null)
     {
         var baseItem = ToListItem(tour, listingLanguage, effectiveUserType);
         var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType);
         var days = MapScheduleDays(schedules, todayUtc);
-        var recent = MapRecentReviews(reviews, reviewTranslations);
+        var recent = MapRecentReviews(reviews, reviewTranslations, currentUserId);
         var travelerPhotos = MapTravelerPhotos(reviews);
         var imageUrls = tour.Images
             .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.ImageUrl))
@@ -30,6 +31,9 @@ public static class UserTourCatalogMapper
             .Select(i => i.ImageUrl.Trim())
             .Distinct()
             .ToList();
+
+        var destTr = tour.Destination?.Translations.FirstOrDefault(x => x.Language == listingLanguage)
+                     ?? tour.Destination?.Translations.FirstOrDefault();
 
         return new UserTourDetailDto(
             TourId: baseItem.TourId,
@@ -49,6 +53,8 @@ public static class UserTourCatalogMapper
             GuideLanguage: baseItem.GuideLanguage,
             TourSlug: baseItem.TourSlug,
             CurrencyCode: tour.CurrencyCode.ToString(),
+            DestinationName: destTr?.Name,
+            CountryName: tour.Destination?.CountryInfo is null? null: tour.Destination?.CountryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
             PriceTiers: tiers,
             ScheduleDays: days,
             RecentReviews: recent,
@@ -196,7 +202,8 @@ public static class UserTourCatalogMapper
 
     private static IReadOnlyList<UserTourReviewItemDto> MapRecentReviews(
         IReadOnlyList<Review> reviews,
-        IReadOnlyList<ReviewTranslation> translations)
+        IReadOnlyList<ReviewTranslation> translations,
+        string? currentUserId)
     {
         return reviews
             .OrderByDescending(r => r.Date)
@@ -212,12 +219,21 @@ public static class UserTourCatalogMapper
                     .Select(i => i.Image.Trim())
                     .Distinct()
                     .ToList();
+                    
+                var votedHelpful = currentUserId != null && r.Votes.Any(v => v.UserId == currentUserId);
+                var isOwner = currentUserId != null && r.UserId == currentUserId;
+
                 return new UserTourReviewItemDto(
-                    r.Rate,
-                    comment,
-                    string.IsNullOrWhiteSpace(author) ? null : author,
-                    r.Date.ToString("yyyy-MM-dd"),
-                    imageUrls);
+                    ReviewId: r.Id,
+                    Rating: r.Rate,
+                    Comment: comment,
+                    AuthorLabel: string.IsNullOrWhiteSpace(author) ? null : author,
+                    Date: r.Date.ToString("yyyy-MM-dd"),
+                    HelpfulCount: r.HelpfulCount,
+                    TravelWith: r.TravelWith,
+                    VotedHelpful: votedHelpful,
+                    IsOwner: isOwner,
+                    ImageUrls: imageUrls);
             })
             .ToList();
     }

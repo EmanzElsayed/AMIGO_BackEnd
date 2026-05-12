@@ -5,7 +5,7 @@
 public class Tour: BaseEntity<Guid>
 {
     
-    public CurrencyCode CurrencyCode { get; set; }
+    public CurrencyCode CurrencyCode { get; set; } = CurrencyCode.USD;
     public TimeSpan Duration { get; set; }
 
     public decimal? Discount { get; set; }

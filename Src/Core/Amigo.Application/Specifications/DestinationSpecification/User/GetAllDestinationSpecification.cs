@@ -33,6 +33,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User
             {
                 AddInclude(d => d.Translations.Take(1));
             }
+            AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations));
             ApplyPagination(requestQuery.PageSize, requestQuery.PageNumber);
         }
     }

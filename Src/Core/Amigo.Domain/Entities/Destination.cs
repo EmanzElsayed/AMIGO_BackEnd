@@ -4,7 +4,9 @@
 
 public class Destination : BaseEntity<Guid>
 {
-    public CountryCode CountryCode { get; set; }
+    //public CountryCode CountryCode { get; set; }
+    public CountryInfo CountryInfo {  get; set; }
+    public Guid? CountryInfoId { get; set; }
     public bool IsActive { get; set; }
     public string? ImageUrl {  get; set; }
     public string? ImagePublicId { get; set; }

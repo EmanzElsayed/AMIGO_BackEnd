@@ -10,7 +10,7 @@ namespace Amigo.Application.Abstraction.Services
     {
         PaymentProvider Provider { get; }
 
-        Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order);
+        Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId);
         Task<CapturePaymentResponseDTO> CapturePaymentAsync(string providerPaymentId);
 
         Task<bool> VerifyWebhookAsync(HttpRequest request, string body);

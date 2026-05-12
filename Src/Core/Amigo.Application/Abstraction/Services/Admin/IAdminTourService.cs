@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.DTO.Tour;
 using Amigo.SharedKernal.DTOs.Tour;
 using System;
 using System.Collections.Generic;
@@ -12,5 +12,6 @@ namespace Amigo.Application.Abstraction.Services.Admin
         Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string tourId);
         Task<Result<PaginatedResponse<AdminTourListItemResponseDTO>>> GetAllToursAsync(GetAllAdminTourQuery requestQuery);
         Task<Result<GetTourResponseDTO>> GetTourById(string id, GetTourByIdRequestDTO requestDTO);
+        Task<Result<object>> GetActivityStatsAsync();
     }
 }

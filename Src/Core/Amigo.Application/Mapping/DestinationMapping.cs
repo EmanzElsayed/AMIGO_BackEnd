@@ -1,5 +1,6 @@
-﻿using Amigo.Application.Abstraction.MappingInterfaces;
+﻿using Amigo.Application.Helpers;
 using Amigo.Application.Services;
+using Amigo.Domain.DTO.CountryInfo;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
@@ -11,79 +12,78 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class DestinationMapping(ImageCloudService _imageCloud) : IDestinationMapping
+    public static class  DestinationMapping
     {
-        public Destination DestinationToEntity(CreateDestinationRequestDTO requestDTO)
+        public static Destination DestinationToEntity(this CreateDestinationRequestDTO requestDTO,CountryInfo country)
         {
+
             return new Destination()
             {
                 Id = Guid.NewGuid(),
                 ImageUrl = requestDTO.ImageUrl,
                 ImagePublicId = requestDTO.PublicId,
                 IsActive = requestDTO.IsActive ?? true,
-                CountryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode),
+                CountryInfoId = country.Id,
+                CountryInfo = country,
+                Translations = new List<DestinationTranslation>
+                {
+                    new DestinationTranslation()
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = requestDTO.Name,
+                        Language = EnumsMapping.ToLanguageEnum(requestDTO.Language)
+
+                    }
+                }
+
+
+                
             };
         }
 
-        public DestinationTranslation DestinationTranslationToEntity(CreateDestinationRequestDTO requestDTO , Destination dest)
-        {
-            return new DestinationTranslation()
-            {
-                Id = Guid.NewGuid(),
-                Name = requestDTO.Name,
-                Language = EnumsMapping.ToLanguageEnum(requestDTO.Language),
-                Destination = dest,
-                DestinationId = dest.Id
-            };
-        }
+        
 
-        public IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable<Destination> destinations)
+        public static IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable<Destination> destinations,Language? language)
         {
-             int numberOfLanguage = Enum.GetValues<Language>().Length;
+            if (language is null) language = Constants.BaseLanguage;
 
             return destinations.Select(destination => new GetDestinationResponseDTO(
 
                 DestinationId: destination.Id,
-                CountryCode: destination.CountryCode.ToString(),
+                Country: destination.CountryInfo is  null? null : new GetCountryInfoResponseDTO(
+                        destination.CountryInfo.Id ,
+                        destination.CountryInfo.CountryCode.ToString(),
+                        destination.CountryInfo.PhoneCode,
+                        destination.CountryInfo.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                        language.ToString()
+                    ),
+                
                 IsActive: destination.IsActive,
                 ImageUrl: destination.ImageUrl,
-                IsFullyTranslated : (destination.Translations.Count == numberOfLanguage ?true : false ) ,
-
-                DestinationTranslation: destination.Translations.Select(translation =>
-                    new GetTranslationDestinationResponseDTO(
-                        TranslationId: translation.Id,
-                        Name: translation.Name,
-                        Language: translation.Language.ToString()
-                    )
-                    
-                ) 
+                Name : destination.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                Language : language.ToString()
                 
             ));
         }
-        public GetDestinationResponseDTO EntityToAdminDestination(Destination destination ,  string? language)
+        public static GetDestinationResponseDTO EntityToAdminDestination(Destination destination ,  Language? language)
         {
+            if (language is null) language = Constants.BaseLanguage;
 
-            bool isFullyTranslated = destination.Translations.Count == Enum.GetValues<Language>().Length? true:false;  
-              return  new GetDestinationResponseDTO(
+            return new GetDestinationResponseDTO(
                    DestinationId: destination.Id,
-                   CountryCode: destination.CountryCode.ToString(),
+                     Country: destination.CountryInfo is null ? null : new GetCountryInfoResponseDTO(
+                        destination.CountryInfo.Id,
+                        destination.CountryInfo.CountryCode.ToString(),
+                        destination.CountryInfo.PhoneCode,
+                        destination.CountryInfo.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                        language.ToString()
+                    ),
                    IsActive: destination.IsActive,
-                    ImageUrl: destination.ImageUrl,
-                    IsFullyTranslated: isFullyTranslated,
-                DestinationTranslation: destination.Translations.Any() ? destination.Translations.Select(translation =>
-                    new GetTranslationDestinationResponseDTO(
-                        TranslationId: translation.Id,
-                        Name: translation.Name,
-                        Language: translation.Language.ToString()
-                    )
-                 ) : new List<GetTranslationDestinationResponseDTO> {
-
-                    new GetTranslationDestinationResponseDTO(
-                            TranslationId: (Guid?)null,
-                            Name: "",
-                            Language: language
-                    )
-                 }
+                   ImageUrl: destination.ImageUrl,
+                                       
+                   Name: destination.Translations.Where(c => c.Language == language).Select(c => c.Name).First() ?? "",
+                   Language : language.ToString()
+               
               );
            
 
@@ -91,30 +91,32 @@ namespace Amigo.Application.Mapping
         }
 
 
-        public GetDestinationResponseDTO EntityToDestination(Destination destination, string? language)
+        public static GetDestinationResponseDTO EntityToDestination(Destination destination, Language? language)
         {
+            if (language is null) language = Constants.BaseLanguage;
 
-            bool isFullyTranslated = destination.Translations.Count == Enum.GetValues<Language>().Length ? true : false;
+
             return new GetDestinationResponseDTO(
                  DestinationId: destination.Id,
-                 CountryCode: destination.CountryCode.ToString(),
-                 IsActive: destination.IsActive,
+                  Country: destination.CountryInfo is null ? null: new GetCountryInfoResponseDTO(
+                        destination.CountryInfo.Id,
+                        destination.CountryInfo.CountryCode.ToString(),
+                        destination.CountryInfo.PhoneCode,
+                        destination.CountryInfo.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                        language.ToString()
+                    ),
+                  IsActive: destination.IsActive,
                   ImageUrl: destination.ImageUrl,
-                  IsFullyTranslated: isFullyTranslated,
-              DestinationTranslation:  destination.Translations.Select(translation =>
-                  new GetTranslationDestinationResponseDTO(
-                      TranslationId: translation.Id,
-                      Name: translation.Name,
-                      Language: translation.Language.ToString()
-                  )
-               ) 
+
+                  Name: destination.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                  Language: language.ToString()
             );
 
 
 
         }
 
-        public void UpdateDestination(
+        public static void UpdateDestination(
              UpdateDestinationRequestDTO requestDTO,
              Destination destination,
              DestinationTranslation? translation,
@@ -124,9 +126,7 @@ namespace Amigo.Application.Mapping
             if (requestDTO.IsActive is not null)
                 destination.IsActive = requestDTO.IsActive.Value;
 
-            if (requestDTO.CountryCode is not null)
-                destination.CountryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
-
+         
             if (requestDTO.Name is not null && language is not null)
             {
                 if (translation is null)
@@ -146,17 +146,7 @@ namespace Amigo.Application.Mapping
                 }
             }
 
-            // image logic
-            if (requestDTO.ImageUrl is not null)
-            {
-                destination.ImageUrl = requestDTO.ImageUrl;
-
-                if (destination.ImagePublicId is not null)
-                    _imageCloud.DeleteImage(destination.ImagePublicId);
-
-                if (requestDTO.PublicId is not null)
-                    destination.ImagePublicId = requestDTO.PublicId;
-            }
+            
         }
     }
 }

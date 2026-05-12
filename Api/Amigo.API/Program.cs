@@ -69,7 +69,7 @@ namespace Amigo.API
             #endregion
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
-
+            app.UseRateLimiter();
             app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI();

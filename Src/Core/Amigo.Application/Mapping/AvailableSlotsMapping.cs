@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class AvailableSlotsMapping : IAvailableSlotsMapping
+    public static class AvailableSlotsMapping 
     {
-        public AvailableSlots AvailableSlotsDTOToEntity(CreateAvailableSlotsRequestDTO requestDTO, TourSchedule tourSchedule)
+        public static AvailableSlots AvailableSlotsDTOToEntity(CreateAvailableSlotsRequestDTO requestDTO, TourSchedule tourSchedule)
         {
             var avialableSlots = new AvailableSlots()
             {

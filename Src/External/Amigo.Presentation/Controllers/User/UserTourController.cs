@@ -1,8 +1,10 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.Entities.Identity;
+using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace Amigo.Presentation.Controllers.User;
@@ -14,7 +16,10 @@ public class UserTourController(
                     UserManager<ApplicationUser> _userManager)
                      : BaseController
 {
+    [EnableRateLimiting("token")]
+
     [HttpGet]
+    [Cache(900)]
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
@@ -23,32 +28,44 @@ public class UserTourController(
     }
 
 
+    [EnableRateLimiting("token")]
 
     [HttpGet("by-public-path")]
+    [Cache(900)]
     public async Task<IResultBase> GetTourByPublicPath([FromQuery] GetTourByPublicPathQuery query)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
-        return await _catalog.GetTourByPublicPathAsync(query, userType);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return await _catalog.GetTourByPublicPathAsync(query, userType, userId);
     }
+    [EnableRateLimiting("token")]
 
     [HttpGet("categories")]
+    [Cache(900)]
     public async Task<IResultBase> GetCategories([FromQuery] Guid destinationId, [FromQuery] string? language)
     {
         return await _catalog.GetTourCategoriesAsync(destinationId, language);
     }
+    [EnableRateLimiting("token")]
 
     [HttpGet("max-duration-hours")]
+    [Cache(900)]
+
     public async Task<IResultBase> GetMaxDurationHours([FromQuery] Guid destinationId)
     {
         return await _catalog.GetMaxDurationHoursForDestinationAsync(destinationId);
     }
+    [EnableRateLimiting("token")]
 
     [HttpGet("trending")]
+    [Cache(900)]
+
     public async Task<IResultBase> GetTrendingTours([FromQuery] string? language, [FromQuery] string? currency, [FromQuery] int take = 6)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
         return await _catalog.GetTrendingToursAsync(language, currency, userType, take);
     }
+    [EnableRateLimiting("token")]
 
     [HttpPost("checkout/quote")]
     public async Task<IResultBase> PostCheckoutQuote([FromBody] CheckoutQuoteRequestDto body)

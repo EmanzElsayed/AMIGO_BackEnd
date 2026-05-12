@@ -6,7 +6,7 @@ public record UserTrendingTourItemDto(
     string? HeroImageUrl,
     decimal? AverageRating,
     int ReviewCount,
-    string? FromPrice,
+    decimal? FromPrice,
     string BaseCurrency,
     decimal? BaseAmount,
     string TourSlug,

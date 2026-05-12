@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class ImageMapping : IImageMapping
+    public static class ImageMapping 
     {
-        public IEnumerable<TourImage> ImagesToEntity(List<ImageUrlsRequestDTO> requestDTO, Tour tour)
+        public static IEnumerable<TourImage> ImagesToEntity(List<ImageUrlsRequestDTO> requestDTO, Tour tour)
         {
             return requestDTO
              .Where(x => x != null && !string.IsNullOrWhiteSpace(x.ImageUrl))

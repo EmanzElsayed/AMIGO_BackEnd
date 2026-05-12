@@ -2,6 +2,7 @@
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.GetBackGroundServicesSpecification;
+using Amigo.Application.Specifications.TourScheduleSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
@@ -58,7 +59,7 @@ public sealed class BookingBackgroundService(
         var voucherService = scope.ServiceProvider.GetRequiredService<IVoucherService>();
         await ExpireReservations(unitOfWork);
         await ExpireOrders(unitOfWork);
-        await SlodOutSlots(unitOfWork);
+        await SoldOutSlots(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
         await SendTourReminderEmails(voucherService, unitOfWork);
 
@@ -126,7 +127,7 @@ public sealed class BookingBackgroundService(
     // =====================================================
     // 3) SoldOutSlots 
     // =====================================================
-    private async Task SlodOutSlots(IUnitOfWork _unitOfWork)
+    private async Task SoldOutSlots(IUnitOfWork _unitOfWork)
     {
         
 
@@ -172,6 +173,45 @@ public sealed class BookingBackgroundService(
 
         await _unitOfWork.SaveChangesAsync();
     }
+
+
+    private async Task SoldOutTourSchedule(IUnitOfWork _unitOfWork)
+    {
+
+
+        var repo = _unitOfWork.GetRepository<TourSchedule, Guid>();
+
+        var tourSchedules = await repo.GetAllAsync(
+            new GetAllTourScheduleWithAvailableStatus());
+
+        if (!tourSchedules.Any())
+            return;
+
+        var tourSchedulesIds = tourSchedules.Select(t => t.Id).ToList();
+
+
+     
+
+        foreach (var schedule in tourSchedules)
+        {
+            if (schedule.StartDate <= DateOnly.FromDateTime(DateTime.UtcNow))
+            {
+                schedule.AvailableDateStatus = AvailableDateTimeStatus.SoldOut;
+
+            }
+            else
+
+            {
+                var notAvailableSlotsCount = schedule.AvailableSlots.Count(s => s.AvailableTimeStatus != AvailableDateTimeStatus.Available);
+                if (notAvailableSlotsCount == schedule.AvailableSlots.Count()) schedule.AvailableDateStatus = AvailableDateTimeStatus.SoldOut;
+            }
+
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+
 
 
 

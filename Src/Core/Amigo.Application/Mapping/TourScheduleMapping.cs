@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class TourScheduleMapping : ITourScheduleMapping
+    public static class TourScheduleMapping 
     {
-        public List<TourSchedule> TourSchedulesDTOToEntity(List<CreateTourScheduleRequestDTO> requestDTO, Tour tour)
+        public static List<TourSchedule> TourSchedulesDTOToEntity(List<CreateTourScheduleRequestDTO> requestDTO, Tour tour)
         {
 
             return requestDTO.Select(requestDTO => new TourSchedule

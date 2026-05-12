@@ -25,6 +25,8 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User
 
                 AddInclude(d => d.Translations.OrderByDescending(x => x.Language == language).Take(1));
             }
+            AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations));
+
         }
     }
 }

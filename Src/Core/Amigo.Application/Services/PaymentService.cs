@@ -11,7 +11,7 @@ namespace Amigo.Application.Services
     IPaymentProviderResolver _resolver) :IPaymentService
 
     {
-        public async Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto)
+        public async Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto,string requestId)
         {
             var strategy = _unitOfWork.CreateExecutionStrategy();
 
@@ -45,7 +45,7 @@ namespace Amigo.Application.Services
                 var provider = _resolver.Resolve(dto.Provider);
 
                 // 4. Call provider
-                var providerResult = await provider.CreatePaymentAsync(order);
+                var providerResult = await provider.CreatePaymentAsync(order,requestId);
 
                 // 5. Save provider reference
                 payment.PaymentProviderReferenceId = providerResult.PaymentIntentId;

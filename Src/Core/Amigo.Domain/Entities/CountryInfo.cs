@@ -16,4 +16,6 @@ public class CountryInfo:BaseEntity<Guid>
 
     public ICollection<CountryInfoTranslation> Translations = new List<CountryInfoTranslation>();
 
+    public ICollection<Destination> Destinations = new List<Destination>();
+
 }

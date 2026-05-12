@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Amigo.Application.Mapping
 {
-    public class CancellationMapping : ICancellationMapping
+    public static class CancellationMapping 
     {
-        public Cancellation CancellationToEntity(CreateCancellationRequestDTO requestDTO, Tour tour ,string language)
+        public static Cancellation CancellationToEntity(CreateCancellationRequestDTO requestDTO, Tour tour ,string language)
         {
             Language mappedlanguage = EnumsMapping.ToLanguageEnum(language);
 
@@ -36,19 +36,6 @@ namespace Amigo.Application.Mapping
 
             };
         }
-        //public CancellationTranslation CancellationTranslationToEntity(CreateCancellationRequestDTO requestDTO, Cancellation cancellation,string language)
-        //{
-        //    Language mappedlanguage = EnumsMapping.ToLanguageEnum(language);
-        //    return new CancellationTranslation
-        //    {
-        //        Id = Guid.NewGuid(),
-        //       Cancellation = cancellation,
-        //       CancellationId = cancellation.Id,
-        //       Language = mappedlanguage,
-        //       Description = requestDTO.Description
-
-
-        //    };
-        //}
+        
     }
 }

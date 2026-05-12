@@ -4,9 +4,12 @@ using System.Text;
 
 namespace Amigo.Application.Helpers
 {
-    public static class CurrencyConstants
+    public static class Constants
     {
         public const CurrencyCode BaseCurrency =
             CurrencyCode.USD;
+
+        public const Language BaseLanguage =
+            Language.en;
     }
 }

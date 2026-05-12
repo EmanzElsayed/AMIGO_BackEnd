@@ -42,7 +42,7 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
             {
                 d.Id,
                 d.ImageUrl,
-                CountryCode = d.CountryCode.ToString(),
+                CountryCode = d.CountryInfo.CountryCode.ToString(),
                 ActivityCount = activeTours.Count(),
                 ReviewCount = activeTours
                     .SelectMany(t => t.Reviews.Where(r => !r.IsDeleted))

@@ -2,9 +2,9 @@ namespace Amigo.Application.Services
 {
     public class DestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork ,
-                                    IDestinationMapping _destinationMapping ,
-                                    ImageCloudService _imageCloud,
-                                    ITopDestinationsReader _topDestinationsReader) : IDestinationService
+                                    
+                                    ITopDestinationsReader _topDestinationsReader) 
+                : IDestinationService
     {
 
     
@@ -24,7 +24,9 @@ namespace Amigo.Application.Services
             var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery , false);
             var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification);
 
-            var mappedDestinationData = _destinationMapping.EntitiesToDestinations(destinationData);
+            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
+
+            var mappedDestinationData = DestinationMapping.EntitiesToDestinations(destinationData, language);
             var paginatedResult = new PaginatedResponse<GetDestinationResponseDTO>
             {
                 Data = mappedDestinationData,
@@ -55,7 +57,9 @@ namespace Amigo.Application.Services
             {
                 return Result.Fail(new NotFoundError($"This Destination Not Found"));
             }
-            var mappedDestinationData = _destinationMapping.EntityToDestination(destinationData , requestQuery.Language);
+            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
+
+            var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language);
             return Result.Ok(mappedDestinationData);
         }
 
