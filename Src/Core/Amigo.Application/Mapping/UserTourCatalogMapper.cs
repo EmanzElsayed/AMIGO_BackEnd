@@ -170,7 +170,9 @@ public static class UserTourCatalogMapper
                         slot.Id,
                         slot.StartTime.ToString("HH:mm"),
                         slot.EndTime?.ToString("HH:mm"),
-                        true);
+                        true,
+                        slot.MaxCapacity,
+                        slot.MaxCapacity - slot.ReservedCount);
 
                     if (!byDay.TryGetValue(day, out var list))
                     {

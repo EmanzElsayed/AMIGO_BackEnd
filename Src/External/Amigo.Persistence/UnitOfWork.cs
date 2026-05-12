@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.Abstraction;
+using Amigo.Domain.Abstraction;
 using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -40,6 +40,10 @@ namespace Amigo.Persistence
 
         public ICartItemRepo CartItemsRepo
             => _cartItemsRepo ??= new CartItemRepo(_dbContext);
+
+        private IFavoriteRepo? _favoritesRepo;
+        public IFavoriteRepo FavoritesRepo
+            => _favoritesRepo ??= new FavoriteRepo(_dbContext);
 
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
                 => await _dbContext.SaveChangesAsync(ct);

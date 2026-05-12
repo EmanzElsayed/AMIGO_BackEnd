@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Abstraction;
+using Amigo.Application.Abstraction;
 using Amigo.Application.Abstraction.MappingInterfaces;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
@@ -68,7 +68,9 @@ public static class DependencyInjection
 
         services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
         services.AddScoped<ICountryInfoService, CountryInfoService>();
+
 
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IPhoneCodeService, PhoneCodeService>();
