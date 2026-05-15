@@ -68,5 +68,14 @@ namespace Amigo.Infrastructure.Resources {
                 return ResourceManager.GetString("GreetingToAmigo", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This Destination Not Found.
+        /// </summary>
+        internal static string NotFoundDestination {
+            get {
+                return ResourceManager.GetString("NotFoundDestination", resourceCulture);
+            }
+        }
     }
 }

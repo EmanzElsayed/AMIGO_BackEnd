@@ -30,9 +30,9 @@ namespace Amigo.Application.Validators.Destination
 
             RuleFor(x => x.Language)
                 .NotEmpty()
-                .WithMessage("Language Is Required")
+                .WithMessage("SupportedLanguage Is Required")
                 .Must(BusinessRules.BeAValidLanguage)
-                .WithMessage("Invalid Language Code Must be (en, es, fr, it, pt, br )");
+                .WithMessage("Invalid SupportedLanguage Code Must be (en, es, fr, it, pt, br )");
 
             RuleFor(x => x.PublicId)
                 .NotEmpty()

@@ -10,7 +10,7 @@ namespace Amigo.Domain.DTO.Tour
 {
     public record CreateTourRequestDTO
     (
-        Language? GuideLanguage,
+        SupportedLanguage? GuideLanguage,
         string? MeetingPoint,
         string? Description,
 

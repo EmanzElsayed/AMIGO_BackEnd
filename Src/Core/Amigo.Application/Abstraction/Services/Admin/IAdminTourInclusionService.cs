@@ -12,6 +12,6 @@ namespace Amigo.Application.Abstraction.Services.Admin
             Tour tour,
             List<string>? includedList,
             List<string>? excludedList,
-            Language? language);
+            SupportedLanguage? language);
     }
 }

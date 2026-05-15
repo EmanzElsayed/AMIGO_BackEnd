@@ -14,6 +14,6 @@ namespace Amigo.Application.Abstraction.Services.Admin
         Task UpdatePricesAsync(
                   Tour tour,
                   List<UpdatePriceRequestDTO> prices,
-                  Language? language);
+                  SupportedLanguage? language);
     }
 }

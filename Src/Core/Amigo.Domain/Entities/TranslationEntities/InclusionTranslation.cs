@@ -14,6 +14,6 @@ public class InclusionTranslation : BaseEntity<Guid>
     [Required]
     public string Text { get; set; } = null!;
 
-    public Language Language { get; set; }
+    public SupportedLanguage Language { get; set; }
 
 }

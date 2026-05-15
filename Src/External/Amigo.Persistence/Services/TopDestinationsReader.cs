@@ -9,26 +9,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Amigo.Persistence.Services;
 
-public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
+public class TopDestinationsReader(AmigoDbContext _db,ICurrentUserService _currentUserService) : ITopDestinationsReader
 {
     public async Task<PaginatedResponse<TopDestinationSummaryResponseDTO>> GetTopAsync(
         GetTopDestinationsQuery query,
         CancellationToken cancellationToken = default)
     {
-        CurrencyCode? currencyFilter = null;
-        if (!string.IsNullOrWhiteSpace(query.Currency)
-            && Enum.TryParse<CurrencyCode>(query.Currency, true, out var c)
-            && c != CurrencyCode.None)
-        {
-            currencyFilter = c;
-        }
+        CurrencyCode? currencyFilter = _currentUserService.Currency;
 
-        var preferredLanguage = string.IsNullOrWhiteSpace(query.Language)
-            ? Language.en
-            : EnumsMapping.ToLanguageEnum(query.Language!);
+        var preferredLanguage = _currentUserService.Language;
 
-        if (preferredLanguage == Language.None)
-            preferredLanguage = Language.en;
 
         var rankingSpec = new TopDestinationsRankingSpecification();
         var eligibleDestinations = SpeceficationEvaluator.CreateQuery(
@@ -100,7 +90,7 @@ public class TopDestinationsReader(AmigoDbContext _db) : ITopDestinationsReader
             if (!string.IsNullOrEmpty(exact))
                 return exact!;
 
-            var english = list.FirstOrDefault(t => t.Language == Language.en)?.Name;
+            var english = list.FirstOrDefault(t => t.Language == SupportedLanguage.en)?.Name;
             if (!string.IsNullOrEmpty(english))
                 return english!;
 

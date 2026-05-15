@@ -7,7 +7,7 @@ namespace Amigo.Application.Specifications.CurrencySpecification
 {
     public class GetCurrencyWithQuerySpecification : BaseSpecification<Currency, Guid>
     {
-        public GetCurrencyWithQuerySpecification(Guid currencyId, Language language)
+        public GetCurrencyWithQuerySpecification(Guid currencyId, SupportedLanguage language)
             : base(c => c.Id == currencyId && !c.IsDeleted
                 && (c.Translations.Any(t => t.Language == language))
             )

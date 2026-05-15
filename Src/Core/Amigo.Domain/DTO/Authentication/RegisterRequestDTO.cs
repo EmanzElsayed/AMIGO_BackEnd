@@ -17,7 +17,7 @@ public record RegisterRequestDTO(
 //    string? PhoneNumber = null,
 //    DateOnly? BirthDate = null,
 //    string? Gender = null,
-//    string? Language = null,
+//    string? SupportedLanguage = null,
 //    string? Nationality = null,
 //    string? BuildingNumber = null,
 //    string? City = null,

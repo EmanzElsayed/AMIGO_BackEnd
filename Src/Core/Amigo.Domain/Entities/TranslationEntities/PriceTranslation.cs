@@ -16,7 +16,7 @@ public class PriceTranslation : BaseEntity<Guid>, ITranslationEntity
     [Required]
     public string Type { get; set; } = null!;
 
-    public Language Language { get; set; }
+    public SupportedLanguage Language { get; set; }
 
 }
 

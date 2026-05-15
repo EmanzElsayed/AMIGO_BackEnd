@@ -10,5 +10,5 @@ public class ReviewTranslation:BaseEntity<Guid>
     
     public string Comment { get; set; } = null!;
 
-    public Language Language {  get; set; }
+    public SupportedLanguage Language {  get; set; }
 }

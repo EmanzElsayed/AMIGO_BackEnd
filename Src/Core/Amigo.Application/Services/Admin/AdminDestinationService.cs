@@ -18,7 +18,7 @@ namespace Amigo.Application.Services.Admin
                 return validationResult;
             }
             CountryCode countryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
-            Language language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            SupportedLanguage language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
             var countryInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetByIdAsync(new GetCountryByCountryCodeSpecification(countryCode,language));
 
             if (countryInfo is null)
@@ -70,7 +70,7 @@ namespace Amigo.Application.Services.Admin
                 return Result.Fail(new NotFoundError("This Destination Not Found"));
             }
             DestinationTranslation? translation = null;
-            Language? languageEnum = null;
+            SupportedLanguage? languageEnum = null;
 
             if (requestDTO.Language is not null)
             {
@@ -183,34 +183,14 @@ namespace Amigo.Application.Services.Admin
             {
                 return Result.Fail(new NotFoundError("This Destination Not Found"));
             }
-            //is booked by people can't removed
-            var _bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
 
-            //var hasBookings = await _bookingRepo.AnyAsync(
-            //                   new ActiveBookingsForDestinationSpecification(destinationId)
-            //              );
-
-            //if (hasBookings)
-            //{
-
-
-               
-            //        return Result.Fail(new ConfilctError("Cannot delete destination  with active bookings"));
-               
-
-            //}
-            _destinationRepo.Remove(destination);
-
+            destination.SetIsDeleted(true);
             try
             {
                 await _unitOfWork.SaveChangesAsync();
-                bool isDeleted = false;
-                if (destination.ImagePublicId is not null)
-                {
-                    isDeleted = _imageCloud.DeleteImage(destination.ImagePublicId);
-                }
+                
                 return Result.Ok()
-                               .WithSuccess(new Success($"Destination Deleted Successfully is image deleted {isDeleted}"));
+                               .WithSuccess(new Success($"Destination Deleted Successfully"));
             }
             catch (Exception ex)
             {
@@ -229,13 +209,13 @@ namespace Amigo.Application.Services.Admin
             }
             var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
 
-            var destinationSpecification = new GetAllDestinationSpecification(requestQuery, true);
+            SupportedLanguage language = _currentUserService.Language;
+            var destinationSpecification = new GetAllDestinationSpecification(requestQuery, true, language);
             var destinationData = await destinationRepo.GetAllAsync(destinationSpecification);
 
-            var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery, true);
+            var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery, true, language);
             var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification);
 
-            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
             
             var mappedDestinationData = DestinationMapping.EntitiesToDestinations(destinationData,language);
             var paginatedResult = new PaginatedResponse<GetDestinationResponseDTO>
@@ -268,7 +248,7 @@ namespace Amigo.Application.Services.Admin
             {
                 return Result.Fail(new NotFoundError($"This Destination Not Found"));
             }
-            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
+            SupportedLanguage? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
 
             var mappedDestinationData = DestinationMapping.EntityToAdminDestination(destinationData, language);
             return Result.Ok(mappedDestinationData);

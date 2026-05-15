@@ -7,6 +7,6 @@ namespace Amigo.Domain.DTO.Destination
     public class DestinationTranslateRequestDTO
     {
         public Guid DestinationId { get; set; }
-        public Language SourceLanguage { get; set; }
+        public SupportedLanguage SourceLanguage { get; set; }
     }
 }

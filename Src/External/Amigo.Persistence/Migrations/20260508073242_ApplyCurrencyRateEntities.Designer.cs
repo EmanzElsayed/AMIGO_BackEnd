@@ -394,7 +394,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -807,7 +807,7 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<int?>("Language")
+                    b.Property<int?>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("LastLoginAt")
@@ -1008,7 +1008,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<string>("MeetingPoint")
@@ -1823,7 +1823,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -1838,9 +1838,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("CancellationId", "Language")
+                    b.HasIndex("CancellationId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("CancellationTranslation", "translation");
@@ -1873,7 +1873,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -1893,9 +1893,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("CountryInfoId", "Language")
+                    b.HasIndex("CountryInfoId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("CountryInfoTranslation", "translation");
@@ -1928,7 +1928,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -1948,9 +1948,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("CurrencyId", "Language")
+                    b.HasIndex("CurrencyId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("CurrencyTranslation", "translation");
@@ -1983,7 +1983,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -2003,9 +2003,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("DestinationId", "Language")
+                    b.HasIndex("DestinationId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("DestinationTranslation", "translation");
@@ -2035,7 +2035,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -2058,9 +2058,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("TourInclusionId", "Language")
+                    b.HasIndex("TourInclusionId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("InclusionTranslation", "translation");
@@ -2090,7 +2090,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -2113,9 +2113,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("PriceId", "Language")
+                    b.HasIndex("PriceId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("PriceTranslation", "translation");
@@ -2150,7 +2150,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -2168,9 +2168,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Language");
+                    b.HasIndex("SupportedLanguage");
 
-                    b.HasIndex("ReviewId", "Language")
+                    b.HasIndex("ReviewId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("ReviewTranslation", "translation");
@@ -2204,7 +2204,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("Language")
+                    b.Property<int>("SupportedLanguage")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ModifiedBy")
@@ -2227,7 +2227,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TourId", "Language")
+                    b.HasIndex("TourId", "SupportedLanguage")
                         .IsUnique();
 
                     b.ToTable("TourTranslation", "translation");

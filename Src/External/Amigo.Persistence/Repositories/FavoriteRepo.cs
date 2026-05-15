@@ -25,7 +25,7 @@ public class FavoriteRepo(AmigoDbContext _dbContext) : IFavoriteRepo
                 TourId = x.t.Id,
                 Title = x.t.Translations
                     .Where(tr => !tr.IsDeleted)
-                    .OrderBy(tr => tr.Language == Language.en ? 0 : 1)
+                    .OrderBy(tr => tr.Language == SupportedLanguage.en ? 0 : 1)
                     .Select(tr => tr.Title)
                     .FirstOrDefault() ?? "Tour",
                 DestinationId = x.t.DestinationId,

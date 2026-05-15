@@ -8,24 +8,17 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
     public class GetDestinationByIdSpecification : BaseSpecification<Destination, Guid>
     {
-        public GetDestinationByIdSpecification(Guid destinationId,GetLanuageQuery requestQuery ) 
+        public GetDestinationByIdSpecification(Guid destinationId, SupportedLanguage language ) 
             : base(
-                 DestinationCommonSpecification.BuildGetDestinaionByIdCriteria(requestQuery,destinationId)
+                 DestinationCommonSpecification.BuildGetDestinaionByIdCriteria(language, destinationId)
 
             )
         {
-            if (requestQuery.Language is null)
-            {
-                AddInclude(d => d.Translations.Take(1));
-
-            }
-            else
-            {
-                var language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
-
-                AddInclude(d => d.Translations.OrderByDescending(x => x.Language == language).Take(1));
-            }
-            AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations));
+           
+               
+            AddInclude(d => d.Translations.OrderByDescending(x => x.Language == language).Take(1));
+            
+            AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations.OrderByDescending(x => x.Language == language).Take(1)));
 
         }
     }

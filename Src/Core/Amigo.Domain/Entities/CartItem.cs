@@ -13,7 +13,7 @@ public class CartItem:BaseEntity<Guid>
     public Guid SlotId { get; set; }
     public AvailableSlots Slot { get; set; } = null!;
 
-    public Language Language { get; set; }
+    public SupportedLanguage Language { get; set; }
 
     public DateOnly TourDate { get; set; }
 

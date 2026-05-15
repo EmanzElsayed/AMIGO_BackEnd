@@ -20,7 +20,7 @@ public class OrderItem:BaseEntity<Guid>
     public DateOnly TourDate { get; set; }
     public TimeOnly StartTime { get; set; }
     //public CurrencyCode CurrencyCode { get; set; } 
-    public Language Language { get; set; }
+    public SupportedLanguage Language { get; set; }
     public string? MeetingPoint { get; set; }
     public TimeSpan Duration { get; set; }
 

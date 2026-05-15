@@ -8,7 +8,7 @@ namespace Amigo.Application.Abstraction.Services
     {
         string? UserId { get; }
 
-        string Language { get; }
-
+        SupportedLanguage Language { get; }
+        CurrencyCode Currency {  get; }
     }
 }

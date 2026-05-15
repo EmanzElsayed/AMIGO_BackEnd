@@ -149,7 +149,7 @@ namespace Amigo.Application.Services.Admin
         {
             var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
             var tours = await tourRepo.GetAllAsync(new GetAllToursForAdminSpecification(requestQuery));
-            Language language = !string.IsNullOrWhiteSpace(requestQuery.Language)? EnumsMapping.ToLanguageEnum(requestQuery.Language):Constants.BaseLanguage;
+            SupportedLanguage language = !string.IsNullOrWhiteSpace(requestQuery.Language)? EnumsMapping.ToLanguageEnum(requestQuery.Language):Constants.BaseLanguage;
 
 
 
@@ -241,7 +241,7 @@ namespace Amigo.Application.Services.Admin
 
             Guid tourId = guid;
 
-            Language language = Constants.BaseLanguage;
+            SupportedLanguage language = Constants.BaseLanguage;
             if (!string.IsNullOrWhiteSpace(requestDTO.Language)) language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
 
 
@@ -286,7 +286,7 @@ namespace Amigo.Application.Services.Admin
 
                     }
                     TourTranslation? translation = null;
-                    Language? languageEnum = null;
+                    SupportedLanguage? languageEnum = null;
 
                     if (!string.IsNullOrWhiteSpace(requestDTO.Language))
                     {
@@ -353,7 +353,7 @@ namespace Amigo.Application.Services.Admin
 
             });
         }
-        public GetTourResponseDTO MapTourToResponseDTO(Tour tour, Language language)
+        public GetTourResponseDTO MapTourToResponseDTO(Tour tour, SupportedLanguage language)
         {
             var translation = tour.Translations
                 .FirstOrDefault(t => t.Language == language);

@@ -67,14 +67,14 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_CountryInfoTranslation_CountryInfoId_Language",
                 schema: "translation",
                 table: "CountryInfoTranslation",
-                columns: new[] { "CountryInfoId", "Language" },
+                columns: new[] { "CountryInfoId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CountryInfoTranslation_Language",
                 schema: "translation",
                 table: "CountryInfoTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
         }
 
         /// <inheritdoc />

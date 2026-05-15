@@ -43,9 +43,8 @@ namespace Amigo.Application.Mapping
 
         
 
-        public static IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable<Destination> destinations,Language? language)
+        public static IEnumerable<GetDestinationResponseDTO> EntitiesToDestinations(IEnumerable<Destination> destinations,SupportedLanguage language)
         {
-            if (language is null) language = Constants.BaseLanguage;
 
             return destinations.Select(destination => new GetDestinationResponseDTO(
 
@@ -65,7 +64,7 @@ namespace Amigo.Application.Mapping
                 
             ));
         }
-        public static GetDestinationResponseDTO EntityToAdminDestination(Destination destination ,  Language? language)
+        public static GetDestinationResponseDTO EntityToAdminDestination(Destination destination ,  SupportedLanguage? language)
         {
             if (language is null) language = Constants.BaseLanguage;
 
@@ -91,9 +90,8 @@ namespace Amigo.Application.Mapping
         }
 
 
-        public static GetDestinationResponseDTO EntityToDestination(Destination destination, Language? language)
+        public static GetDestinationResponseDTO EntityToDestination(Destination destination, SupportedLanguage language)
         {
-            if (language is null) language = Constants.BaseLanguage;
 
 
             return new GetDestinationResponseDTO(
@@ -120,7 +118,7 @@ namespace Amigo.Application.Mapping
              UpdateDestinationRequestDTO requestDTO,
              Destination destination,
              DestinationTranslation? translation,
-             Language? language)
+             SupportedLanguage? language)
         {
             
             if (requestDTO.IsActive is not null)

@@ -10,7 +10,7 @@ public class Tour: BaseEntity<Guid>
 
     public decimal? Discount { get; set; }
 
-    public Language? GuideLanguage { get; set; }
+    public SupportedLanguage? GuideLanguage { get; set; }
 
     public string? MeetingPoint { get; set; }
     

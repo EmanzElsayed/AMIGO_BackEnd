@@ -9,7 +9,7 @@ namespace Amigo.Application.Specifications.CountriesInfo
 {
     public class GetAllCountryInfoSpecification : BaseSpecification<CountryInfo, Guid>
     {
-        public GetAllCountryInfoSpecification(GetAllCountryInfoQuery query,Language language)
+        public GetAllCountryInfoSpecification(GetAllCountryInfoQuery query,SupportedLanguage language)
             : base(c => !c.IsDeleted 
                  && (string.IsNullOrWhiteSpace(query.CountryCode) || c.CountryCode == EnumsMapping.ToCountryCodeEnum(query.CountryCode))
 

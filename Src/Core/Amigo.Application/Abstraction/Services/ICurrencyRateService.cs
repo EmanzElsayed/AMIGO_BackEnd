@@ -1,6 +1,7 @@
 ﻿using Amigo.Domain.DTO.Currency;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace Amigo.Application.Abstraction.Services
@@ -22,6 +23,6 @@ namespace Amigo.Application.Abstraction.Services
         decimal rate);
         Task<Result<decimal>> GetRateAsync(
            CurrencyCode from,
-           CurrencyCode to);
+           CurrencyCode to,bool isHit);
     }
 }

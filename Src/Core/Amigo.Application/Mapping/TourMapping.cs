@@ -29,7 +29,7 @@ namespace Amigo.Application.Mapping
 
         public static TourTranslation TourTranslationToEntity(CreateTourRequestDTO requestDTO, Tour tour)
         {
-            Language language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            SupportedLanguage language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
             return new TourTranslation()
             {
                 Id = Guid.NewGuid(),
@@ -45,7 +45,7 @@ namespace Amigo.Application.Mapping
                 UpdateTourRequestDTO requestDTO,
                 Tour tour,
                 TourTranslation? translation,
-                Language? language)
+                SupportedLanguage? language)
         {
             // basic fields
             if (requestDTO.Duration is not null)

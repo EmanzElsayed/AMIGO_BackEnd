@@ -7,14 +7,14 @@ namespace Amigo.Application.Specifications.TourSpecification.User;
 
 public class ReviewTranslationsForReviewsSpecification : BaseSpecification<ReviewTranslation, Guid>
 {
-    public ReviewTranslationsForReviewsSpecification(IReadOnlyCollection<Guid> reviewIds, Language language)
+    public ReviewTranslationsForReviewsSpecification(IReadOnlyCollection<Guid> reviewIds, SupportedLanguage language)
         : base(BuildCriteria(reviewIds, language))
     {
     }
 
     private static Expression<Func<ReviewTranslation, bool>> BuildCriteria(
         IReadOnlyCollection<Guid> reviewIds,
-        Language language)
+        SupportedLanguage language)
     {
         return rt => reviewIds.Contains(rt.ReviewId) && rt.Language == language && !rt.IsDeleted;
     }

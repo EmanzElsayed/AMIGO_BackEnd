@@ -2,8 +2,7 @@ namespace Amigo.SharedKernal.QueryParams;
 
 public class GetTopDestinationsQuery
 {
-    public string? Language { get; set; }
-    public string? Currency { get; set; }
+    
 
     private const int DefaultPageSize = 5;
     private const int MaxPageSize = 50;

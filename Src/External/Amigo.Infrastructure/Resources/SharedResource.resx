@@ -120,4 +120,7 @@
   <data name="GreetingToAmigo" xml:space="preserve">
     <value>Welcome To Amigo Tours</value>
   </data>
+  <data name="NotFoundDestination" xml:space="preserve">
+    <value>This Destination Not Found</value>
+  </data>
 </root>

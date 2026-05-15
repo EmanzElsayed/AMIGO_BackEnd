@@ -26,11 +26,11 @@ namespace Amigo.Application.Validators.Tour
                 .WithMessage("Description Must Be Less Than 2000 Characters")
                 .When(x => !string.IsNullOrEmpty(x.Description));
 
-            // Language
+            // SupportedLanguage
             RuleFor(x => x.Language)
                   .Cascade(CascadeMode.Stop)
                   .NotEmpty()
-                      .WithMessage("Language is required when updating translation fields")
+                      .WithMessage("SupportedLanguage is required when updating translation fields")
                       .When(x =>
                           !string.IsNullOrWhiteSpace(x.Title) ||
                           !string.IsNullOrWhiteSpace(x.Description) ||
@@ -39,7 +39,7 @@ namespace Amigo.Application.Validators.Tour
                           (x.Prices != null && x.Prices.Any())
                       )
                   .Must(BusinessRules.BeAValidLanguage)
-                      .WithMessage("Invalid Language Code")
+                      .WithMessage("Invalid SupportedLanguage Code")
                       .When(x => !string.IsNullOrWhiteSpace(x.Language));
 
 
@@ -50,11 +50,11 @@ namespace Amigo.Application.Validators.Tour
 
 
 
-            // Guide Language
+            // Guide SupportedLanguage
             RuleFor(x => x.GuideLanguage)
                 .Must(BusinessRules.IsValidFlagsEnumNullable)
                 .When(x => x.GuideLanguage is not null)
-                .WithMessage("Invalid Guide Language Code");
+                .WithMessage("Invalid Guide SupportedLanguage Code");
 
             // Meeting Point
             RuleFor(x => x.MeetingPoint)

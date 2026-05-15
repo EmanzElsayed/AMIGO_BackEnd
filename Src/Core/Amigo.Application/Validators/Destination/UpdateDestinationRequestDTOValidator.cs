@@ -16,7 +16,7 @@ namespace Amigo.Application.Validators.Destination
                     (string.IsNullOrEmpty(x.Name) && string.IsNullOrEmpty(x.Language)) ||
                     (!string.IsNullOrEmpty(x.Name) && !string.IsNullOrEmpty(x.Language))
                 )
-                .WithMessage("Name and Language must be provided together");
+                .WithMessage("Name and SupportedLanguage must be provided together");
 
 
             RuleFor(x => x)
@@ -24,7 +24,7 @@ namespace Amigo.Application.Validators.Destination
                     (string.IsNullOrEmpty(x.CountryCode) && string.IsNullOrEmpty(x.Language)) ||
                     (!string.IsNullOrEmpty(x.CountryCode) && !string.IsNullOrEmpty(x.Language))
                 )
-                .WithMessage("Country Code and Language must be provided together");
+                .WithMessage("Country Code and SupportedLanguage must be provided together");
 
             RuleFor(x => x.Name)
                .MaximumLength(300)
@@ -42,7 +42,7 @@ namespace Amigo.Application.Validators.Destination
             RuleFor(x => x.Language)
                 .Must(BusinessRules.BeAValidLanguage)
                 .When(x => x.Language is not null)
-                .WithMessage("Invalid Language Code Must be (en, es, SpanishLatinAmerica, fr, it, PortuguesePortugal, PortugueseBrazil)");
+                .WithMessage("Invalid SupportedLanguage Code Must be (en, es, SpanishLatinAmerica, fr, it, PortuguesePortugal, PortugueseBrazil)");
            
             RuleFor(x => x.PublicId)
                .NotEmpty()

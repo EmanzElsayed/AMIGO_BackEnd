@@ -7,7 +7,7 @@ public class HeaderRequestCultureProvider: RequestCultureProvider
 {
     public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
     {
-        var acceptedLanguageHeader = httpContext.Request.Headers["Accept-Language"].ToString();
+        var acceptedLanguageHeader = httpContext.Request.Headers["Accept-SupportedLanguage"].ToString();
         if (string.IsNullOrWhiteSpace(acceptedLanguageHeader))
             return Task.FromResult<ProviderCultureResult?>(null);
         var firstLang = acceptedLanguageHeader.Split(',')[0];

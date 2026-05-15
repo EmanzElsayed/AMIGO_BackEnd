@@ -11,8 +11,8 @@ public static class TourCatalogCriteria
     public static Expression<Func<Tour, bool>> Build(
         Guid destinationId,
         GetUserToursQuery q,
-        Language? translationLanguage,
-        Language? effectiveGuideLanguage,
+        SupportedLanguage? translationLanguage,
+        SupportedLanguage? effectiveGuideLanguage,
         CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
@@ -79,7 +79,7 @@ public static class TourCatalogCriteria
             && (string.IsNullOrWhiteSpace(q.Category)
                         || t.TourInclusions.Any(i =>
                             i.Translations.Any(tr =>
-                                tr.Language == (translationLanguage ?? Language.en)
+                                tr.Language == (translationLanguage ?? SupportedLanguage.en)
                                 && tr.Text.ToLower().Trim().Contains(q.Category!.ToLower().Trim())
                             )
                         )
@@ -115,13 +115,13 @@ public static class TourCatalogCriteria
              Guid? destinationId,
              string? tourTitle,
              string?language
-             //Language translationLanguage = Language.en
+             //SupportedLanguage translationLanguage = SupportedLanguage.en
 
 
 
         )
     {
-        Language translationLanguage = Language.en;
+        SupportedLanguage translationLanguage = SupportedLanguage.en;
         if (!string.IsNullOrEmpty(language))
         {
             translationLanguage = EnumsMapping.ToLanguageEnum(language);

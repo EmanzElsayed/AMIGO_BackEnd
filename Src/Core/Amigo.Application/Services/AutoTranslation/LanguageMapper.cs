@@ -6,17 +6,17 @@ namespace Amigo.Application.Services.AutoTranslation
 {
     public static class LanguageMapper
     {
-        private static readonly Dictionary<Language, string> Map = new()
+        private static readonly Dictionary<SupportedLanguage, string> Map = new()
         {
-            { Language.en, "en" },
-            { Language.es, "es" },
-            { Language.fr, "fr" },
-            { Language.it, "it" },
-            { Language.br, "pt" },
-            { Language.pt, "pt" }
+            { SupportedLanguage.en, "en" },
+            { SupportedLanguage.es, "es" },
+            { SupportedLanguage.fr, "fr" },
+            { SupportedLanguage.it, "it" },
+            { SupportedLanguage.br, "pt" },
+            { SupportedLanguage.pt, "pt" }
         };
 
-        public static string ToCode(Language lang)
+        public static string ToCode(SupportedLanguage lang)
         {
             return Map.TryGetValue(lang, out var code)
                 ? code

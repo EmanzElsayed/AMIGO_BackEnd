@@ -112,7 +112,7 @@ namespace Amigo.Application.Services
 
             var rate = await _currencyRateService.GetRateAsync(
                     Constants.BaseCurrency,
-                    cart.CurrencyCode.Value);
+                    cart.CurrencyCode.Value,false);
 
             if (!rate.IsSuccess)
                 return Result.Fail(rate.Errors);
@@ -207,7 +207,7 @@ namespace Amigo.Application.Services
 
                 var rate = await _currencyRateService.GetRateAsync(
                 Constants.BaseCurrency,
-                cart.CurrencyCode.Value);
+                cart.CurrencyCode.Value,false);
 
                 if (!rate.IsSuccess)
                     return Result.Fail(rate.Errors);
@@ -494,7 +494,7 @@ namespace Amigo.Application.Services
                         decimal itemTotal = 0;
                         var rate = await _currencyRateService.GetRateAsync(
                         Constants.BaseCurrency,
-                        cart.CurrencyCode.Value);
+                        cart.CurrencyCode.Value,false);
 
                         if (!rate.IsSuccess)
                             return Result.Fail(rate.Errors);
@@ -633,7 +633,7 @@ namespace Amigo.Application.Services
             cart.TotalAmount = cart.Items.Sum(x => x.TotalAmount);
             cart.LastUpdatedAt = DateTime.UtcNow;
         }
-        private decimal GetPriceFromTour(Tour tour, string type, Language lang,UserType userType)
+        private decimal GetPriceFromTour(Tour tour, string type, SupportedLanguage lang,UserType userType)
         {
             var price = tour.Prices
                 .FirstOrDefault(p => p.UserType == userType &&

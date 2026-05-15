@@ -11,9 +11,9 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User
 {
     public class CountGetAllDestinationSpecification : BaseSpecification<Destination, Guid>
     {
-        public CountGetAllDestinationSpecification(GetAllDestinationQuery requestQuery ,bool isAdmin)
+        public CountGetAllDestinationSpecification(GetAllDestinationQuery requestQuery ,bool isAdmin,SupportedLanguage language)
             : base(
-                  DestinationCommonSpecification.BuildCriteria(requestQuery, isAdmin)
+                  DestinationCommonSpecification.BuildCriteria(requestQuery, isAdmin,language)
             )
         { 
         }

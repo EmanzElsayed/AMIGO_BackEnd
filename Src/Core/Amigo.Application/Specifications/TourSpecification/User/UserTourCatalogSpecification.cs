@@ -11,8 +11,8 @@ public class UserTourCatalogSpecification : BaseSpecification<Tour, Guid>
     public UserTourCatalogSpecification(
         GetUserToursQuery query,
         Guid destinationId,
-        Language? translationLanguage,
-        Language? effectiveGuideLanguage,
+        SupportedLanguage? translationLanguage,
+        SupportedLanguage? effectiveGuideLanguage,
         CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,

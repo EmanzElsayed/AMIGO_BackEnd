@@ -1,7 +1,7 @@
 namespace Amigo.Domain.Enum;
 
 [Flags]
-public enum Language
+public enum SupportedLanguage
 {
     None = 0,
     en = 1,

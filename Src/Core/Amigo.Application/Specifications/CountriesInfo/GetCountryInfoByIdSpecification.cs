@@ -8,7 +8,7 @@ namespace Amigo.Application.Specifications.CountriesInfo
 {
     public class GetCountryInfoByIdSpecification : BaseSpecification<CountryInfo, Guid>
     {
-        public GetCountryInfoByIdSpecification(Guid id , Language language) 
+        public GetCountryInfoByIdSpecification(Guid id , SupportedLanguage language) 
             : base(c => !c.IsDeleted && 
                 c.Id == id
                 && ( c.Translations.Any(t => t.Language == language))

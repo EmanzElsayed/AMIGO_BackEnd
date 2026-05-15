@@ -1219,14 +1219,14 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_CancellationTranslation_CancellationId_Language",
                 schema: "translation",
                 table: "CancellationTranslation",
-                columns: new[] { "CancellationId", "Language" },
+                columns: new[] { "CancellationId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CancellationTranslation_Language",
                 schema: "translation",
                 table: "CancellationTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Cart_CartToken",
@@ -1274,14 +1274,14 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_CurrencyTranslation_CurrencyId_Language",
                 schema: "translation",
                 table: "CurrencyTranslation",
-                columns: new[] { "CurrencyId", "Language" },
+                columns: new[] { "CurrencyId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CurrencyTranslation_Language",
                 schema: "translation",
                 table: "CurrencyTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Destination_CountryCode",
@@ -1299,14 +1299,14 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_DestinationTranslation_DestinationId_Language",
                 schema: "translation",
                 table: "DestinationTranslation",
-                columns: new[] { "DestinationId", "Language" },
+                columns: new[] { "DestinationId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DestinationTranslation_Language",
                 schema: "translation",
                 table: "DestinationTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Favorites_UserId",
@@ -1318,13 +1318,13 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_InclusionTranslation_Language",
                 schema: "translation",
                 table: "InclusionTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
 
             migrationBuilder.CreateIndex(
                 name: "IX_InclusionTranslation_TourInclusionId_Language",
                 schema: "translation",
                 table: "InclusionTranslation",
-                columns: new[] { "TourInclusionId", "Language" },
+                columns: new[] { "TourInclusionId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1373,13 +1373,13 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_PriceTranslation_Language",
                 schema: "translation",
                 table: "PriceTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PriceTranslation_PriceId_Language",
                 schema: "translation",
                 table: "PriceTranslation",
-                columns: new[] { "PriceId", "Language" },
+                columns: new[] { "PriceId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1421,13 +1421,13 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_ReviewTranslation_Language",
                 schema: "translation",
                 table: "ReviewTranslation",
-                column: "Language");
+                column: "SupportedLanguage");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReviewTranslation_ReviewId_Language",
                 schema: "translation",
                 table: "ReviewTranslation",
-                columns: new[] { "ReviewId", "Language" },
+                columns: new[] { "ReviewId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1470,7 +1470,7 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_TourTranslation_TourId_Language",
                 schema: "translation",
                 table: "TourTranslation",
-                columns: new[] { "TourId", "Language" },
+                columns: new[] { "TourId", "SupportedLanguage" },
                 unique: true);
 
             migrationBuilder.CreateIndex(

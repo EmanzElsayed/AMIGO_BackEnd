@@ -1,15 +1,18 @@
+using Amigo.Application.Abstraction.Services;
+
 namespace Amigo.Application.Services
 {
     public class DestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork ,
-                                    
-                                    ITopDestinationsReader _topDestinationsReader) 
+                                    ICurrentUserService _currentUserService,
+                                    ITopDestinationsReader _topDestinationsReader,
+                                     ILocalizationService _localizationService) 
                 : IDestinationService
     {
 
     
 
-        public async Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery)
+        public async Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery, CancellationToken cancellationToken)
         {
             var validationResult = await _validationService.ValidateAsync(requestQuery);
             if (!validationResult.IsSuccess)
@@ -18,13 +21,15 @@ namespace Amigo.Application.Services
             }
             var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
 
-            var destinationSpecification = new GetAllDestinationSpecification(requestQuery,false);
-            var destinationData = await destinationRepo.GetAllAsync(destinationSpecification);
+            SupportedLanguage language = _currentUserService.Language;
 
-            var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery , false);
-            var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification);
+            var destinationSpecification = new GetAllDestinationSpecification(requestQuery,false,language);
+            var destinationData = await destinationRepo.GetAllAsync(destinationSpecification, cancellationToken);
 
-            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
+            var countDestinationSpecification = new CountGetAllDestinationSpecification(requestQuery , false,language);
+            var countDestinationData = await destinationRepo.GetCountSpecificationAsync(countDestinationSpecification, cancellationToken);
+
+            
 
             var mappedDestinationData = DestinationMapping.EntitiesToDestinations(destinationData, language);
             var paginatedResult = new PaginatedResponse<GetDestinationResponseDTO>
@@ -37,33 +42,30 @@ namespace Amigo.Application.Services
             return Result.Ok(paginatedResult);
         }
 
-        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id,  GetLanuageQuery requestQuery)
+        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id, CancellationToken cancellationToken)
         {
-            var validationResult = await _validationService.ValidateAsync(requestQuery);
-            if (!validationResult.IsSuccess)
-            {
-                return validationResult;
-            }
+           
             if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
                 return Result.Fail("Invalid UUID");
           
             Guid destinationId = guid;
 
+            SupportedLanguage language = _currentUserService.Language;
+
             var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
-            var destinationSpecification = new GetDestinationByIdSpecification(destinationId ,requestQuery );
+            var destinationSpecification = new GetDestinationByIdSpecification(destinationId ,language );
             
-            var destinationData = await destinationRepo.GetByIdAsync(destinationSpecification);
+            var destinationData = await destinationRepo.GetByIdAsync(destinationSpecification, cancellationToken);
             if (destinationData is null)
             {
-                return Result.Fail(new NotFoundError($"This Destination Not Found"));
+                return Result.Fail(new NotFoundError(_localizationService.Get("NotFoundDestination")));
             }
-            Language? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
 
             var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language);
             return Result.Ok(mappedDestinationData);
         }
 
-        public async Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery)
+        public async Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery, CancellationToken cancellationToken)
         {
             var validationResult = await _validationService.ValidateAsync(requestQuery);
             if (!validationResult.IsSuccess)

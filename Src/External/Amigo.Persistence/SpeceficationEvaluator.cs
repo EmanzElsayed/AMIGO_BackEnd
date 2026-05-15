@@ -12,6 +12,8 @@ namespace Amigo.Persistence
         {
             var query = inputQuery;
 
+            query = query.Where(x => !x.IsDeleted);
+
             if (specifications.Criteria is not null)
             {
                 query = query.Where(specifications.Criteria);

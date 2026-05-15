@@ -15,7 +15,7 @@ namespace Amigo.Application.Validators.SharedValidator
                  
                 .Must(BusinessRules.BeAValidLanguage)
                 .When(x => x.Language is not null)
-                .WithMessage("Invalid Language Code Must be (en, es, fr, it, Portuguese (Portugal), Portuguese (Brazil) )");
+                .WithMessage("Invalid SupportedLanguage Code Must be (en, es, fr, it, Portuguese (Portugal), Portuguese (Brazil) )");
 
         }
     }

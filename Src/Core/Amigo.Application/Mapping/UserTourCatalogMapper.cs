@@ -10,7 +10,7 @@ public static class UserTourCatalogMapper
 {
     public static UserTourDetailDto ToDetail(
         Tour tour,
-        Language listingLanguage,
+        SupportedLanguage listingLanguage,
         IReadOnlyList<Price> pricesWithTranslations,
         UserType? effectiveUserType,
         IReadOnlyList<TourSchedule> schedules,
@@ -67,7 +67,7 @@ public static class UserTourCatalogMapper
                 : cancellationPolicyDescription.Trim());
     }
 
-    private static IReadOnlyList<string> MapIncludedLines(Tour tour, Language lang)
+    private static IReadOnlyList<string> MapIncludedLines(Tour tour, SupportedLanguage lang)
     {
         var inclusions = tour.TourInclusions
             .Where(i => !i.IsDeleted && i.IsIncluded) 
@@ -93,7 +93,7 @@ public static class UserTourCatalogMapper
             .ToList();
     }
 
-    private static IReadOnlyList<string> MapNotIncludedLines(Tour tour, Language lang)
+    private static IReadOnlyList<string> MapNotIncludedLines(Tour tour, SupportedLanguage lang)
     {
         var inclusions = tour.TourInclusions
            .Where(i => !i.IsDeleted && !i.IsIncluded)
@@ -121,7 +121,7 @@ public static class UserTourCatalogMapper
 
     private static IReadOnlyList<UserTourPriceTierDto> MapPriceTiers(
         IReadOnlyList<Price> prices,
-        Language listingLanguage,
+        SupportedLanguage listingLanguage,
         UserType? effectiveUserType)
     {
         var list = new List<UserTourPriceTierDto>();
@@ -262,10 +262,10 @@ public static class UserTourCatalogMapper
         return rows;
     }
 
-    public static UserTourListItemDto ToListItem(Tour tour, Language listingLanguage)
+    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage)
         => ToListItem(tour, listingLanguage, null);
 
-    public static UserTourListItemDto ToListItem(Tour tour, Language listingLanguage, UserType? effectiveUserType)
+    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, UserType? effectiveUserType)
     {
         var tr = tour.Translations
             .FirstOrDefault(x => x.Language == listingLanguage)

@@ -14,7 +14,7 @@ public class GetUserToursQueryValidator : AbstractValidator<GetUserToursQuery>
             .When(x => !string.IsNullOrWhiteSpace(x.Currency))
             .WithMessage("Invalid currency code.");
 
-        //Language
+        //SupportedLanguage
         //CountryCode
         //GuideLanguage
         //AvailabilityDate

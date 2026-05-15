@@ -10,7 +10,7 @@ public class ApplicationUser : IdentityUser
     public Gender? Gender { get; set; }
     public DateOnly? BirthDate { get; set; }
     public string? Nationality { get; set; }
-    public Language? Language { get; set; }
+    public SupportedLanguage? Language { get; set; }
     public Address? Address { get; set; }
      public  DateTime LastLoginAt { get; set; }
     public int? CreatedBy { get; private set; }
@@ -27,7 +27,7 @@ public class ApplicationUser : IdentityUser
         DateOnly birthDate,
         string phoneNumber,
         Gender gender,
-        Language language,
+        SupportedLanguage language,
         Address address,
         string userName,
         string nationality)

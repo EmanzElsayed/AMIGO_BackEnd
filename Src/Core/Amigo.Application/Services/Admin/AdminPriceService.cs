@@ -46,7 +46,7 @@ namespace Amigo.Application.Services.Admin
         public Task UpdatePricesAsync(
              Tour tour,
              List<UpdatePriceRequestDTO> prices,
-             Language? language)
+             SupportedLanguage? language)
         {
             if (tour == null || language is null || prices == null || prices.Count == 0)
                 return Task.CompletedTask;

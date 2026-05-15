@@ -10,7 +10,7 @@ namespace Amigo.Application.Mapping
     {
         public static Cancellation CancellationToEntity(CreateCancellationRequestDTO requestDTO, Tour tour ,string language)
         {
-            Language mappedlanguage = EnumsMapping.ToLanguageEnum(language);
+            SupportedLanguage mappedlanguage = EnumsMapping.ToLanguageEnum(language);
 
             var cancellationType = EnumsMapping.ToEnum<CancelationPolicyType>(requestDTO.CancelationPolicyType, true);
             return new Cancellation

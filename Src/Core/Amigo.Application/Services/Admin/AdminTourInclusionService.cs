@@ -13,7 +13,7 @@ namespace Amigo.Application.Services.Admin
             Tour tour,
             List<string>? includedList,
             List<string>? excludedList,
-            Language? language)
+            SupportedLanguage? language)
         {
             if (tour == null || language is null)
                 return Task.CompletedTask;

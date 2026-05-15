@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace Amigo.Presentation.Attributes
 {
@@ -19,23 +20,48 @@ namespace Amigo.Presentation.Attributes
 
             if (cacheValue is not null)
             {
-                context.Result = new ContentResult()
+                context.Result = new JsonResult(
+                  JsonSerializer.Deserialize<object>(cacheValue))
                 {
-                    Content = cacheValue,
-                    StatusCode = StatusCodes.Status200OK,
-                    ContentType = "application/json",
+                    StatusCode = StatusCodes.Status200OK
                 };
+
                 return;
             }
             var executedContext = await next.Invoke();
             if (executedContext.Result is ObjectResult result)
-                await _cacheService.SetAsync(cachKey, result.Value, TimeSpan.FromSeconds(duration));
+            {
+                object valueToCache = result.Value!;
+
+                var type = valueToCache.GetType();
+
+                if (type.IsGenericType &&
+                    type.GetProperty("Value") is not null)
+                {
+                    valueToCache = type.GetProperty("Value")!
+                        .GetValue(valueToCache)!;
+                }
+
+                await _cacheService.SetAsync(
+                    cachKey,
+                    valueToCache,
+                    TimeSpan.FromSeconds(duration));
+            }
         }
         private string CreateCacheKey(HttpRequest request)
         {
             //baseurl/products?brandId=1&typeId=2
             StringBuilder Key = new StringBuilder();
             Key.Append(request.Path + "?");
+
+            var language = request.Headers["Accept-Language"]
+               .FirstOrDefault()?
+               .Split(',')[0]
+               .Split('-')[0]
+               .ToLower();
+
+            Key.Append($":lang-{language}");
+
             var QueryOrdered = request.Query.OrderBy(q => q.Key);
             foreach (var item in QueryOrdered)
             {

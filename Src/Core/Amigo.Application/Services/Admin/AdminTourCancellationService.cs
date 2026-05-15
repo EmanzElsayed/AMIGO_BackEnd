@@ -10,7 +10,7 @@ namespace Amigo.Application.Services.Admin
         public Task UpdateCancellationAsync(
               Tour tour,
               UpdateCancellationRequestDTO? dto,
-              Language? language)
+              SupportedLanguage? language)
         {
             if (dto is null)
                 return Task.CompletedTask;

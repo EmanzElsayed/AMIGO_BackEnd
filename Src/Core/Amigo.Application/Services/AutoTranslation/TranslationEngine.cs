@@ -19,11 +19,11 @@ namespace Amigo.Application.Services.AutoTranslation
             Func<TTranslation> createTranslation,
             Dictionary<string, Func<TTranslation, string>> getters,
             Dictionary<string, Action<TTranslation, string>> setters,
-            Language sourceLang)
+            SupportedLanguage sourceLang)
             where TTranslation : ITranslationEntity
         {
-            var languages = Enum.GetValues<Language>()
-                    .Where(l => l != Language.None && l != sourceLang)
+            var languages = Enum.GetValues<SupportedLanguage>()
+                    .Where(l => l != SupportedLanguage.None && l != sourceLang)
                     .ToList();
 
             var fromCode = LanguageMapper.ToCode(sourceLang);
@@ -71,7 +71,7 @@ namespace Amigo.Application.Services.AutoTranslation
         }
 
 
-        public async Task TranslateDestination(Guid destinationId, Language sourceLang)
+        public async Task TranslateDestination(Guid destinationId, SupportedLanguage sourceLang)
         {
             var _repo = _unitOfWork.GetRepository<Destination, Guid>();
             var destination = await _repo.GetByIdAsync(new GetDestinationWithTranslationsSpecification(destinationId));
@@ -97,7 +97,7 @@ namespace Amigo.Application.Services.AutoTranslation
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<Result> TranslateTour(Guid tourId, Language sourceLang)
+        public async Task<Result> TranslateTour(Guid tourId, SupportedLanguage sourceLang)
         {
             var repo = _unitOfWork.GetRepository<Tour, Guid>();
 

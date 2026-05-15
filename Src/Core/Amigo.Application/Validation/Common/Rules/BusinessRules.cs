@@ -51,11 +51,11 @@ namespace Amigo.Application.Validation.Common.Rules
         }
         public static bool BeAValidLanguage(string languageCode)
         {
-            //return Enum.TryParse(typeof(Language), languageCode, true, out _);
+            //return Enum.TryParse(typeof(SupportedLanguage), languageCode, true, out _);
             if (string.IsNullOrWhiteSpace(languageCode))
                 return false;
 
-            foreach (var field in typeof(Language).GetFields())
+            foreach (var field in typeof(SupportedLanguage).GetFields())
             {
                 // check enum name
                 if (field.Name.Equals(languageCode, StringComparison.OrdinalIgnoreCase))

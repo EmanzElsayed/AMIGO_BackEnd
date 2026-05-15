@@ -27,10 +27,10 @@ public class UserTourCatalogService(
             return validationResult;
 
         var listingLang = string.IsNullOrWhiteSpace(query.Language)
-            ? Language.en
+            ? SupportedLanguage.en
             : EnumsMapping.ToLanguageEnum(query.Language!);
 
-        Language? effectiveGuide = query.OnlyInUserLanguage == true
+        SupportedLanguage? effectiveGuide = query.OnlyInUserLanguage == true
             ? listingLang
             : (string.IsNullOrWhiteSpace(query.GuideLanguage)
                 ? null
@@ -103,7 +103,7 @@ public class UserTourCatalogService(
      string? language)
     {
         var lang = string.IsNullOrWhiteSpace(language)
-            ? Language.en
+            ? SupportedLanguage.en
             : EnumsMapping.ToLanguageEnum(language!);
 
         var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
@@ -297,7 +297,7 @@ public class UserTourCatalogService(
 
             var rate = await _currencyRateService.GetRateAsync(
                   Constants.BaseCurrency,
-                  mappedCurrency);
+                  mappedCurrency,true);
 
             if (!rate.IsSuccess)
                 return Result.Fail(rate.Errors);

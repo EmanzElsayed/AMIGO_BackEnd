@@ -25,7 +25,7 @@ namespace Amigo.Application.Services
                 return validationResult;
             }
 
-            Language language = !string.IsNullOrWhiteSpace(requestQuery.Language) ? EnumsMapping.ToLanguageEnum(requestQuery.Language) : Language.en;
+            SupportedLanguage language = !string.IsNullOrWhiteSpace(requestQuery.Language) ? EnumsMapping.ToLanguageEnum(requestQuery.Language) : SupportedLanguage.en;
 
 
             var CurrencySpec = new GetAllCurrencySpecification(requestQuery,language);
@@ -50,7 +50,7 @@ namespace Amigo.Application.Services
 
             Guid CurrencyId = guid;
 
-            Language language = !string.IsNullOrWhiteSpace(query.Language) ? EnumsMapping.ToLanguageEnum(query.Language) : Language.en;
+            SupportedLanguage language = !string.IsNullOrWhiteSpace(query.Language) ? EnumsMapping.ToLanguageEnum(query.Language) : SupportedLanguage.en;
 
             var _currencyRepo = _unitOfWork.GetRepository<Currency, Guid>();
 
@@ -84,7 +84,7 @@ namespace Amigo.Application.Services
             }
 
             CurrencyTranslation? translation = null;
-            Language? languageEnum = null;
+            SupportedLanguage? languageEnum = null;
 
             if (requestDTO.Language is not null)
             {
@@ -133,7 +133,7 @@ namespace Amigo.Application.Services
         }
         public async Task<Result> CreateCurrencyAsync(CreateCurrencyRequestDTO requestDTO)
         {
-            Language language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            SupportedLanguage language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
             CurrencyCode code = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.CurrencyCode, false);
             var currency = new Currency()
             {

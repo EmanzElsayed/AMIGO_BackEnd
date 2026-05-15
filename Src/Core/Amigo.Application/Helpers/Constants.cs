@@ -9,7 +9,7 @@ namespace Amigo.Application.Helpers
         public const CurrencyCode BaseCurrency =
             CurrencyCode.USD;
 
-        public const Language BaseLanguage =
-            Language.en;
+        public const SupportedLanguage BaseLanguage =
+            SupportedLanguage.en;
     }
 }

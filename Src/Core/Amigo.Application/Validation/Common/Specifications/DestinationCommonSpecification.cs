@@ -14,17 +14,14 @@ namespace Amigo.Application.Validation.Common.Specifications
     public static class DestinationCommonSpecification 
     {
         public static Expression<Func<Destination, bool>> BuildCriteria(
-       GetAllDestinationQuery requestQuery, bool isAdmin)
+       GetAllDestinationQuery requestQuery, bool isAdmin,SupportedLanguage language)
         {
-            Language? language = null;
-            if (!string.IsNullOrWhiteSpace(requestQuery.Language))
-            { 
-                language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
-            }   
+               
 
-            return d =>
+            return d =>  
 
                     (
+                        !d.IsDeleted &&
                         d.Translations.Any(
                             t =>
                             (
@@ -34,8 +31,8 @@ namespace Amigo.Application.Validation.Common.Specifications
                             )
                             &&
                             (
-                                string.IsNullOrWhiteSpace(requestQuery.Language)
-                                ||
+                                //string.IsNullOrWhiteSpace(requestQuery.SupportedLanguage)
+                                //||
                                 t.Language == language
                             )
 
@@ -62,15 +59,9 @@ namespace Amigo.Application.Validation.Common.Specifications
         }
 
         public static Expression<Func<Destination, bool>> BuildGetDestinaionByIdCriteria(
-        GetLanuageQuery requestQuery ,Guid destinationId)
+        SupportedLanguage language ,Guid destinationId)
         {
-            Language? language = null;
-            if (!string.IsNullOrWhiteSpace(requestQuery.Language))
-            {
-                language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
-            }
-
-         
+            
            
                 return d => 
                 (
@@ -83,8 +74,7 @@ namespace Amigo.Application.Validation.Common.Specifications
                             t =>
                             
                             (
-                                string.IsNullOrWhiteSpace(requestQuery.Language)
-                                ||
+                               
                                 t.Language == language
                             )
 

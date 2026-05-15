@@ -9,9 +9,6 @@ namespace Amigo.SharedKernal.QueryParams
     {
         public string? Name { get; set; }
         public string? CountryCode { get; set; }
-        public string? Language { get; set; } 
-
-
 
         #region Pagination
 

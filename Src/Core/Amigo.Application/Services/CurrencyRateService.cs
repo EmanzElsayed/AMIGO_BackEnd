@@ -1,20 +1,27 @@
-﻿using Amigo.Application.Helpers;
+﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.CurrencyRateSpecification;
 using Amigo.Domain.DTO.Currency;
+using Amigo.Domain.Entities;
 using System.Globalization;
+using System.Text.Json;
 
 
 namespace Amigo.Application.Services
 {
+
+    
+
     public class CurrencyRateService(ICacheRepo _cacheRepo,
+        IBackgroundTaskQueue _backgroundQueue,
+        ICurrencyProvider currencyProvider,
         IUnitOfWork _unitOfWork ) 
         : ICurrencyRateService
     {
 
-
         public async Task<Result<decimal>> GetRateAsync(
               CurrencyCode from,
-              CurrencyCode to)
+              CurrencyCode to,bool isHit)
         {
             if (from == to)
                 return 1m;
@@ -22,13 +29,13 @@ namespace Amigo.Application.Services
             // direct from base
             if (from == Constants.BaseCurrency)
             {
-                return await GetDirectRateAsync(from, to);
+                return await GetDirectRateAsync(from, to,isHit);
             }
 
             // to base
             if (to == Constants.BaseCurrency)
             {
-                var rate = await GetDirectRateAsync(to, from);
+                var rate = await GetDirectRateAsync(to, from,isHit);
                 if (!rate.IsSuccess)
                     return Result.Fail(rate.Errors);
 
@@ -38,11 +45,11 @@ namespace Amigo.Application.Services
             // cross currency
             var fromRate = await GetDirectRateAsync(
                 Constants.BaseCurrency,
-                from);
+                from,isHit);
 
             var toRate = await GetDirectRateAsync(
                 Constants.BaseCurrency,
-                to);
+                to, isHit);
 
             if (!fromRate.IsSuccess)
                 return Result.Fail(fromRate.Errors);
@@ -54,15 +61,22 @@ namespace Amigo.Application.Services
         }
 
 
+
+
+
+
         private async Task<Result<decimal>> GetDirectRateAsync(
             CurrencyCode from,
-            CurrencyCode to)
+            CurrencyCode to,
+            bool isHit
+            )
         {
             var key = GetKey(from, to);
 
             // CACHE
-               // 1. CACHE
+            // 1. CACHE
             var cached = await _cacheRepo.GetAsync(key);
+
             if (!string.IsNullOrEmpty(cached) &&
                 decimal.TryParse(
                 cached,
@@ -76,20 +90,62 @@ namespace Amigo.Application.Services
             var repo = _unitOfWork.GetRepository<CurrencyRate, Guid>();
 
             // 2. DB fallback
-            var dbRate = await repo.GetByIdAsync(new GetCurrencyRateWithCurrencyTypeSpecification(from,to));
+            var dbRate = await repo.GetByIdAsync(new GetCurrencyRateWithCurrencyTypeSpecification(from, to));
 
             if (dbRate is null)
             {
                 return Result.Fail(new NotFoundError($"Currency rate not found: {from} -> {to}"));
 
             }
+            if (dbRate.ExpiresAt >= DateTime.UtcNow)
+            {
+                if (isHit)
+                {
+                    _backgroundQueue.QueueTask(async token =>
+                    {
+                        await SyncRates();
+                    });
+                    return Result.Ok(dbRate.Rate);
+                }
+                else
+                {
+                    await SyncRates();
+                    var updatedCached = await _cacheRepo.GetAsync(key);
+                    if (!string.IsNullOrEmpty(cached) &&
+                            decimal.TryParse(
+                            cached,
+                            NumberStyles.Any,
+                            CultureInfo.InvariantCulture,
+                            out var returnedRate))
+                            {
+                                return Result.Ok(returnedRate);
+                            }
+                }
+            }
 
-            await CacheRate(from, to, dbRate.Rate);
             return Result.Ok(dbRate.Rate);
-          
+
+
         }
 
+        public async Task SyncRates()
+        {
 
+            var rates = await currencyProvider.GetRatesAsync(Constants.BaseCurrency);
+
+            if (rates.IsSuccess)
+            {
+                var bulk = rates.Value
+                    .Where(x => x.Key != Constants.BaseCurrency)
+                    .Select(x => new CurrencyRateBulkItemDTO(
+                        Constants.BaseCurrency,
+                        x.Key,
+                        x.Value))
+                    .ToList();
+
+                await BulkUpsertAsync(bulk);
+            }
+        }
 
         public async Task BulkUpsertAsync(
             List<CurrencyRateBulkItemDTO> rates)
@@ -182,7 +238,7 @@ namespace Amigo.Application.Services
          CurrencyCode from,
          CurrencyCode to)
         {
-            var rate = await GetRateAsync(from, to);
+            var rate = await GetRateAsync(from, to,false);
             if (rate.IsSuccess)
             { 
                 return Result.Ok(amount * rate.Value);

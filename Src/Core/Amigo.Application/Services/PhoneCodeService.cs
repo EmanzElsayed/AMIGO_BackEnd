@@ -19,7 +19,7 @@ namespace Amigo.Application.Services
         public Result<IEnumerable<GetPhoneNumberCodeDTO>> GetCountries(string? lang)
         {
 
-            if (string.IsNullOrWhiteSpace(lang)) lang = Language.en.ToString();
+            if (string.IsNullOrWhiteSpace(lang)) lang = SupportedLanguage.en.ToString();
             return Result.Ok( _countries.Select(c => new GetPhoneNumberCodeDTO
             {
                 IsoCode = c.IsoCode,

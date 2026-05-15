@@ -8,7 +8,7 @@ namespace Amigo.Application.Specifications.CurrencySpecification
 {
     public class GetAllCurrencySpecification : BaseSpecification<Currency, Guid>
     {
-        public GetAllCurrencySpecification(GetAllCurrencyQuery query , Language language) 
+        public GetAllCurrencySpecification(GetAllCurrencyQuery query , SupportedLanguage language) 
             : base(c => !c.IsDeleted
                 && (string.IsNullOrWhiteSpace(query.CurrencyCode) || c.CurrencyCode == EnumsMapping.ToEnum<CurrencyCode>(query.CurrencyCode , false))
 

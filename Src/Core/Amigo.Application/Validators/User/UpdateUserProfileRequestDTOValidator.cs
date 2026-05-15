@@ -45,7 +45,7 @@ namespace Amigo.Application.Validators.User
             RuleFor(x => x.Language)
            .Must(BusinessRules.BeAValidLanguage)
            .When(x => !string.IsNullOrWhiteSpace(x.Language))
-           .WithMessage("Invalid Language Code");
+           .WithMessage("Invalid SupportedLanguage Code");
 
 
         }

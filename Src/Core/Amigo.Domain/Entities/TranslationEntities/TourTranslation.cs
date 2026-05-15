@@ -15,6 +15,6 @@ public class TourTranslation:BaseEntity<Guid>, ITranslationEntity
 
     public string? Description { get; set; }
 
-    public Language Language { get; set; }
+    public SupportedLanguage Language { get; set; }
 
 }

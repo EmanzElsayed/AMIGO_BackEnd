@@ -18,7 +18,7 @@ namespace Amigo.Application.Services
                 return validationResult;
             }
 
-            Language language = !string.IsNullOrWhiteSpace( requestQuery.Language)  ? EnumsMapping.ToLanguageEnum(requestQuery.Language) : Language.en;
+            SupportedLanguage language = !string.IsNullOrWhiteSpace( requestQuery.Language)  ? EnumsMapping.ToLanguageEnum(requestQuery.Language) : SupportedLanguage.en;
 
             var countrySpec = new GetAllCountryInfoSpecification(requestQuery, language);
             var CountriesInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetAllAsync(countrySpec);
@@ -42,7 +42,7 @@ namespace Amigo.Application.Services
                 return Result.Fail("Invalid UUID");
 
             Guid CountryInfoId = guid;
-            Language language = !string.IsNullOrWhiteSpace(query.Language) ? EnumsMapping.ToLanguageEnum(query.Language) : Language.en;
+            SupportedLanguage language = !string.IsNullOrWhiteSpace(query.Language) ? EnumsMapping.ToLanguageEnum(query.Language) : SupportedLanguage.en;
 
             var countryInfoSpec = new GetCountryInfoByIdSpecification(CountryInfoId, language);
 

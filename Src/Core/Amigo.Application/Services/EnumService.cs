@@ -8,14 +8,14 @@ namespace Amigo.Application.Services
 {
     public class EnumService : IEnumService
     {
-        Dictionary<Language,string> GetLanguageName = new Dictionary<Language, string>() {
+        Dictionary<SupportedLanguage,string> GetLanguageName = new Dictionary<SupportedLanguage, string>() {
 
-            { Language.en , "English" },
-            { Language.it , "Italiano" },
-            { Language.fr , "Français" },
-            { Language.br , "Português (BR)" },
-            { Language.pt , "Português (PT)" },
-            { Language.es , "Español" },
+            { SupportedLanguage.en , "English" },
+            { SupportedLanguage.it , "Italiano" },
+            { SupportedLanguage.fr , "Français" },
+            { SupportedLanguage.br , "Português (BR)" },
+            { SupportedLanguage.pt , "Português (PT)" },
+            { SupportedLanguage.es , "Español" },
 
 
         };
@@ -23,8 +23,8 @@ namespace Amigo.Application.Services
         public Result<List<GetLanguageResponseDTO>> GetLanguageEnum()
         {
             
-            var result =  Enum.GetValues(typeof(Language))
-                .Cast<Language>()
+            var result =  Enum.GetValues(typeof(SupportedLanguage))
+                .Cast<SupportedLanguage>()
                 .Where(e => Convert.ToInt32(e) != 0)
                 .Select(e => new GetLanguageResponseDTO(
                         LanguageCode :e.ToString(),

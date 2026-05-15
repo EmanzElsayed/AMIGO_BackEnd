@@ -42,7 +42,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     new DateOnly(1990, 1, 1),
                     "+201111111111",
                     Gender.Female,
-                    Language.en,
+                    SupportedLanguage.en,
                     new Address
                     {
                         BuildingNumber = "25",
@@ -98,12 +98,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+20",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = Language.en, Name = "Egypt" },
-                    new() { Id = Guid.NewGuid(), Language = Language.es, Name = "Egipto" },
-                    new() { Id = Guid.NewGuid(), Language = Language.fr, Name = "Égypte" },
-                    new() { Id = Guid.NewGuid(), Language = Language.it, Name = "Egitto" },
-                    new() { Id = Guid.NewGuid(), Language = Language.pt, Name = "Egito" },
-                    new() { Id = Guid.NewGuid(), Language = Language.br, Name = "Egito" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Egypt" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Egipto" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Égypte" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Egitto" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Egito" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Egito" }
                 }
             },
 
@@ -115,12 +115,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+971",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = Language.en, Name = "United Arab Emirates" },
-                    new() { Id = Guid.NewGuid(), Language = Language.es, Name = "Emiratos Árabes Unidos" },
-                    new() { Id = Guid.NewGuid(), Language = Language.fr, Name = "Émirats arabes unis" },
-                    new() { Id = Guid.NewGuid(), Language = Language.it, Name = "Emirati Arabi Uniti" },
-                    new() { Id = Guid.NewGuid(), Language = Language.pt, Name = "Emirados Árabes Unidos" },
-                    new() { Id = Guid.NewGuid(), Language = Language.br, Name = "Emirados Árabes Unidos" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "United Arab Emirates" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Emiratos Árabes Unidos" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Émirats arabes unis" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Emirati Arabi Uniti" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Emirados Árabes Unidos" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Emirados Árabes Unidos" }
                 }
             },
 
@@ -132,12 +132,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+90",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = Language.en, Name = "Turkey" },
-                    new() { Id = Guid.NewGuid(), Language = Language.es, Name = "Turquía" },
-                    new() { Id = Guid.NewGuid(), Language = Language.fr, Name = "Turquie" },
-                    new() { Id = Guid.NewGuid(), Language = Language.it, Name = "Turchia" },
-                    new() { Id = Guid.NewGuid(), Language = Language.pt, Name = "Turquia" },
-                    new() { Id = Guid.NewGuid(), Language = Language.br, Name = "Turquia" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Turkey" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Turquía" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Turquie" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Turchia" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Turquia" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Turquia" }
                 }
             },
 
@@ -149,12 +149,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+966",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = Language.en, Name = "Saudi Arabia" },
-                    new() { Id = Guid.NewGuid(), Language = Language.es, Name = "Arabia Saudita" },
-                    new() { Id = Guid.NewGuid(), Language = Language.fr, Name = "Arabie saoudite" },
-                    new() { Id = Guid.NewGuid(), Language = Language.it, Name = "Arabia Saudita" },
-                    new() { Id = Guid.NewGuid(), Language = Language.pt, Name = "Arábia Saudita" },
-                    new() { Id = Guid.NewGuid(), Language = Language.br, Name = "Arábia Saudita" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Saudi Arabia" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Arabia Saudita" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Arabie saoudite" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Arabia Saudita" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Arábia Saudita" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Arábia Saudita" }
                 }
             }
         };
@@ -177,39 +177,39 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     {
                         Id = Guid.NewGuid(),
                         Name = "Pound sterling",
-                        Language = Language.en
+                        Language = SupportedLanguage.en
                     },
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Sterlina",
-                        Language = Language.it
+                        Language = SupportedLanguage.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Libra esterlina",
-                        Language = Language.es
+                        Language = SupportedLanguage.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Livre sterling",
-                        Language = Language.fr
+                        Language = SupportedLanguage.fr
                     },
                       
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Libra esterlina",
-                        Language = Language.pt
+                        Language = SupportedLanguage.pt
                     },
                       
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Libra esterlina britânica",
-                        Language = Language.br
+                        Language = SupportedLanguage.br
                     },
             }
         };
@@ -225,39 +225,39 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     {
                         Id = Guid.NewGuid(),
                         Name = "EUR",
-                        Language = Language.en
+                        Language = SupportedLanguage.en
                     },
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "EUR",
-                        Language = Language.it
+                        Language = SupportedLanguage.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "EUR",
-                        Language = Language.es
+                        Language = SupportedLanguage.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "EUR",
-                        Language = Language.fr
-                    },
-
-                      new CurrencyTranslation
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "EUR",
-                        Language = Language.pt
+                        Language = SupportedLanguage.fr
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "EUR",
-                        Language = Language.br
+                        Language = SupportedLanguage.pt
+                    },
+
+                      new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "EUR",
+                        Language = SupportedLanguage.br
                     },
             }
         };
@@ -272,39 +272,39 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     {
                         Id = Guid.NewGuid(),
                         Name = "Brazilian real",
-                        Language = Language.en
+                        Language = SupportedLanguage.en
                     },  
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Real brasiliano",
-                        Language = Language.it
+                        Language = SupportedLanguage.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Real brasileño",
-                        Language = Language.es
+                        Language = SupportedLanguage.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Réal brésilien",
-                        Language = Language.fr
+                        Language = SupportedLanguage.fr
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Real brasileiro",
-                        Language = Language.pt
+                        Language = SupportedLanguage.pt
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Real brasileiro",
-                        Language = Language.br
+                        Language = SupportedLanguage.br
                     },
             }
         };
@@ -320,39 +320,39 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peruvian sol",
-                        Language = Language.en
+                        Language = SupportedLanguage.en
                     },
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Sol peruviano",
-                        Language = Language.it
+                        Language = SupportedLanguage.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Sol peruano",
-                        Language = Language.es
+                        Language = SupportedLanguage.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Sol péruvien",
-                        Language = Language.fr
+                        Language = SupportedLanguage.fr
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Sol peruano",
-                        Language = Language.pt
+                        Language = SupportedLanguage.pt
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Sol peruano",
-                        Language = Language.br
+                        Language = SupportedLanguage.br
                     },
             }
         };
@@ -368,39 +368,39 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     {
                         Id = Guid.NewGuid(),
                         Name = "Argentine peso",
-                        Language = Language.en
+                        Language = SupportedLanguage.en
                     },
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso argentino",
-                        Language = Language.it
+                        Language = SupportedLanguage.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso argentino",
-                        Language = Language.es
+                        Language = SupportedLanguage.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso argentin",
-                        Language = Language.fr
+                        Language = SupportedLanguage.fr
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso argentino",
-                        Language = Language.pt
+                        Language = SupportedLanguage.pt
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso argentino",
-                        Language = Language.br
+                        Language = SupportedLanguage.br
                     },
             }
         };
@@ -415,39 +415,39 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     {
                         Id = Guid.NewGuid(),
                         Name = "Colombian peso",
-                        Language = Language.en
+                        Language = SupportedLanguage.en
                     },
                     new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso colombiano",
-                        Language = Language.it
+                        Language = SupportedLanguage.it
                     },
                      new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso colombiano",
-                        Language = Language.es
+                        Language = SupportedLanguage.es
                     },
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso colombien",
-                        Language = Language.fr
+                        Language = SupportedLanguage.fr
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso Colombiano",
-                        Language = Language.pt
+                        Language = SupportedLanguage.pt
                     },
 
                       new CurrencyTranslation
                     {
                         Id = Guid.NewGuid(),
                         Name = "Peso Colombiano",
-                        Language = Language.br
+                        Language = SupportedLanguage.br
                     },
             }
         };
@@ -464,37 +464,37 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             Name = "Mexican peso",
-            Language = Language.en
+            Language = SupportedLanguage.en
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso mexicano",
-            Language = Language.it
+            Language = SupportedLanguage.it
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso mexicano",
-            Language = Language.es
+            Language = SupportedLanguage.es
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso mexicain",
-            Language = Language.fr
+            Language = SupportedLanguage.fr
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso Mexicano",
-            Language = Language.pt
+            Language = SupportedLanguage.pt
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso Mexicano",
-            Language = Language.br
+            Language = SupportedLanguage.br
         },
     }
         };
@@ -511,37 +511,37 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             Name = "United States dollar",
-            Language = Language.en
+            Language = SupportedLanguage.en
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Dollaro statunitense",
-            Language = Language.it
+            Language = SupportedLanguage.it
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Dólar estadounidense",
-            Language = Language.es
+            Language = SupportedLanguage.es
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Dollar américain",
-            Language = Language.fr
+            Language = SupportedLanguage.fr
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Dólar dos Estados Unidos",
-            Language = Language.pt
+            Language = SupportedLanguage.pt
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Dólar dos Estados Unidos",
-            Language = Language.br
+            Language = SupportedLanguage.br
         },
     }
         };
@@ -558,37 +558,37 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             Name = "Chilean peso",
-            Language = Language.en
+            Language = SupportedLanguage.en
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso cileno",
-            Language = Language.it
+            Language = SupportedLanguage.it
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso chileno",
-            Language = Language.es
+            Language = SupportedLanguage.es
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso chilien",
-            Language = Language.fr
+            Language = SupportedLanguage.fr
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso Chileno",
-            Language = Language.pt
+            Language = SupportedLanguage.pt
         },
         new CurrencyTranslation
         {
             Id = Guid.NewGuid(),
             Name = "Peso Chileno",
-            Language = Language.br
+            Language = SupportedLanguage.br
         },
     }
         };

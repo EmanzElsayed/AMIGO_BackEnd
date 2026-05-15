@@ -13,14 +13,6 @@ public class GetTopDestinationsQueryValidator : AbstractValidator<GetTopDestinat
         RuleFor(x => x.PageNumber)
             .GreaterThanOrEqualTo(1);
 
-        RuleFor(x => x.Language)
-            .Must(BusinessRules.BeAValidLanguage)
-            .When(x => !string.IsNullOrWhiteSpace(x.Language))
-            .WithMessage("Invalid Language Code Must be (en, es, fr, it, Portuguese (Portugal), Portuguese (Brazil) )");
-
-        RuleFor(x => x.Currency)
-            .Must(BusinessRules.BeAValidCurrency)
-            .When(x => !string.IsNullOrWhiteSpace(x.Currency))
-            .WithMessage("Invalid currency code.");
+        
     }
 }

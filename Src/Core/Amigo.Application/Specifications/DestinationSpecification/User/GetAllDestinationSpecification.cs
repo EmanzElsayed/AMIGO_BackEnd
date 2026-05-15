@@ -13,27 +13,20 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User
     public class GetAllDestinationSpecification : BaseSpecification<Destination, Guid>
     {
         
-        public GetAllDestinationSpecification(GetAllDestinationQuery requestQuery , bool isAdmin)
+        public GetAllDestinationSpecification(GetAllDestinationQuery requestQuery , bool isAdmin,SupportedLanguage language)
             : base( 
-                  DestinationCommonSpecification.BuildCriteria(requestQuery,isAdmin)
+                  DestinationCommonSpecification.BuildCriteria(requestQuery,isAdmin,language)
 
             )
         {
-            if (requestQuery.Language is not null)
-            {
-                    var language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
-
-                    AddInclude(d => d.Translations
+           
+            AddInclude(d => d.Translations
                         .OrderByDescending(t => t.Language == language)
                         .Take(1)
                     );
-                
-            }
-            else
-            {
-                AddInclude(d => d.Translations.Take(1));
-            }
-            AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations));
+            AddInclude(d => d.Include(c => c.CountryInfo)
+            .ThenInclude(c => c.Translations.OrderByDescending(t => t.Language == language)
+                        .Take(1)));
             ApplyPagination(requestQuery.PageSize, requestQuery.PageNumber);
         }
     }

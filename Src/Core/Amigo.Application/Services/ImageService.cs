@@ -112,18 +112,19 @@ namespace Amigo.Application.Services
 
             return Task.CompletedTask;
         }
-        //public Task<Result<string>> DeleteImage(string publicId)
-        //{
-        //    if (string.IsNullOrEmpty(publicId))
-        //        return Task.FromResult(Result.Fail<string>("PublicId is required"));
 
-        //    var result = _imageCloudService.DeleteImage(publicId);
 
-        //    return result == "ok"
-        //        ? Task.FromResult(Result.Ok("Image deleted successfully"))
-        //        : result == "not found"
-        //            ? Task.FromResult(Result.Fail<string>("Image not found"))
-        //            : Task.FromResult(Result.Fail<string>($"Deletion failed: {result}"));
-        //}
+        public Task<Result<string>> DeleteImage(string publicId)
+        {
+            if (string.IsNullOrEmpty(publicId))
+                return Task.FromResult(Result.Fail<string>("PublicId is required"));
+
+            var result = _imageCloudService.DeleteImage(publicId);
+
+            return result 
+                ? Task.FromResult(Result.Ok("Image deleted successfully"))
+      
+                    : Task.FromResult(Result.Fail<string>($"Deletion failed"));
+        }
     }
 }

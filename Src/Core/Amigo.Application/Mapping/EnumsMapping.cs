@@ -16,25 +16,25 @@ namespace Amigo.Application.Mapping
             return code;
         }
        
-        public static Language ToLanguageEnum(string language)
+        public static SupportedLanguage ToLanguageEnum(string language)
         {
             if (string.IsNullOrWhiteSpace(language))
-                return Language.en;
+                return SupportedLanguage.en;
 
-            if (Enum.TryParse<Language>(language, true, out var parsed) && parsed != Language.None)
+            if (Enum.TryParse<SupportedLanguage>(language, true, out var parsed) && parsed != SupportedLanguage.None)
                 return parsed;
 
-            foreach (var field in typeof(Language).GetFields(BindingFlags.Public | BindingFlags.Static))
+            foreach (var field in typeof(SupportedLanguage).GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 if (field.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
-                    return (Language)field.GetValue(null)!;
+                    return (SupportedLanguage)field.GetValue(null)!;
 
                 var display = field.GetCustomAttribute<DisplayAttribute>();
                 if (display?.Name != null && display.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
-                    return (Language)field.GetValue(null)!;
+                    return (SupportedLanguage)field.GetValue(null)!;
             }
 
-            return Language.en;
+            return SupportedLanguage.en;
         }
         public static AvailableDateTimeStatus ToAvailableSheduleStatus(string? availableStatus)
         {
