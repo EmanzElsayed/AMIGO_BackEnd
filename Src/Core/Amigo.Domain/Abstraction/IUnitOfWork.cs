@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.Abstraction.Repositories;
+using Amigo.Domain.Abstraction.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,7 @@ namespace Amigo.Domain.Abstraction
 
         ISlotsRepo SlotsRepo { get; }
         ICartItemRepo CartItemsRepo { get; }
+        IFavoriteRepo FavoritesRepo { get; }
 
         public Task<int> SaveChangesAsync(CancellationToken ct = default);
         public Task<IDbContextTransaction> BeginTransactionAsync();

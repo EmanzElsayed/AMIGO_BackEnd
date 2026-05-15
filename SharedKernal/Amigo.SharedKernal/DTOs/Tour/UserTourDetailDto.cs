@@ -11,7 +11,9 @@ public record UserTourSlotDto(
     Guid SlotId,
     string StartTime,
     string? EndTime,
-    bool Available
+    bool Available,
+    int MaxCapacity,
+    int RemainingCapacity
     );
 
 public record UserTourScheduleDayDto(
