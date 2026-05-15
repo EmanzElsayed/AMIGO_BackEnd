@@ -1,17 +1,19 @@
-
-
+using Amigo.Infrastructure;
+using Microsoft.Extensions.Localization;
 using PayPalCheckoutSdk.Core;
 
 namespace Amigo.Presentation.Controllers
 {
     
     [Route("api/v1/auth")]
-    public class AuthenticationController(IAuthService _authService) 
+    public class AuthenticationController(IAuthService _authService, IStringLocalizer<SharedResource> _localizer)
         : BaseController
     {
+
         [HttpPost("register")]
         public async Task<IResultBase> Register([FromBody] RegisterRequestDTO registerRequestDTO)
         {
+
             return await _authService.RegisterAsync(registerRequestDTO);
             
            
@@ -19,6 +21,8 @@ namespace Amigo.Presentation.Controllers
         [HttpPost("login")]
         public async Task<IResultBase> Login(CancellationToken cancellationToken,[FromBody] LoginRequestDTO loginRequestDTO)
         {
+            //var result = _localizer["GreetingToAmigo"]; 
+            //return Result.Ok(result);
             return await _authService.LoginAsync(loginRequestDTO, cancellationToken);
 
           

@@ -169,7 +169,11 @@ public static class DependencyInjection
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<ICurrencyRateService, CurrencyRateService>();
         services.AddScoped<ICurrencyProvider, CurrencyApiProvider>();
+        services.AddHttpContextAccessor();
 
+        services.AddScoped<
+            ICurrentUserService,
+            CurrentUserService>();
         return services;
     }
 }

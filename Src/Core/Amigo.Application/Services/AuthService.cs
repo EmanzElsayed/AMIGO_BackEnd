@@ -1,12 +1,13 @@
 
 
-using System.Security.Cryptography;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Amigo.Domain.Entities.Identity;
-using Amigo.Domain.Enum;
 using Amigo.Application.Specifications.Identity;
 using Amigo.Domain.DTO.Authentication;
+using Amigo.Domain.Entities.Identity;
+using Amigo.Domain.Enum;
+using Microsoft.Extensions.Localization;
 using System.Net;
+using System.Security.Cryptography;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Amigo.Application.Services;
 
@@ -18,6 +19,8 @@ public class AuthService(
                          IConfiguration _configuration,
                          IEmailService _emailService,
                          IUnitOfWork _unitOfWork,
+                         ILocalizationService _localizationService,
+                         
                          IJWTTokenService _jWTTokenService
     ) : IAuthService
 {
@@ -25,6 +28,8 @@ public class AuthService(
 
     public async Task<Result<LoginResponseDTO>> LoginAsync(LoginRequestDTO requestDTO  , CancellationToken cancellationToken)
     {
+
+        
         var validationResult = await _validationService.ValidateAsync(requestDTO);
         if (!validationResult.IsSuccess)
         {
@@ -84,9 +89,10 @@ public class AuthService(
             };
             await _refreshTokenRepo.AddToken(refreshToken , cancellationToken);
             await _unitOfWork.SaveChangesAsync();
-            
+            var value = _localizationService.Get("GreetingToAmigo") ;
             return Result.Ok(data)
-                 .WithSuccess(new Success("Welcome To Amigo Arabe Tours"));
+
+                 .WithSuccess(new Success(value));
                  
 
         }

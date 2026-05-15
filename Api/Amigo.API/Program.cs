@@ -1,10 +1,12 @@
 ﻿
+using Amigo.API.MiddleWare;
 using Amigo.Application;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.Services;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
+using Amigo.Infrastructure;
 using Amigo.Persistence;
 using Amigo.Persistence.Services;
 using Amigo.Presentation;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using System.Security.Claims;
@@ -32,7 +35,9 @@ namespace Amigo.API
             builder.Services.AddBasicDependencyInjcetion(builder.Configuration)
                             .AddPersistence(builder.Configuration)
                             .AddApplicationDependencyInjection(builder.Configuration)
-                            .AddPresentationDependencyInjection(builder.Configuration);
+                            .AddPresentationDependencyInjection(builder.Configuration)
+                            .AddInfrastructureDependencyInjection(builder.Configuration);
+
 
             builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
 
@@ -59,6 +64,15 @@ namespace Amigo.API
             builder.Services.AddSwaggerGen();
             var app = builder.Build();
 
+            #region Localization
+            var localizationOptions =
+                     app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
+
+            //app.UseRequestLocalization(localizationOptions.Value);
+
+            #endregion
+
+
             #region SeedingData
 
             using var scope = app.Services.CreateScope();
@@ -69,6 +83,9 @@ namespace Amigo.API
             #endregion
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
+           
+            app.UseMiddleware<CultureMiddleware>();
+
             app.UseRateLimiter();
             app.MapOpenApi();
             app.UseSwagger();

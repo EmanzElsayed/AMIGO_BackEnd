@@ -7,7 +7,7 @@ namespace Amigo.Application.Services.Admin
 {
     public class AdminDestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork,
-                                    
+                                    ICurrentUserService _currentUserService,
                                     ImageCloudService _imageCloud) : IAdminDestinationService
     {
         public async Task<Result> CreateDestinationAsync(CreateDestinationRequestDTO requestDTO)

@@ -60,7 +60,7 @@ namespace Amigo.Application.Mapping
                 
                 IsActive: destination.IsActive,
                 ImageUrl: destination.ImageUrl,
-                Name : destination.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                Name :  destination.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
                 Language : language.ToString()
                 
             ));
@@ -81,7 +81,7 @@ namespace Amigo.Application.Mapping
                    IsActive: destination.IsActive,
                    ImageUrl: destination.ImageUrl,
                                        
-                   Name: destination.Translations.Where(c => c.Language == language).Select(c => c.Name).First() ?? "",
+                   Name: !destination.Translations.Any()? "": destination.Translations.Where(c => c.Language == language).Select(c => c.Name).First() ?? "",
                    Language : language.ToString()
                
               );

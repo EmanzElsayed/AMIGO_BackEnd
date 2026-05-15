@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Polly;
 using Polly.Extensions.Http;
+using System.Globalization;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -18,6 +20,9 @@ public static class DependencyInjection
        .AddApplicationPart(typeof(Presentation.IAssemblyReference).Assembly);
 
         #endregion
+
+       
+
 
         #region JWTBareerTokenConfigurations
 

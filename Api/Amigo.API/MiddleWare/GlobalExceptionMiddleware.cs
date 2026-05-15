@@ -3,7 +3,7 @@ using Amigo.SharedKernal.DTOs.Results;
 using System.Net;
 
 
-namespace Amigo.API
+namespace Amigo.API.MiddleWare
 
 
 
