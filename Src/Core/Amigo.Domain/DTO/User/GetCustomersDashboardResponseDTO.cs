@@ -1,4 +1,4 @@
-﻿using Amigo.SharedKernal.DTOs.Results;
+using Amigo.SharedKernal.DTOs.Results;
 using System;
 using System.Collections.Generic;
 using System.Text;

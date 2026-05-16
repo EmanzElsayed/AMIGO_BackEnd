@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Text;
@@ -10,6 +10,7 @@ namespace Amigo.SharedKernal.QueryParams
         public string? Language { get; set; } 
         public string? Name { get; set; }
         public Guid? DestinationId { get; set; }
+        public bool FilterActiveOnly { get; set; } = false;
 
         #region Pagination
 

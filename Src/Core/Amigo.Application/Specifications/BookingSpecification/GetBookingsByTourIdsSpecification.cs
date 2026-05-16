@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +14,7 @@ namespace Amigo.Application.Specifications.BookingSpecification
                 tourIds.Contains(b.OrderItem.TourId.Value))
         {
             AddInclude(b => b.OrderItem);
+            AddInclude(b => b.Travelers);
         }
     }
 }

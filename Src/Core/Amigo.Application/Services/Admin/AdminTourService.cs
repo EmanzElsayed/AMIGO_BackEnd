@@ -217,8 +217,8 @@ namespace Amigo.Application.Services.Admin
                         .Where(s => s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
                         .Sum(s => s.MaxCapacity),
 
-                    BookedSeats = travelersCountByTourId[tour.Id],
-                    BookedPercentage = travelersCountByTourId[tour.Id] / TourCapacity[tour.Id] * 100
+                    BookedSeats = travelersCountByTourId.GetValueOrDefault(tour.Id, 0),
+                    BookedPercentage = TourCapacity[tour.Id] > 0 ? (double)travelersCountByTourId.GetValueOrDefault(tour.Id, 0) / TourCapacity[tour.Id] * 100 : 0
 
                 };
             });

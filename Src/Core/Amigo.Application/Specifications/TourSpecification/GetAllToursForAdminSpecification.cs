@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Helpers;
+using Amigo.Application.Helpers;
 using Amigo.Application.Validation.Common.Specifications;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace Amigo.Application.Specifications.TourSpecification
     public class GetAllToursForAdminSpecification : BaseSpecification<Tour, Guid>
     {
         public GetAllToursForAdminSpecification(GetAllAdminTourQuery requestQuery)
-            : base(TourCatalogCriteria.BuildAdminTourCatalog(requestQuery.DestinationId,requestQuery.Name,requestQuery.Language))
+            : base(TourCatalogCriteria.BuildAdminTourCatalog(requestQuery.DestinationId,requestQuery.Name,requestQuery.Language,requestQuery.FilterActiveOnly))
             
         {
             ApplyPagination(requestQuery.PageSize, requestQuery.PageNumber);

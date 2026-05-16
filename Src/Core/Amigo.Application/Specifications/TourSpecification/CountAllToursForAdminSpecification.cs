@@ -7,7 +7,7 @@ namespace Amigo.Application.Specifications.TourSpecification
     public class CountAllToursForAdminSpecification : BaseSpecification<Tour, Guid>
     {
         public CountAllToursForAdminSpecification(GetAllAdminTourQuery requestQuery)
-            : base(TourCatalogCriteria.BuildAdminTourCatalog(requestQuery.DestinationId, requestQuery.Name, requestQuery.Language))
+            : base(TourCatalogCriteria.BuildAdminTourCatalog(requestQuery.DestinationId, requestQuery.Name, requestQuery.Language, requestQuery.FilterActiveOnly))
         {
         }
     }

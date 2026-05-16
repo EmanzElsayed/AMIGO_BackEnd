@@ -75,10 +75,11 @@ namespace Amigo.Application.Services.Admin
 
         public async Task<Result<PaginatedResponse<TopPerformingActivityDTO>>> GetDashboardActivitiesAsync(GetAllAdminTourQuery query)
         {
+            query.FilterActiveOnly = true;
             var now = DateTime.UtcNow;
-            var currentMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var nextMonthStart = currentMonthStart.AddMonths(1);
-            var previousMonthStart = currentMonthStart.AddMonths(-1);
+            var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+            var nextDayStart = todayStart.AddDays(1);
+            var previousDayStart = todayStart.AddDays(-1);
 
             var spec = new GetAllToursForAdminSpecification(query);
             var tours = await _unitOfWork.GetRepository<Tour, Guid>().GetAllAsync(spec);
@@ -96,17 +97,20 @@ namespace Amigo.Application.Services.Admin
                                      ?? new DestinationTranslation { Name = "Unknown" };
 
                 var tourBookings = allBookings.Where(b => b.OrderItem?.TourId == t.Id).ToList();
-                var currentMonthCount = tourBookings.Count(b => b.CreatedDate >= currentMonthStart && b.CreatedDate < nextMonthStart);
-                var previousMonthCount = tourBookings.Count(b => b.CreatedDate >= previousMonthStart && b.CreatedDate < currentMonthStart);
+                var currentDayCount = tourBookings.Count(b => b.CreatedDate >= todayStart && b.CreatedDate < nextDayStart);
+                var previousDayCount = tourBookings.Count(b => b.CreatedDate >= previousDayStart && b.CreatedDate < todayStart);
+                
+                var totalCapacity = t.AvailableTimes.SelectMany(at => at.AvailableSlots).Sum(s => s.MaxCapacity);
+                var totalTourBookings = tourBookings.Count;
 
                 return new TopPerformingActivityDTO
                 {
                     ActivityName = translation.Title,
                     ActivityImage = t.Images.FirstOrDefault()?.ImageUrl ?? "",
-                    MarketDemand = DetermineMarketDemand(currentMonthCount),
-                    Bookings = currentMonthCount,
+                    MarketDemand = DetermineMarketDemand(totalTourBookings, totalCapacity),
+                    Bookings = totalTourBookings,
                     Location = destTranslation.Name,
-                    Trend = CalculateTrend(currentMonthCount, previousMonthCount)
+                    Trend = CalculateTrend(currentDayCount, previousDayCount)
                 };
             }).ToList();
 
@@ -321,7 +325,7 @@ namespace Amigo.Application.Services.Admin
                     {
                         ActivityName = tourTitle,
                         ActivityImage = "",
-                        MarketDemand = DetermineMarketDemand(currentCount),
+                        MarketDemand = DetermineMarketDemand(currentCount, 100),
                         Bookings = currentCount,
                         Location = g.Key?.DestinationName ?? "Unknown",
                         Trend = CalculateTrend(currentCount, previousCount)
@@ -343,16 +347,15 @@ namespace Amigo.Application.Services.Admin
             return $"{arrow}{Math.Abs(Math.Round(growth, 1)):0.#}%";
         }
 
-        private string DetermineMarketDemand(int bookingCount)
+        private string DetermineMarketDemand(int bookingCount, int totalCapacity)
         {
-            return bookingCount switch
-            {
-                >= 100 => "VERY HIGH",
-                >= 50 => "HIGH",
-                >= 20 => "RISING",
-                >= 10 => "MODERATE",
-                _ => "LOW"
-            };
+            if (totalCapacity == 0) return "LOW";
+            
+            if (bookingCount >= totalCapacity) return "VERY HIGH";
+            if (bookingCount > totalCapacity / 2) return "HIGH";
+            if (bookingCount >= totalCapacity / 4) return "MODERATE";
+            
+            return "LOW";
         }
 
    

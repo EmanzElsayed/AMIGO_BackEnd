@@ -114,11 +114,8 @@ public static class TourCatalogCriteria
     public static Expression<Func<Tour, bool>> BuildAdminTourCatalog(
              Guid? destinationId,
              string? tourTitle,
-             string?language
-             //SupportedLanguage translationLanguage = SupportedLanguage.en
-
-
-
+             string?language,
+             bool filterActiveOnly = false
         )
     {
         SupportedLanguage translationLanguage = SupportedLanguage.en;
@@ -165,6 +162,8 @@ public static class TourCatalogCriteria
              )
              &&
             t.Prices.Any(p => p.Translations.Any(t => t.Language == translationLanguage))
+            &&
+            (!filterActiveOnly || t.AvailableTimes.Any(at => (at.EndDate ?? at.StartDate) >= DateOnly.FromDateTime(DateTime.UtcNow)))
             ;
 
 
