@@ -181,10 +181,16 @@ namespace Amigo.Application.Services.Admin
             var MappingTours = tours.Select(tour =>
             {
                 var vipPrice = tour.Prices
-                    .FirstOrDefault(p => !p.IsDeleted && p.UserType == UserType.VIP);
+                .Where(p => !p.IsDeleted && p.UserType == UserType.VIP)
+                .OrderByDescending(p => p.RetailPrice)
+                .FirstOrDefault();
+
 
                 var publicPrice = tour.Prices
-                    .FirstOrDefault(p => !p.IsDeleted && p.UserType == UserType.Public);
+                .Where(p => !p.IsDeleted && p.UserType == UserType.Public)
+                .OrderByDescending(p => p.RetailPrice)
+                .FirstOrDefault();
+
 
                 var translation = tour.Translations
                     .FirstOrDefault(t => t.Language == language);

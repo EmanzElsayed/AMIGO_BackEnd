@@ -27,9 +27,7 @@ public class UserTourCatalogService(
         if (!validationResult.IsSuccess)
             return validationResult;
 
-        var listingLang = string.IsNullOrWhiteSpace(query.Language)
-            ? SupportedLanguage.en
-            : EnumsMapping.ToLanguageEnum(query.Language!);
+        var listingLang = _currentUserService.Language;
 
         SupportedLanguage? effectiveGuide = query.OnlyInUserLanguage == true
             ? listingLang
@@ -106,9 +104,7 @@ public class UserTourCatalogService(
      Guid destinationId,
      string? language)
     {
-        var lang = string.IsNullOrWhiteSpace(language)
-            ? SupportedLanguage.en
-            : EnumsMapping.ToLanguageEnum(language!);
+        var lang = _currentUserService.Language;
 
         var spec = new TourIncludedLinesForDestinationSpecification(destinationId);
         var rows = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(spec);
@@ -332,7 +328,7 @@ public class UserTourCatalogService(
                 var baseAmount = t.Prices
                     .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType)
                     .Select(p => (decimal?)p.RetailPrice)
-                    .Min();
+                    .Max();
                 var tr = t.Destination.Translations
                     .FirstOrDefault(x => x.Language == listingLang)
                     ?? t.Destination.Translations.FirstOrDefault();
@@ -344,7 +340,8 @@ public class UserTourCatalogService(
                     DestinationSlug = SlugHelper.ToUrlSlug(destinationName),
                     Rating = item.AverageRating ?? 0m,
                     BaseCurrency = Constants.BaseCurrency.ToString(),
-                    BaseAmount = baseAmount
+                    BaseAmount = baseAmount,
+                    FromPrice = baseAmount is null ? 0 : Math.Round(baseAmount.Value * rate.ValueOrDefault ,2)
                 };
             })
             .Where(x => !string.IsNullOrWhiteSpace(x.DestinationSlug))
@@ -358,7 +355,8 @@ public class UserTourCatalogService(
                 HeroImageUrl: x.Item.HeroImageUrl,
                 AverageRating: x.Item.AverageRating,
                 ReviewCount: x.Item.ReviewCount,
-                FromPrice: x.BaseAmount ,
+                FilteredCurrency : filteredCurrency.ToString(),
+                FromPrice: x.FromPrice,
                 BaseCurrency: x.BaseCurrency,
                 BaseAmount: x.BaseAmount,
                 TourSlug: x.Item.TourSlug,

@@ -73,7 +73,12 @@ namespace Amigo.Presentation.Attributes
                .Split('-')[0]
                .ToLower();
 
-            Key.Append($":lang-{language}");
+            var currency = request.Headers["Accept-Currency"]
+              .FirstOrDefault()?
+              .Split(',')[0]
+              .Split('-')[0];
+              
+            Key.Append($":currency-{currency}");
 
             var QueryOrdered = request.Query.OrderBy(q => q.Key);
             foreach (var item in QueryOrdered)

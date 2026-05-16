@@ -35,13 +35,17 @@ public class CheckoutQuoteService(
         var listingLang = string.IsNullOrWhiteSpace(request.Language)
             ? SupportedLanguage.en
             : EnumsMapping.ToLanguageEnum(request.Language!);
+
         CurrencyCode? requestedCurrency = null;
+
         if (!string.IsNullOrWhiteSpace(request.Currency)
             && Enum.TryParse<CurrencyCode>(request.Currency, true, out var ccy)
             && ccy != CurrencyCode.None)
             requestedCurrency = ccy;
+
         if (requestedCurrency.HasValue && tour.CurrencyCode != requestedCurrency.Value)
             return Result.Fail<CheckoutQuoteResponseDto>("Selected currency does not match this tour currency.");
+       
         var effectiveUserType = ParseUserType(request.EffectiveUserType) ?? UserType.Public;
 
         var scheduleRepo = _unitOfWork.GetRepository<TourSchedule, Guid>();
