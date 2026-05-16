@@ -17,11 +17,14 @@ public static class UserTourCatalogMapper
         IReadOnlyList<Review> reviews,
         IReadOnlyList<ReviewTranslation> reviewTranslations,
         DateOnly todayUtc,
+         decimal rate,
+         CurrencyCode filteredcurrency,
         string? cancellationPolicyDescription,
-        string? currentUserId = null)
+        string? currentUserId = null
+       )
     {
-        var baseItem = ToListItem(tour, listingLanguage, effectiveUserType);
-        var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType);
+        var baseItem = ToListItem(tour, listingLanguage, effectiveUserType,filteredcurrency,rate);
+        var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType,rate);
         var days = MapScheduleDays(schedules, todayUtc);
         var recent = MapRecentReviews(reviews, reviewTranslations, currentUserId);
         var travelerPhotos = MapTravelerPhotos(reviews);
@@ -52,7 +55,7 @@ public static class UserTourCatalogMapper
             DurationDisplay: baseItem.DurationDisplay,
             GuideLanguage: baseItem.GuideLanguage,
             TourSlug: baseItem.TourSlug,
-            CurrencyCode: tour.CurrencyCode.ToString(),
+            CurrencyCode: filteredcurrency.ToString(),
             DestinationName: destTr?.Name,
             CountryName: tour.Destination?.CountryInfo is null? null: tour.Destination?.CountryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
             PriceTiers: tiers,
@@ -122,7 +125,8 @@ public static class UserTourCatalogMapper
     private static IReadOnlyList<UserTourPriceTierDto> MapPriceTiers(
         IReadOnlyList<Price> prices,
         SupportedLanguage listingLanguage,
-        UserType? effectiveUserType)
+        UserType? effectiveUserType,
+        decimal rate)
     {
         var list = new List<UserTourPriceTierDto>();
         var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
@@ -133,7 +137,7 @@ public static class UserTourCatalogMapper
             var tr = p.Translations.FirstOrDefault(x => x.Language == listingLanguage)
                      ?? p.Translations.FirstOrDefault();
             var label = tr?.Type ?? "Traveler";
-            var retail = p.RetailPrice;
+            var retail = Math.Round(p.RetailPrice * rate,2);
             var isFree = retail <= 0;
             var group = p.UserType.HasFlag(UserType.VIP) ? "VIP" : "Public";
             list.Add(new UserTourPriceTierDto(p.Id, label, retail, isFree, group));
@@ -262,10 +266,10 @@ public static class UserTourCatalogMapper
         return rows;
     }
 
-    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage)
-        => ToListItem(tour, listingLanguage, null);
+    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, CurrencyCode filteredCurrency, decimal rate)
+        => ToListItem(tour, listingLanguage, null,filteredCurrency,rate);
 
-    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, UserType? effectiveUserType)
+    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, UserType? effectiveUserType, CurrencyCode filteredCurrency,decimal rate)
     {
         var tr = tour.Translations
             .FirstOrDefault(x => x.Language == listingLanguage)
@@ -290,30 +294,63 @@ public static class UserTourCatalogMapper
         var prices = tour.Prices
             .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType)
             .ToList();
-        decimal? minRetail = prices.Count == 0
-            ? null
-            : prices.Min(p => p.Cost * (1 - p.Discount / 100m));
 
-        var currency = "USD";
-        string? fromDisplay = minRetail.HasValue ? $"{currency} {minRetail.Value:0.##}" : null;
+
+        //decimal? minRetail = prices.Count == 0
+        //    ? null
+        //    : prices.Min(p => p.RetailPrice);
+
+        //var currency = filteredCurrency;
+
+        //string? fromDisplay = minRetail.HasValue ? $"{currency} {minRetail.Value:0.##}" : null;
+
+        //string? originalDisplay = null;
+        //int? discountPct = null;
+        //if (prices.Count > 0 && minRetail.HasValue)
+        //{
+        //    var originalMaxPrice = prices.Min(p => p.Cost);
+        //    if (tour.Discount is > 0)
+        //    {
+        //        discountPct = (int)Math.Round(tour.Discount.Value);
+        //        originalDisplay = $"{currency} {originalMaxPrice:0.##}";
+        //    }
+        //    else if (originalMaxPrice > minRetail.Value + 0.0001m)
+        //    {
+        //        var inferredPct = (int)Math.Round((1 - minRetail.Value / originalMaxPrice) * 100m);
+        //        if (inferredPct > 0)
+        //        {
+        //            discountPct = inferredPct;
+        //            originalDisplay = $"{currency} {originalMaxPrice:0.##}";
+        //        }
+        //    }
+        //}
+
+        decimal? maxRetail = prices.Count == 0
+            ? null
+            : prices.Max(p => p.RetailPrice);
+
+        var currency = filteredCurrency;
+
+        string? fromDisplay = maxRetail.HasValue ? $"{currency} {Math.Round(maxRetail.Value * rate,2):0.##}" : null;
 
         string? originalDisplay = null;
         int? discountPct = null;
-        if (prices.Count > 0 && minRetail.HasValue)
+
+        if (prices.Count > 0 && maxRetail.HasValue)
         {
-            var minListPrice = prices.Min(p => p.Cost);
+            var originalMaxPrice = prices.Max(p => p.Cost);
             if (tour.Discount is > 0)
             {
                 discountPct = (int)Math.Round(tour.Discount.Value);
-                originalDisplay = $"{currency} {minListPrice:0.##}";
+                originalDisplay = $"{currency} {Math.Round(originalMaxPrice * rate,2):0.##}";
             }
-            else if (minListPrice > minRetail.Value + 0.0001m)
+            else if (originalMaxPrice > maxRetail.Value + 0.0001m)
             {
-                var inferredPct = (int)Math.Round((1 - minRetail.Value / minListPrice) * 100m);
+                var inferredPct = (int)Math.Round((1 - maxRetail.Value / originalMaxPrice) * 100m);
                 if (inferredPct > 0)
                 {
                     discountPct = inferredPct;
-                    originalDisplay = $"{currency} {minListPrice:0.##}";
+                    originalDisplay = $"{currency} {Math.Round(originalMaxPrice * rate,2):0.##}";
                 }
             }
         }

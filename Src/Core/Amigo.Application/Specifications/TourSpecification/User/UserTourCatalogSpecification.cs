@@ -13,7 +13,7 @@ public class UserTourCatalogSpecification : BaseSpecification<Tour, Guid>
         Guid destinationId,
         SupportedLanguage? translationLanguage,
         SupportedLanguage? effectiveGuideLanguage,
-        CurrencyCode? currencyFilter,
+        //CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
         DateOnly? availabilityDate,
@@ -23,7 +23,7 @@ public class UserTourCatalogSpecification : BaseSpecification<Tour, Guid>
             query,
             translationLanguage,
             effectiveGuideLanguage,
-            currencyFilter,
+            //currencyFilter,
             destinationCountryFilter,
             userTypeFilter,
             availabilityDate))

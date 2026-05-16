@@ -11,7 +11,7 @@ namespace Amigo.Application.Abstraction.Services
 
          Task BulkUpsertAsync(
             List<CurrencyRateBulkItemDTO> rates);
-
+         Task SyncRates();
         Task<Result<decimal>> ConvertAsync(
         decimal amount,
         CurrencyCode from,

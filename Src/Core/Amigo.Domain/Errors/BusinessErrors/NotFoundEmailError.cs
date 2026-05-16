@@ -8,7 +8,7 @@ namespace Amigo.Domain.Errors.BusinessErrors
         : BaseDomainError
     {
         public NotFoundEmailError(string email)
-            :base ($"Email {email} Not Found!!" , ErrorCode.NotFoundError)
+            :base (ErrorCode.NotFoundError.ToString(),email)
         {
             
         }

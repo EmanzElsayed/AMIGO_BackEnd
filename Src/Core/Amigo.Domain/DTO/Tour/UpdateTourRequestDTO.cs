@@ -10,7 +10,7 @@ namespace Amigo.Domain.DTO.Tour
 {
     public record UpdateTourRequestDTO
      (
-         SupportedLanguage? GuideLanguage,
+         List<SupportedLanguage>? GuideLanguage,
          string? MeetingPoint,
          string? Description,
 
@@ -22,7 +22,7 @@ namespace Amigo.Domain.DTO.Tour
          string? Title,
          string? Language,
          string? Currency,
-         UserType? UserType,
+         List<UserType>? UserType,
 
 
          UpdateCancellationRequestDTO? Cancellation,

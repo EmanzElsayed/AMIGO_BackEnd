@@ -38,8 +38,21 @@ namespace Amigo.Presentation.Attributes
                 if (type.IsGenericType &&
                     type.GetProperty("Value") is not null)
                 {
-                    valueToCache = type.GetProperty("Value")!
+
+
+                    var isSuccess =
+                    (bool)type.GetProperty("IsSuccess")!
                         .GetValue(valueToCache)!;
+
+                    if (isSuccess)
+                    {
+                        valueToCache = type.GetProperty("Value")!
+                            .GetValue(valueToCache)!;
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
 
                 await _cacheService.SetAsync(

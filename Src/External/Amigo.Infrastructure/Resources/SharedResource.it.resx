@@ -117,10 +117,49 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Auth_InvalidCredentials" xml:space="preserve">
+    <value>Email o password non validi.</value>
+  </data>
+  <data name="EmailAlreadyExist" xml:space="preserve">
+    <value>L'email '{0}' esiste già.</value>
+  </data>
+  <data name="Fields_FullName" xml:space="preserve">
+    <value>Nome completo</value>
+  </data>
+  <data name="Fields_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Field_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
   <data name="GreetingToAmigo" xml:space="preserve">
     <value>Benvenuto in Amigo Tours</value>
   </data>
   <data name="NotFoundDestination" xml:space="preserve">
     <value>Questa destinazione non è stata trovata</value>
+  </data>
+  <data name="Validation_InvalidEmail" xml:space="preserve">
+    <value>Indirizzo email non valido.</value>
+  </data>
+  <data name="Validation_MaxLength" xml:space="preserve">
+    <value>{0} non deve superare {1} caratteri</value>
+  </data>
+  <data name="Validation_MinLength" xml:space="preserve">
+    <value>{0} deve contenere almeno {1} caratteri</value>
+  </data>
+  <data name="Validation_Password_Lowercase" xml:space="preserve">
+    <value>La password deve contenere almeno una lettera minuscola.</value>
+  </data>
+  <data name="Validation_Password_NotMatch" xml:space="preserve">
+    <value>Le password non corrispondono.</value>
+  </data>
+  <data name="Validation_Password_Number" xml:space="preserve">
+    <value>La password deve contenere almeno un numero.</value>
+  </data>
+  <data name="Validation_Password_SpecialCharacter" xml:space="preserve">
+    <value>La password deve contenere almeno un carattere speciale.</value>
+  </data>
+  <data name="Validation_Password_Uppercase" xml:space="preserve">
+    <value>La password deve contenere almeno una lettera maiuscola.</value>
   </data>
 </root>

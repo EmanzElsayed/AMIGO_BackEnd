@@ -75,8 +75,8 @@ namespace Amigo.Application.Services
                 var currency = currencyHeader
                     .Split(',')[0]
                     .Split('-')[0]
-                    .Trim()
-                    .ToLower();
+                    .Trim();
+                    
 
                 currency = AllowedCurrencies.Contains(currency)
                     ? currency

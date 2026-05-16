@@ -80,6 +80,7 @@ namespace Amigo.Application.Services.Admin
                         Discount = dto.Discount ?? 0,
                         UserType = dto.UserType ?? UserType.Public,
                         TourId = tour.Id,
+                        
                         Translations = new List<PriceTranslation>()
                     };
 

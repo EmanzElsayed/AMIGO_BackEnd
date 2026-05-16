@@ -6,7 +6,7 @@ namespace Amigo.Domain.Errors.BusinessErrors
 {
     public class ForbiddenError :BaseDomainError
     {
-        public ForbiddenError(string msg):base(msg,ErrorCode.Forbidden)
+        public ForbiddenError(string msg):base(ErrorCode.Forbidden.ToString(),msg)
         {
             
         }

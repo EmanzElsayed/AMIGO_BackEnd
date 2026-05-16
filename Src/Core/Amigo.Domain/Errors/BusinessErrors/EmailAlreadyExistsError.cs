@@ -8,8 +8,8 @@ namespace Amigo.Domain.Errors.BusinessErrors
     public class EmailAlreadyExistsError:BaseDomainError
     {
         public EmailAlreadyExistsError(string email)
-        : base($"Email '{email}' already exists.",
-              ErrorCode.EmailAlreadyExist
+        : base(
+              ErrorCode.EmailAlreadyExist.ToString(), email
               )
         { 
             

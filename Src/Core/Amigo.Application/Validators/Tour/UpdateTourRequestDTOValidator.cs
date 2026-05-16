@@ -51,10 +51,11 @@ namespace Amigo.Application.Validators.Tour
 
 
             // Guide SupportedLanguage
-            RuleFor(x => x.GuideLanguage)
-                .Must(BusinessRules.IsValidFlagsEnumNullable)
-                .When(x => x.GuideLanguage is not null)
-                .WithMessage("Invalid Guide SupportedLanguage Code");
+            RuleForEach(x => x.GuideLanguage)
+                 .IsInEnum()
+                 .When(x => x.GuideLanguage is not null)
+                 .WithMessage("Invalid Guide SupportedLanguage Code");
+                
 
             // Meeting Point
             RuleFor(x => x.MeetingPoint)
@@ -71,11 +72,11 @@ namespace Amigo.Application.Validators.Tour
 
 
 
-            RuleFor(x => x.UserType)
+            RuleForEach(x => x.UserType)
+                 .IsInEnum()
+                .When(x => x.UserType is not null)
 
-                .Must(BusinessRules.IsValidFlagsEnumNullable)
-                .WithMessage("User Type Code (VIP, Public)")
-                .When(x => x.UserType is not null);
+                .WithMessage("User Type Code (VIP, Public)");
 
 
             RuleForEach(x => x.Images)

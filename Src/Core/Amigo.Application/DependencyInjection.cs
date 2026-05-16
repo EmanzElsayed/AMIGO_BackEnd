@@ -159,7 +159,8 @@ public static class DependencyInjection
 
         services.AddHostedService<BookingBackgroundService>();
         services.AddHostedService<OutboxWorker>();
-        //services.AddHostedService<CurrencyBackgroundService>();
+
+        services.AddHostedService<QueueBackgroundService>();
 
         services.AddSingleton<EncryptionService>();
 
@@ -176,7 +177,7 @@ public static class DependencyInjection
             ICurrentUserService,
             CurrentUserService>();
 
-        services.AddScoped<IBackgroundTaskQueue, BackgroundTaskQueue>();
+        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
         return services;
     }
 }

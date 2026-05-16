@@ -7,8 +7,9 @@ namespace Amigo.Domain.Errors
     public class ConfilctError : BaseDomainError
     {
         public ConfilctError(string msg)
-        : base(msg,
-              ErrorCode.ConflictError
+        : base(
+              ErrorCode.ConflictError.ToString()
+              ,msg
               )
         {
         }
