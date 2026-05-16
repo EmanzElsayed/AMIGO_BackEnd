@@ -13,7 +13,7 @@ public static class TourCatalogCriteria
         GetUserToursQuery q,
         SupportedLanguage? translationLanguage,
         SupportedLanguage? effectiveGuideLanguage,
-        CurrencyCode? currencyFilter,
+        //CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
         DateOnly? availabilityDate)
@@ -25,8 +25,8 @@ public static class TourCatalogCriteria
             && (!destinationCountryFilter.HasValue
                 || t.Destination.CountryInfo.CountryCode == destinationCountryFilter.Value)
 
-            && (!currencyFilter.HasValue
-                || t.CurrencyCode == currencyFilter.Value)
+            //&& (!currencyFilter.HasValue
+            //    || t.CurrencyCode == currencyFilter.Value)
 
             && (string.IsNullOrWhiteSpace(q.DestinationName)
                 || t.Destination.Translations.Any(dt =>

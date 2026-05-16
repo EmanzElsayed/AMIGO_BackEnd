@@ -40,68 +40,66 @@ public class AuthService(
 
         if (user is null)   
         {
-            return Result.Fail(new UnauthorizedError());
+            return Result.Fail(new UnauthorizedError("Auth_InvalidCredentials"));
                                 
 
         }
-
-        //if (!user.EmailConfirmed)
-        //{
-        //    var SendEmailResult = await SendConfirmEmail(user, requestDTO.ReturnUrl);
-        //    if (!SendEmailResult.IsSuccess)
-        //    {
-        //        return SendEmailResult;
-        //    }
-        //    return Result.Fail(new ForbiddenError("Please Confirm Your Email First"));
-
-
-        //}
-        // after sms 
-        //if (!user.PhoneNumberConfirmed)
-        //{
-        //    return Result.Fail($"Please Confirm Your Phone Number First!!");
-
-        //}
         var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, requestDTO.Password);
-        if (isPasswordCorrect)
+        
+        if(!isPasswordCorrect)
+            return Result.Fail(new UnauthorizedError("Auth_InvalidCredentials"));
+
+      
+
+        
+        string role = await GetRole(user);
+
+        var data = new LoginResponseDTO
+        (
+            FullName : user.FullName?? user.UserName,
+            Email: requestDTO.Email,
+            AccessToken: await _jWTTokenService.GenerateToken(user) ,
+            RefreshToken : _jWTTokenService.GenerateRefreshToken(),
+            AccessTokenExpiresIn: DateTime.UtcNow.AddDays(1),
+            Role: role,
+            EmailConfirmed: user.EmailConfirmed
+        );
+
+        var refreshToken = new UserRefreshToken()
         {
-            string role = await GetRole(user);
+            RefreshToken = data.RefreshToken,
+            UserId = user.Id,
+            User = user,
+            CreatedAtUtc = DateTime.UtcNow,
+            ExpiryDate = DateTime.UtcNow.AddDays(15),
 
-            var data = new LoginResponseDTO
-            (
-                FullName : user.FullName?? user.UserName,
-                Email: requestDTO.Email,
-                AccessToken: await _jWTTokenService.GenerateToken(user) ,
-                RefreshToken : _jWTTokenService.GenerateRefreshToken(),
-                AccessTokenExpiresIn: DateTime.UtcNow.AddDays(1),
-                Role: role,
-                EmailConfirmed: user.EmailConfirmed
-            );
+        };
 
-            var refreshToken = new UserRefreshToken()
-            {
-                RefreshToken = data.RefreshToken,
-                UserId = user.Id,
-                User = user,
-                CreatedAtUtc = DateTime.UtcNow,
-                ExpiryDate = DateTime.UtcNow.AddDays(15),
-
-            };
+        try
+        {
             await _refreshTokenRepo.AddToken(refreshToken , cancellationToken);
             await _unitOfWork.SaveChangesAsync();
-            var value = _localizationService.Get("GreetingToAmigo") ;
-            return Result.Ok(data)
 
-                 .WithSuccess(new Success(value));
+        } catch (Exception ex)
+        {
+            return FluentValidationExtension.FromException(details: ex.Message);
+
+        }
+        // send confirm email
+
+        if (!user.EmailConfirmed)
+        {
+            var SendEmailResult = await SendConfirmEmail(user, requestDTO.ReturnUrl);
+            if (!SendEmailResult.IsSuccess)
+            {
+                return SendEmailResult;
+            }
+        }
+
+        return Result.Ok(data)
+                .WithSuccess(new Success(_localizationService.Get("GreetingToAmigo")));
                  
 
-        }
-        else
-        {
-            return Result.Fail(new UnauthorizedError());
-                                  
-
-        }
     }
 
    

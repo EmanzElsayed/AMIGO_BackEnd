@@ -48,15 +48,19 @@ namespace Amigo.Application.Services.Admin
                 return Result.Fail(new NotFoundError("This Destination Not Found"));
 
             }
+            UserType userType = requestDTO.UserType is null ? UserType.Public
+                                            : requestDTO.UserType.Aggregate(
+                                            UserType.None,
+                                            (acc, type) => acc | type);
 
             if (requestDTO.Prices is not null && requestDTO.Prices.Any(p =>
                     p.UserType == UserType.None
-                    || (p.UserType & requestDTO.UserType) != p.UserType))
+                    || (p.UserType & userType) != p.UserType))
             {
                 return Result.Fail("Invalid pricing tiers: tier user type must match selected tour audience.");
             }
 
-            var tour = TourMapping.TourToEntity(requestDTO, destination);
+            var tour = TourMapping.TourToEntity(requestDTO, destination,userType);
 
             var tourTranslation = TourMapping.TourTranslationToEntity(requestDTO, tour);
             
@@ -218,7 +222,9 @@ namespace Amigo.Application.Services.Admin
                         .Sum(s => s.MaxCapacity),
 
                     BookedSeats = travelersCountByTourId.GetValueOrDefault(tour.Id, 0),
+
                     BookedPercentage = TourCapacity[tour.Id] > 0 ? (double)travelersCountByTourId.GetValueOrDefault(tour.Id, 0) / TourCapacity[tour.Id] * 100 : 0
+                  
 
                 };
             });
@@ -389,7 +395,7 @@ namespace Amigo.Application.Services.Admin
 
                 UserType: tour.UserType.ToString(),
 
-                            Cancellation: cancellation == null
+                 Cancellation: cancellation == null
                 ? null
                 : new GetCancellationResponseDTO
                 (

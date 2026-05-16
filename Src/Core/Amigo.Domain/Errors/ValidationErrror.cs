@@ -7,7 +7,7 @@ public class ValidationErrror
 
     public ValidationErrror(List<ValidationPropertError> errors,
         string msg = "Validation Failed")
-        : base(msg, ErrorCode.InvalidBodyInput)
+        : base(ErrorCode.InvalidBodyInput.ToString(),msg)
     {
         Errors = errors;
     }

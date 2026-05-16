@@ -7,21 +7,26 @@ namespace Amigo.Application.Mapping
 {
     public static class TourMapping 
     {
-        public static Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination)
+        public static Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination,UserType userType)
         {
             
             CurrencyCode currency = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.Currency, false);
+
+            SupportedLanguage? guideLanguage = requestDTO.GuideLanguage is null ? null
+                                            : requestDTO.GuideLanguage.Aggregate(
+                                            SupportedLanguage.None,
+                                            (acc, lang) => acc | lang);
             return new Tour()
             {
                 Id = Guid.NewGuid(),
-                GuideLanguage = requestDTO.GuideLanguage,
+                GuideLanguage = guideLanguage,
                 MeetingPoint = requestDTO.MeetingPoint,
                 Duration = requestDTO.Duration,
                 IsPitsAllowed = requestDTO.IsPitsAllowed,
                 IsWheelchairAvailable = requestDTO.IsWheelchairAvailable,
                 DestinationId = destination.Id,
                 Destination = destination,
-                UserType = requestDTO.UserType,
+                UserType = userType,
                 CurrencyCode = currency
 
             };
@@ -55,10 +60,21 @@ namespace Amigo.Application.Mapping
                 tour.MeetingPoint = requestDTO.MeetingPoint;
 
             if (requestDTO.GuideLanguage is not null)
-                tour.GuideLanguage = requestDTO.GuideLanguage;
-
+            {
+                tour.GuideLanguage = requestDTO.GuideLanguage is null ? null
+                                            : requestDTO.GuideLanguage.Aggregate(
+                                            SupportedLanguage.None,
+                                            (acc, lang) => acc | lang);
+            }
+             
             if (requestDTO.UserType is not null)
-                tour.UserType = requestDTO.UserType.Value;
+            {
+                tour.UserType = requestDTO.UserType is null ? UserType.Public
+                                           : requestDTO.UserType.Aggregate(
+                                           UserType.None,
+                                           (acc, type) => acc | type);
+            }
+              
 
             if (requestDTO.Currency is not null)
                 tour.CurrencyCode = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.Currency, false);

@@ -61,6 +61,51 @@ namespace Amigo.Infrastructure.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid email or password..
+        /// </summary>
+        internal static string Auth_InvalidCredentials {
+            get {
+                return ResourceManager.GetString("Auth_InvalidCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email &apos;{0}&apos; already exists.
+        /// </summary>
+        internal static string EmailAlreadyExist {
+            get {
+                return ResourceManager.GetString("EmailAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        internal static string Field_Email {
+            get {
+                return ResourceManager.GetString("Field_Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Full Name.
+        /// </summary>
+        internal static string Fields_FullName {
+            get {
+                return ResourceManager.GetString("Fields_FullName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        internal static string Fields_Password {
+            get {
+                return ResourceManager.GetString("Fields_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Welcome To Amigo Tours.
         /// </summary>
         internal static string GreetingToAmigo {
@@ -75,6 +120,78 @@ namespace Amigo.Infrastructure.Resources {
         internal static string NotFoundDestination {
             get {
                 return ResourceManager.GetString("NotFoundDestination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid email address.
+        /// </summary>
+        internal static string Validation_InvalidEmail {
+            get {
+                return ResourceManager.GetString("Validation_InvalidEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must not exceed {1} characters.
+        /// </summary>
+        internal static string Validation_MaxLength {
+            get {
+                return ResourceManager.GetString("Validation_MaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} must be at least {1} characters.
+        /// </summary>
+        internal static string Validation_MinLength {
+            get {
+                return ResourceManager.GetString("Validation_MinLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must contain at least one lowercase letter.
+        /// </summary>
+        internal static string Validation_Password_Lowercase {
+            get {
+                return ResourceManager.GetString("Validation_Password_Lowercase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Passwords do not match.
+        /// </summary>
+        internal static string Validation_Password_NotMatch {
+            get {
+                return ResourceManager.GetString("Validation_Password_NotMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must contain at least one number.
+        /// </summary>
+        internal static string Validation_Password_Number {
+            get {
+                return ResourceManager.GetString("Validation_Password_Number", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must contain at least one special character.
+        /// </summary>
+        internal static string Validation_Password_SpecialCharacter {
+            get {
+                return ResourceManager.GetString("Validation_Password_SpecialCharacter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password must contain at least one uppercase letter.
+        /// </summary>
+        internal static string Validation_Password_Uppercase {
+            get {
+                return ResourceManager.GetString("Validation_Password_Uppercase", resourceCulture);
             }
         }
     }

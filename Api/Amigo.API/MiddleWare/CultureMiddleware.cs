@@ -19,7 +19,7 @@ namespace Amigo.API.MiddleWare
 
             cultureName = cultureName.Split('-')[0]; // en
 
-            var supported = new[] { "en", "fr", "es", "it", "pt", "pt-BR"};
+            var supported = new[] { "en", "fr", "es", "it", "pt", "br"};
 
             if (!supported.Contains(cultureName))
                 cultureName = "en";

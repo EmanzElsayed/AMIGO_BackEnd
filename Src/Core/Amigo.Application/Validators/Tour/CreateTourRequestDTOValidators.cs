@@ -41,10 +41,10 @@ namespace Amigo.Application.Validators.Tour
                .WithMessage("Invalid CurrencyCode Code");
 
             // Guide SupportedLanguage
-            RuleFor(x => x.GuideLanguage)
-                .Must(BusinessRules.IsValidFlagsEnumNullable)
-                .When(x => x.GuideLanguage is not null)
-                .WithMessage("Invalid Guide SupportedLanguage Code");
+            RuleForEach(x => x.GuideLanguage)
+                 .IsInEnum()
+                 .When(x => x.GuideLanguage is not null)
+                 .WithMessage("Invalid Guide SupportedLanguage Code");
 
             // Meeting Point
             RuleFor(x => x.MeetingPoint)
@@ -64,10 +64,10 @@ namespace Amigo.Application.Validators.Tour
                 .WithMessage("Destination Is Required");
 
 
-            RuleFor(x => x.UserType)
-                .NotEmpty()
-                .WithMessage("User Type Is Required")
-                .Must(BusinessRules.IsValidFlagsEnum)
+            RuleForEach(x => x.UserType)
+                 .IsInEnum()
+                .When(x => x.UserType is not null)
+
                 .WithMessage("User Type Code (VIP, Public)");
 
             RuleForEach(x => x.Images)

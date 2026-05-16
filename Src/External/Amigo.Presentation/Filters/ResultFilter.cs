@@ -1,4 +1,5 @@
-﻿using Amigo.Domain.Errors;
+﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Domain.Errors;
 using Amigo.Domain.Errors.BusinessErrors;
 
 using Amigo.SharedKernal.DTOs.Results;
@@ -14,6 +15,12 @@ namespace Amigo.Presentation.Filters
 {
     public class ResultFilter : IAsyncResultFilter
     {
+        private readonly ILocalizationService _localizer;
+
+        public ResultFilter(ILocalizationService localizer)
+        {
+            _localizer = localizer;
+        }
         private int ResolveStatusCode(IResultBase result)
         {
             // Success case
@@ -71,7 +78,7 @@ namespace Amigo.Presentation.Filters
                 {
                     statusCode = Convert.ToInt32(successWithStatus.Metadata["StatusCode"]);
                 }
-                // 👇 Detect PaginatedResult
+                //  Detect PaginatedResult
                 if (value != null && IsPaginated(value))
                 {
                     return MapPaginated(value, result, context, statusCode);
@@ -90,7 +97,8 @@ namespace Amigo.Presentation.Filters
             {
                 IsSuccess = false,
                 StatusCode = MapStatusCode(result.Errors),
-                Message = string.Join(", ", result.Errors.Select(e => e.Message)),
+                Message =  string.Join(", ",
+    result.         Errors.Select(TranslateError)),
                 Errors = MapValidationErrors(result.Errors),
                 ErrorCode = result.Errors.OfType<BaseDomainError>().FirstOrDefault()?.Code.ToString(),
                 TraceId = context.HttpContext.TraceIdentifier
@@ -178,5 +186,16 @@ namespace Amigo.Presentation.Filters
                 });
         }
 
+        private string TranslateError(IError error)
+        {
+            if (error is BaseDomainError domainError)
+            {
+                return _localizer.Get(
+                    domainError.Code.ToString(),
+                    domainError.Arguments);
+            }
+
+            return error.Message;
+        }
     }
 }

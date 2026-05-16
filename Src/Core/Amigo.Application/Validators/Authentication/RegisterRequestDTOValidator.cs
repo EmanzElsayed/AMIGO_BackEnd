@@ -8,16 +8,19 @@ namespace Amigo.Application.Validators.Authentication
 {
     public class RegisterRequestDTOValidator : AbstractValidator<RegisterRequestDTO>
     {
-        public RegisterRequestDTOValidator()
+        private readonly ILocalizationService _localizer;
+
+        public RegisterRequestDTOValidator(ILocalizationService localizer)
         {
+            _localizer = localizer;
 
             RuleFor(x => x.FullName)
               .NotEmpty()
               .WithMessage("FullName is required.")
               .MinimumLength(3)
-              .WithMessage("FullName must be at least 3 Characters.")
+              .WithMessage(_localizer.Get("Validation_MinLength",_localizer.Get("Fields_FullName"),3))
               .MaximumLength(256)
-              .WithMessage("FullName must be less than 256 Characters.");
+              .WithMessage(_localizer.Get("Validation_MaxLength", _localizer.Get("Fields_FullName"),256));
 
 
             RuleFor(x => x.Email)
@@ -25,28 +28,28 @@ namespace Amigo.Application.Validators.Authentication
                 .WithMessage("Email is required.")
                 .EmailAddress()
                 .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-                .WithMessage("Email must be a valid email address.");
+                .WithMessage(_localizer.Get("Validation_InvalidEmail")  );
            
 
             RuleFor(x => x.Password)
                 .NotEmpty()
                 .WithMessage("Password is required.")
                 .MinimumLength(8)
-                .WithMessage("Password must be at least 8 characters.")
+                .WithMessage(_localizer.Get("Validation_MaxLength", _localizer.Get("Fields_Password"),8))
                 .Matches(@"[A-Z]")
-                .WithMessage("Password must contain at least one uppercase letter.")
+                .WithMessage(_localizer.Get("Validation_Password_Uppercase"))
                 .Matches(@"[a-z]")
-                .WithMessage("Password must contain at least one lowercase letter.")
+                .WithMessage(_localizer.Get("Validation_Password_Lowercase"))
                 .Matches(@"\d")
-                .WithMessage("Password must contain at least one number.")
+                .WithMessage(_localizer.Get("Validation_Password_Number"))
                 .Matches(@"[\W_]")
-                .WithMessage("Password must contain at least one special character.");
+                .WithMessage(_localizer.Get("Validation_Password_SpecialCharacter"));
 
             RuleFor(x => x.ConfirmPassword)
                 .NotEmpty()
                 .WithMessage("Confirm password is required.")
                 .Equal(x => x.Password)
-                .WithMessage("Passwords do not match.");
+                .WithMessage(_localizer.Get("Validation_Password_NotMatch"));
 
             RuleFor(x => x.TermsAccepted)
                 .Equal(true)

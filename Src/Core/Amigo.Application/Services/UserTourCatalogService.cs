@@ -17,7 +17,8 @@ public class UserTourCatalogService(
             IValidationService _validationService,
             IUnitOfWork _unitOfWork,
             IDestinationSlugResolver _slugResolver,
-            ICurrencyRateService _currencyRateService) 
+            ICurrencyRateService _currencyRateService,
+            ICurrentUserService _currentUserService) 
                 : IUserTourCatalogService
 {
     public async Task<Result<PaginatedResponse<UserTourListItemDto>>> GetToursAsync(GetUserToursQuery query)
@@ -43,7 +44,10 @@ public class UserTourCatalogService(
 
             country = cc;
         
-        CurrencyCode? currencyFilter = null;
+        CurrencyCode filteredCurrency = _currentUserService.Currency;
+        var rate = await _currencyRateService.GetRateAsync(
+                    Constants.BaseCurrency,
+                    filteredCurrency, true);
 
         UserType? userType = ParseUserType(query.UserType); 
 
@@ -60,7 +64,7 @@ public class UserTourCatalogService(
             destId,
             listingLang,
             effectiveGuide,
-            currencyFilter,
+            //currencyFilter,
             country,
             userType,
             availabilityDate);
@@ -73,14 +77,14 @@ public class UserTourCatalogService(
             destId,
             listingLang,
             effectiveGuide,
-            currencyFilter,
+            //currencyFilter,
             country,
             userType,
             availabilityDate,
             applyPaging: true);
 
         var tours = (await tourRepo.GetAllAsync(listSpec)).ToList();
-        var data = tours.Select(t => UserTourCatalogMapper.ToListItem(t, listingLang, userType)).ToList();
+        var data = tours.Select(t => UserTourCatalogMapper.ToListItem(t, listingLang, userType,filteredCurrency,rate.ValueOrDefault)).ToList();
 
         var totalPages = query.PageSize <= 0
             ? 0
@@ -172,9 +176,17 @@ public class UserTourCatalogService(
         if (destId is null)
             return Result.Fail(new NotFoundError("Destination not found for this link."));
 
-        var listingLang = string.IsNullOrWhiteSpace(query.Language)
-            ? Constants.BaseLanguage
-            : EnumsMapping.ToLanguageEnum(query.Language!);
+        var listingLang = _currentUserService.Language;
+        var filteredCurrency = _currentUserService.Currency;
+
+        var rate = await _currencyRateService.GetRateAsync(
+                       Constants.BaseCurrency,
+                       filteredCurrency, true);
+
+        if (!rate.IsSuccess)
+            return Result.Fail(rate.Errors);
+
+
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
 
         var requestSlug = SlugHelper.ToUrlSlug(query.TourSlug);
@@ -255,6 +267,8 @@ public class UserTourCatalogService(
             reviews,
             reviewTranslations,
             todayUtc,
+            rate.ValueOrDefault,
+            filteredCurrency,
             cancellationPolicyDescription,
             currentUserId
         );
@@ -276,9 +290,15 @@ public class UserTourCatalogService(
 
     public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 6)
     {
-        var listingLang = string.IsNullOrWhiteSpace(language)
-            ? Constants.BaseLanguage
-            : EnumsMapping.ToLanguageEnum(language!);
+        var listingLang =  _currentUserService.Language;
+        var filteredCurrency = _currentUserService.Currency;
+        var rate = await _currencyRateService.GetRateAsync(
+                        Constants.BaseCurrency,
+                        filteredCurrency, true);
+
+        if (!rate.IsSuccess)
+            return Result.Fail(rate.Errors);
+
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
         var top = take <= 0 ? 6 : Math.Min(take, 24);
 
@@ -289,25 +309,25 @@ public class UserTourCatalogService(
 
         if (rows.Count == 0)
             return Result.Ok<IEnumerable<UserTrendingTourItemDto>>([]);
-        var mappedCurrency = string.IsNullOrWhiteSpace(currency) ? Constants.BaseCurrency: EnumsMapping.ToEnum<CurrencyCode>(currency, false);
-        decimal exchangeRate = 1m;
+        //var mappedCurrency = string.IsNullOrWhiteSpace(currency) ? Constants.BaseCurrency: EnumsMapping.ToEnum<CurrencyCode>(currency, false);
+        //decimal exchangeRate = 1m;
 
-        if (!string.IsNullOrWhiteSpace(currency) && mappedCurrency != Constants.BaseCurrency)
-        {
+        //if (!string.IsNullOrWhiteSpace(currency) && mappedCurrency != Constants.BaseCurrency)
+        //{
 
-            var rate = await _currencyRateService.GetRateAsync(
-                  Constants.BaseCurrency,
-                  mappedCurrency,true);
+        //    var rate = await _currencyRateService.GetRateAsync(
+        //          Constants.BaseCurrency,
+        //          mappedCurrency,true);
 
-            if (!rate.IsSuccess)
-                return Result.Fail(rate.Errors);
+        //    if (!rate.IsSuccess)
+        //        return Result.Fail(rate.Errors);
 
-            exchangeRate = rate.ValueOrDefault;
-        }
+        //    exchangeRate = rate.ValueOrDefault;
+        //}
         var mapped = rows
             .Select(t =>
             {
-                var item = UserTourCatalogMapper.ToListItem(t, listingLang, effectiveUserType);
+                var item = UserTourCatalogMapper.ToListItem(t, listingLang, effectiveUserType,filteredCurrency,rate.ValueOrDefault);
                 var allowedUserType = effectiveUserType == UserType.VIP ? UserType.VIP : UserType.Public;
                 var baseAmount = t.Prices
                     .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType)
@@ -338,7 +358,7 @@ public class UserTourCatalogService(
                 HeroImageUrl: x.Item.HeroImageUrl,
                 AverageRating: x.Item.AverageRating,
                 ReviewCount: x.Item.ReviewCount,
-                FromPrice: x.BaseAmount * exchangeRate,
+                FromPrice: x.BaseAmount ,
                 BaseCurrency: x.BaseCurrency,
                 BaseAmount: x.BaseAmount,
                 TourSlug: x.Item.TourSlug,

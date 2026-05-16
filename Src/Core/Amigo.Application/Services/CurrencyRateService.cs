@@ -3,6 +3,7 @@ using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.CurrencyRateSpecification;
 using Amigo.Domain.DTO.Currency;
 using Amigo.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Text.Json;
 
@@ -97,14 +98,20 @@ namespace Amigo.Application.Services
                 return Result.Fail(new NotFoundError($"Currency rate not found: {from} -> {to}"));
 
             }
-            if (dbRate.ExpiresAt >= DateTime.UtcNow)
+            if (dbRate.ExpiresAt <= DateTime.UtcNow)
             {
                 if (isHit)
                 {
-                    _backgroundQueue.QueueTask(async token =>
+                    _backgroundQueue.QueueTask(async (token, sp) =>
                     {
-                        await SyncRates();
-                    });
+                        using var scope = sp.CreateScope();
+
+                        var service =
+                            scope.ServiceProvider
+                                .GetRequiredService<ICurrencyRateService>();
+
+                        await service.SyncRates();
+                    }); 
                     return Result.Ok(dbRate.Rate);
                 }
                 else
