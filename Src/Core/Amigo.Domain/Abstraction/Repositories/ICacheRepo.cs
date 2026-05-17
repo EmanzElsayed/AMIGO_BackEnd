@@ -6,7 +6,13 @@ namespace Amigo.Domain.Abstraction.Repositories
 {
     public interface ICacheRepo
     {
-        Task<string?> GetAsync(string cackeKey);
-        Task SetAsync(string cackeKey, string value, TimeSpan timeToLive);
+        Task<T?> GetAsync<T>(string cacheKey);
+
+        Task SetAsync<T>( 
+            string cacheKey,
+            T value,
+            TimeSpan timeToLive);
+
+        Task RemoveAsync(string cacheKey);
     }
 }

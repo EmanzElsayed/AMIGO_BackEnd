@@ -11,18 +11,30 @@ namespace Amigo.Application.Services
 {
     public class CartService(IUnitOfWork _unitOfWork ,
         EncryptionService _encryptionService,
-        IPaymentOrchestrator _paymentOrchestrator,
         ICurrencyRateService _currencyRateService,
         ISlotsRepo _slotsRepo,
+        ICacheService _cacheService,
         Microsoft.AspNetCore.Identity.UserManager<Amigo.Domain.Entities.Identity.ApplicationUser> _userManager
         ) 
         : ICartService
     {
         public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
         {
+            var cacheKey =
+            BuildCartCacheKey(userId, cartToken);
+
+            // 1. Try Cache
+            var cached =
+                await _cacheService
+                    .GetAsync<CartDTO>(cacheKey);
+
+            if (cached != null)
+                return Result.Ok(cached);
+
+            // 2. DB
             var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
 
-            if (cart == null)
+            if (cart == null || !cart.Items.Any())
             {
                 return Result.Ok(new CartDTO(
                     Guid.Empty,
@@ -38,6 +50,12 @@ namespace Amigo.Application.Services
             }
 
             var MappedCart = cart.ToDto();
+            // 3. Save Cache
+            await _cacheService.SetAsync(
+                cacheKey,
+                MappedCart,
+                TimeSpan.FromMinutes(20));
+
             return Result.Ok(MappedCart);
         }
 
@@ -142,8 +160,13 @@ namespace Amigo.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            var dto = cart.ToDto();
+            await _cacheService.SetAsync(
+            BuildCartCacheKey(userId, cartToken),
+            dto,
+            TimeSpan.FromMinutes(20));
 
-            return cart.ToDto();
+            return dto;
         }
 
 
@@ -272,7 +295,14 @@ namespace Amigo.Application.Services
                 return Result.Fail(new Error($"DB Error: {ex.Message} Inner: {ex.InnerException?.Message}"));
             }
 
-            return cart.ToDto();
+
+            var mappedCart = cart.ToDto();
+            await _cacheService.SetAsync(
+            BuildCartCacheKey(userId, cartToken),
+            dto,
+            TimeSpan.FromMinutes(20));
+
+            return mappedCart;
         }
 
 
@@ -572,6 +602,8 @@ namespace Amigo.Application.Services
 
                     await transaction.CommitAsync();
 
+                    await _cacheService.RemoveAsync(
+                                    BuildCartCacheKey(userId, cartToken));
                     return Result.Ok(
                         response with
                         {
@@ -724,6 +756,22 @@ namespace Amigo.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            // UPDATE CACHE
+            var cacheKey =
+                 BuildCartCacheKey(userId, cartToken);
+
+            if (!cart.Items.Any())
+            {
+                await _cacheService.RemoveAsync(cacheKey);
+            }
+            else
+            {
+                await _cacheService.SetAsync(
+                    cacheKey,
+                    cart.ToDto(),
+                    TimeSpan.FromMinutes(20));
+            }
+
             return Result.Ok("Cart Item Deleted Successfully");
         }
         public async Task<Result<string>> ClearAsync(
@@ -740,7 +788,22 @@ namespace Amigo.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
+            var cacheKey =
+                 BuildCartCacheKey(userId, cartToken);
+            await _cacheService.RemoveAsync(cacheKey);
+
             return Result.Ok("Cart Deleted Successfully");
+        }
+
+
+        private string BuildCartCacheKey(
+            string? userId,
+            string? cartToken)
+        {
+            if (!string.IsNullOrWhiteSpace(userId))
+                return $"cart:user:{userId}";
+
+            return $"cart:guest:{cartToken}";
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Amigo.Application.Services
 
     
 
-    public class CurrencyRateService(ICacheRepo _cacheRepo,
+    public class CurrencyRateService(ICacheService _cacheService,
         IBackgroundTaskQueue _backgroundQueue,
         ICurrencyProvider currencyProvider,
         IUnitOfWork _unitOfWork ) 
@@ -76,16 +76,11 @@ namespace Amigo.Application.Services
 
             // CACHE
             // 1. CACHE
-            var cached = await _cacheRepo.GetAsync(key);
+            var cached = await _cacheService.GetAsync<decimal?>(key);
 
-            if (!string.IsNullOrEmpty(cached) &&
-                decimal.TryParse(
-                cached,
-                NumberStyles.Any,
-                CultureInfo.InvariantCulture,
-                out var cachedRate))
+            if (cached.HasValue)
             {
-                return Result.Ok(cachedRate);
+                return Result.Ok(cached.Value);
             }
 
             var repo = _unitOfWork.GetRepository<CurrencyRate, Guid>();
@@ -117,16 +112,11 @@ namespace Amigo.Application.Services
                 else
                 {
                     await SyncRates();
-                    var updatedCached = await _cacheRepo.GetAsync(key);
-                    if (!string.IsNullOrEmpty(cached) &&
-                            decimal.TryParse(
-                            cached,
-                            NumberStyles.Any,
-                            CultureInfo.InvariantCulture,
-                            out var returnedRate))
-                            {
-                                return Result.Ok(returnedRate);
-                            }
+                    var updatedCached = await _cacheService.GetAsync<decimal?>(key);
+                    if (updatedCached.HasValue)
+                    {
+                                return Result.Ok(updatedCached.Value);
+                    }
                 }
             }
 
@@ -267,9 +257,9 @@ namespace Amigo.Application.Services
         {
             var key = GetKey(from, to);
 
-            await _cacheRepo.SetAsync(
+            await _cacheService.SetAsync(
                 key,
-                rate.ToString(CultureInfo.InvariantCulture),
+                rate,
                 TimeSpan.FromHours(1));
 
         }

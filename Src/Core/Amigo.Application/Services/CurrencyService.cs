@@ -14,7 +14,7 @@ using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Amigo.Application.Services
 {
-    public  class CurrencyService (IUnitOfWork _unitOfWork, IValidationService _validationService) : ICurrencyService
+    public  class CurrencyService (IUnitOfWork _unitOfWork, IValidationService _validationService,ICurrentUserService _currentUserService) : ICurrencyService
     {
 
         public async Task<Result<List<GetCurrencyResponseDTO>>> GetAllCurrencyAsync(GetAllCurrencyQuery requestQuery)
@@ -25,7 +25,7 @@ namespace Amigo.Application.Services
                 return validationResult;
             }
 
-            SupportedLanguage language = !string.IsNullOrWhiteSpace(requestQuery.Language) ? EnumsMapping.ToLanguageEnum(requestQuery.Language) : SupportedLanguage.en;
+            SupportedLanguage language = _currentUserService.Language;
 
 
             var CurrencySpec = new GetAllCurrencySpecification(requestQuery,language);
@@ -50,7 +50,7 @@ namespace Amigo.Application.Services
 
             Guid CurrencyId = guid;
 
-            SupportedLanguage language = !string.IsNullOrWhiteSpace(query.Language) ? EnumsMapping.ToLanguageEnum(query.Language) : SupportedLanguage.en;
+            SupportedLanguage language = _currentUserService.Language;
 
             var _currencyRepo = _unitOfWork.GetRepository<Currency, Guid>();
 

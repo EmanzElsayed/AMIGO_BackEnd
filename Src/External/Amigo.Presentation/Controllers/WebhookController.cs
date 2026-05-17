@@ -57,8 +57,8 @@ namespace Amigo.Presentation.Controllers
                 var eventType = JsonDocument.Parse(json)
                     .RootElement.GetProperty("event_type").GetString();
                 _logger.LogInformation("PayPal event type: {type}", eventType);
-
-                
+                //var json = "eman";
+                //var eventType = "PAYMENT.CAPTURE.COMPLETED";
                 switch (eventType)
                 {
                     case "PAYMENT.CAPTURE.COMPLETED":

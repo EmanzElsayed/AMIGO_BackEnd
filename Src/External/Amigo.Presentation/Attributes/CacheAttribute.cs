@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.Json;
 
 namespace Amigo.Presentation.Attributes
 {
@@ -16,12 +15,12 @@ namespace Amigo.Presentation.Attributes
             var cachKey = CreateCacheKey(context.HttpContext.Request);
 
             var _cacheService = context.HttpContext.RequestServices.GetRequiredService<ICacheService>();
-            var cacheValue = await _cacheService.GetAsync(cachKey);
+            var cacheValue = await _cacheService.GetAsync<object>(cachKey);
 
             if (cacheValue is not null)
             {
-                context.Result = new JsonResult(
-                  JsonSerializer.Deserialize<object>(cacheValue))
+                context.Result = new JsonResult(cacheValue)
+                  
                 {
                     StatusCode = StatusCodes.Status200OK
                 };

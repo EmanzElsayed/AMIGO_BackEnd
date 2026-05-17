@@ -34,7 +34,7 @@ namespace Amigo.Application.Mapping
                         StartTime: item.StartTime,
                         TourName: item.TourTitle,
                         DestinationName: item.DestinationName,
-                        TotalAmount: item.TotalAmount,
+                        TotalAmount:  item.TotalAmount,
 
                         Prices: item.Prices?
                             .Select(price => new CartPriceDTO

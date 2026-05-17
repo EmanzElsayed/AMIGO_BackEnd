@@ -10,19 +10,32 @@ public class MemoryCacheRepo : ICacheRepo
         _cache = cache;
     }
 
-    public Task<string?> GetAsync(string cacheKey)
+    public Task<T?> GetAsync<T>(string cacheKey)
     {
-        _cache.TryGetValue(cacheKey, out string? value);
+        _cache.TryGetValue(cacheKey, out T? value);
+
         return Task.FromResult(value);
     }
 
-    public Task SetAsync(string cacheKey, string value, TimeSpan timeToLive)
+    public Task SetAsync<T>(
+        string cacheKey,
+        T value,
+        TimeSpan timeToLive)
     {
-        _cache.Set(cacheKey, value, new MemoryCacheEntryOptions
+        var options = new MemoryCacheEntryOptions
         {
             SlidingExpiration = TimeSpan.FromMinutes(5),
             AbsoluteExpirationRelativeToNow = timeToLive
-        });
+        };
+
+        _cache.Set(cacheKey, value, options);
+
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveAsync(string cacheKey)
+    {
+        _cache.Remove(cacheKey);
 
         return Task.CompletedTask;
     }

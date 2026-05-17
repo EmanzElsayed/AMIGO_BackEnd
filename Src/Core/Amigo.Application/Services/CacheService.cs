@@ -1,24 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
-
-namespace Amigo.Application.Services
+﻿public class CacheService : ICacheService
 {
-    public class CacheService(ICacheRepo _cacheRepository) : ICacheService
-    {
-        public async Task<string?> GetAsync(string cacheKey)
-        {
-            return await _cacheRepository.GetAsync(cacheKey);
-        }
+    private readonly ICacheRepo _cacheRepository;
 
-        public async Task SetAsync(string cacheKey, object value, TimeSpan timeToLive)
-        {
-            var cachedValue = JsonSerializer.Serialize(value, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-            await _cacheRepository.SetAsync(cacheKey, cachedValue, timeToLive);
-        }
+    public CacheService(ICacheRepo cacheRepository)
+    {
+        _cacheRepository = cacheRepository;
+    }
+
+    public async Task<T?> GetAsync<T>(string cacheKey)
+    {
+        return await _cacheRepository.GetAsync<T>(cacheKey);
+    }
+
+    public async Task SetAsync<T>(
+        string cacheKey,
+        T value,
+        TimeSpan timeToLive)
+    {
+        await _cacheRepository.SetAsync(
+            cacheKey,
+            value,
+            timeToLive);
+    }
+
+    public async Task RemoveAsync(string cacheKey)
+    {
+        await _cacheRepository.RemoveAsync(cacheKey);
     }
 }
