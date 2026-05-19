@@ -1,3 +1,4 @@
+using Amigo.Domain.DTO.Price;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
@@ -15,4 +16,7 @@ public interface IUserTourCatalogService
     Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null);
 
     Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 10);
+
+    Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(PiceWithActivityTypeRequestDTO requestDTO, string? userType);
+
 }

@@ -14,4 +14,6 @@ public class TourInclusion: BaseEntity<Guid>
     public bool IsIncluded { get; set; } = false;
 
     public ICollection<InclusionTranslation> Translations { get; set; } = new List<InclusionTranslation>();
+
 }
+    

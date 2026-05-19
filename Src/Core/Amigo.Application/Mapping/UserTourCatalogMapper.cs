@@ -25,6 +25,7 @@ public static class UserTourCatalogMapper
     {
         var baseItem = ToListItem(tour, listingLanguage, effectiveUserType,filteredcurrency,rate);
         var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType,rate);
+        var activityTypes = MapActivityTypes(pricesWithTranslations, listingLanguage, effectiveUserType);
         var days = MapScheduleDays(schedules, todayUtc);
         var recent = MapRecentReviews(reviews, reviewTranslations, currentUserId);
         var travelerPhotos = MapTravelerPhotos(reviews);
@@ -58,6 +59,7 @@ public static class UserTourCatalogMapper
             CurrencyCode: filteredcurrency.ToString(),
             DestinationName: destTr?.Name,
             CountryName: tour.Destination?.CountryInfo is null? null: tour.Destination?.CountryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
+            ActivityTypes: activityTypes.Any() ? activityTypes : null,
             PriceTiers: tiers,
             ScheduleDays: days,
             RecentReviews: recent,
@@ -118,6 +120,29 @@ public static class UserTourCatalogMapper
             .SelectMany(i => i.Translations)
             .Where(t => !string.IsNullOrWhiteSpace(t.Text))
             .Select(t => t.Text.Trim())
+            .Distinct()
+            .ToList();
+    }
+
+    private static IReadOnlyList<string?> MapActivityTypes(
+     IReadOnlyList<Price> prices,
+     SupportedLanguage listingLanguage,
+     UserType? effectiveUserType)
+    {
+        var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
+
+        return prices
+            .Where(x =>
+                !x.IsDeleted &&
+                (x.UserType & allowedUserType) == allowedUserType)
+            .Select(p =>
+            {
+                var tr = p.Translations.FirstOrDefault(x => x.Language == listingLanguage)
+                         ?? p.Translations.FirstOrDefault();
+
+                return tr?.ActivityType;
+            })
+            .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct()
             .ToList();
     }

@@ -19,7 +19,7 @@ namespace Amigo.Domain.DTO.Cart
      string DestinationName       ,
                                    
      decimal TotalAmount          ,
-                                   
+      string?ActivityType,                             
       List<CartPriceDTO>? Prices,
       List<CheckoutTravelersRequestDTO>? Travelers
    );

@@ -1,36 +1,25 @@
-﻿using Amigo.Application.Services.AutoTranslation;
-using Amigo.Domain.DTO.Destination;
+﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Domain.DTO.Enums;
 using Amigo.Domain.DTO.Tour;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Amigo.Presentation.Controllers.Admin
 {
-    [Route("api/v1/admin/translation")]
-    //[Authorize(Roles = "Admin")]
-    public class AdminTranslationController : BaseController
+    [Route("api/v1/admin/translate")]
+    public class AdminTranslationController(IAutoTranslationService _translationService) : BaseController
+
     {
-        private readonly TranslationEngine _engine;
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
 
-        public AdminTranslationController(TranslationEngine engine)
+        public async Task<IResultBase> TranslateTours([FromBody] GetLanguageFromBodyDTO requestDTO)
         {
-            _engine = engine;
-        }
-        [HttpPost("destination")]
-        public async Task<IActionResult> TranslateDestination([FromBody] DestinationTranslateRequestDTO request)
-        {
-            await _engine.TranslateDestination(request.DestinationId, request.SourceLanguage);
 
-            return Ok("Translated successfully");
-        }
+            return await _translationService.TranslateAllPendingTours(requestDTO);
 
-        [HttpPost("tour")]
-        public async Task<IActionResult> TranslateTour([FromBody] TourTranslationRequestDTO request)
-        {
-            await _engine.TranslateTour(request.TourId, request.SourceLanguage);
-
-            return Ok("Translated successfully");
         }
     }
 }

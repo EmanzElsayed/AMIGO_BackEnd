@@ -7,16 +7,17 @@ namespace Amigo.Domain.Entities.TranslationEntities;
 [Table($"{nameof(PriceTranslation)}", Schema = SchemaConstants.translation_schema)]
 
 
-public class PriceTranslation : BaseEntity<Guid>, ITranslationEntity
-{
+    public class PriceTranslation : BaseEntity<Guid>, ITranslationEntity
+    {
                                                
-    public Price Price { get; set; } = null!;
-    public Guid PriceId { get; set; }
+        public Price Price { get; set; } = null!;
+        public Guid PriceId { get; set; }
     
-    [Required]
-    public string Type { get; set; } = null!;
+        [Required]
+        public string Type { get; set; } = null!;
 
-    public SupportedLanguage Language { get; set; }
+        public string? ActivityType { get; set; }
+        public SupportedLanguage Language { get; set; }
 
 }
 

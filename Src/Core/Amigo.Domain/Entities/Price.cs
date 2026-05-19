@@ -9,12 +9,12 @@ public class Price : BaseEntity<Guid>
    
     public decimal Cost { get; set; }
 
-
     public UserType UserType { get; set; } 
 
     public decimal Discount { get; set; } = 0;
     public decimal RetailPrice => Cost * (1 - Discount  / 100m);
 
     public ICollection<PriceTranslation> Translations { get; set; } = new List<PriceTranslation>();
+    
 
 }

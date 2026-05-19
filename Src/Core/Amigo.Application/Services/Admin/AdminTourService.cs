@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Amigo.Domain.DTO.Translation;
 
 namespace Amigo.Application.Services.Admin
 {
@@ -53,6 +54,7 @@ namespace Amigo.Application.Services.Admin
                                             UserType.None,
                                             (acc, type) => acc | type);
 
+
             if (requestDTO.Prices is not null && requestDTO.Prices.Any(p =>
                     p.UserType == UserType.None
                     || (p.UserType & userType) != p.UserType))
@@ -61,7 +63,7 @@ namespace Amigo.Application.Services.Admin
             }
 
             var tour = TourMapping.TourToEntity(requestDTO, destination,userType);
-
+           
             var tourTranslation = TourMapping.TourTranslationToEntity(requestDTO, tour);
             
             var tourImages = new List<TourImage>();
@@ -88,7 +90,7 @@ namespace Amigo.Application.Services.Admin
             var tourInclusion = (requestDTO.Includes is not null && requestDTO.Includes.Any()) || (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any())
                                 ? InclusionMapping.TourInclusionToEntity(requestDTO.Includes,requestDTO.NotIncludes ,tour, requestDTO.Language)
                                 :new List<TourInclusion>();
-
+            
            
             var cancellation = requestDTO.Cancellation is not null ?
                                     CancellationMapping.CancellationToEntity(requestDTO.Cancellation, tour,requestDTO.Language)
@@ -149,6 +151,43 @@ namespace Amigo.Application.Services.Admin
             });
         }
 
+        public TourTranslationItem CreateTourTranslationItem(SupportedLanguage sourceLanguage,Tour tour,List<TourInclusion> tourInclusions,Cancellation cancellation,List<Price> tourPrice,Destination destination)
+        {
+            var tourTranslation = tour.Translations.Where(t => t.Language == sourceLanguage);
+            var destinationTranslation = destination.Translations.Where(t => t.Language == sourceLanguage);
+            var cancellationTranslation = cancellation.Translations.Where(t => t.Language == sourceLanguage);
+            return new TourTranslationItem()
+            {
+                TourId = tour.Id,
+                SourceLanguage = sourceLanguage,
+                Title = tourTranslation.Select(t => t.Title).FirstOrDefault(),
+                Description = tourTranslation.Select(t => t.Description).FirstOrDefault(),
+                Destination = new DestinationTranslationItem()
+                {
+                    DestinationId = destination.Id,
+                    Name = destinationTranslation.Select(d => d.Name).FirstOrDefault()
+                },
+
+                Cancellation = new CancellationTranslationItem()
+                {
+                    CancellationId = cancellation.Id,
+                    Description = cancellationTranslation.Select(c => c.Description).FirstOrDefault()
+                },
+                Inclusions = tourInclusions
+                .Select(i => new InclusionTranslationItem
+                {
+                    InclusionId = i.Id,
+
+                    Text = i.Translations
+                        .Where(t => t.Language == sourceLanguage)
+                        .Select(t => t.Text)
+                        .FirstOrDefault() ?? ""
+                })
+                .ToList()
+            };
+        
+        }
+       
         public async Task<Result<PaginatedResponse<AdminTourListItemResponseDTO>>> GetAllToursAsync(GetAllAdminTourQuery requestQuery)
         {
             var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
@@ -444,7 +483,12 @@ namespace Amigo.Application.Services.Admin
                             .Type ?? "",
 
                         Cost: p.Cost,
-                        UserType: p.UserType
+
+                        UserType: p.UserType,
+
+                        ActivityType: p.Translations
+                            .FirstOrDefault(t => t.Language == language)?
+                            .ActivityType ?? ""
                     ))
                     .ToList(),
 

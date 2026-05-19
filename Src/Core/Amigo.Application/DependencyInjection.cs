@@ -65,9 +65,6 @@ public static class DependencyInjection
 
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IPhoneCodeService, PhoneCodeService>();
-        services.AddScoped<TranslationService>();
-        services.AddHttpClient<TranslationService>();
-        services.AddScoped<TranslationEngine>();
 
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IPaymentOrchestrator, PaymentOrchestrator>();
@@ -157,6 +154,9 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateAvailableSlotsRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
+        services.AddValidatorsFromAssemblyContaining<PiceWithActivityTypeRequestDTO>();
+
+
         services.AddHostedService<BookingBackgroundService>();
         services.AddHostedService<OutboxWorker>();
 
@@ -169,8 +169,14 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IAdminOrderService, AdminOrderService>();
         services.AddScoped<ICacheService, CacheService>();
+
+        services.AddHttpClient();
+
         services.AddScoped<ICurrencyRateService, CurrencyRateService>();
         services.AddScoped<ICurrencyProvider, CurrencyApiProvider>();
+        services.AddScoped<IOpenAiBatchTranslationService, OpenAiBatchTranslationService>();
+        services.AddScoped<IAutoTranslationService, TourBatchTranslationService>();
+
         services.AddHttpContextAccessor();
 
         services.AddScoped<

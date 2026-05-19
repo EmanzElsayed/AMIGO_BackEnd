@@ -1,7 +1,9 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Application.Mapping;
+using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.User;
+using Amigo.Domain.DTO.Price;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
@@ -9,7 +11,9 @@ using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
+using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Amigo.Application.Services;
 
@@ -364,5 +368,53 @@ public class UserTourCatalogService(
             .ToList();
 
         return Result.Ok<IEnumerable<UserTrendingTourItemDto>>(mapped);
+    }
+
+    public async Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(PiceWithActivityTypeRequestDTO requestDTO, string? userType)
+    {
+        var validationResult = await _validationService.ValidateAsync(requestDTO);
+        if (!validationResult.IsSuccess)
+            return validationResult;
+
+        var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new GetTourByIdWithPriceIncludingOnlySpecification(requestDTO.TourId));
+
+        if (tour is null)
+        {
+            return Result.Fail(new NotFoundError("This Tour Not Found"));
+        }
+        var listingLang = _currentUserService.Language;
+        var filteredCurrency = _currentUserService.Currency;
+
+        var rate = await _currencyRateService.GetRateAsync(
+                       Constants.BaseCurrency,
+                       filteredCurrency, true);
+
+        if (!rate.IsSuccess)
+            return Result.Fail(rate.Errors);
+
+        var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
+
+        var prices = tour.Prices
+                .Where(p => !p.IsDeleted
+                    && (p.UserType & effectiveUserType) == effectiveUserType
+                    && p.Translations.Any(tr =>
+                        tr.Language == listingLang &&
+                        tr.ActivityType == requestDTO.ActivityType))
+                .OrderBy(x => x.RetailPrice)
+                .ToList();
+        var list = new List<UserTourPriceTierDto>();
+
+        foreach (var p in prices)
+                
+            {
+                var tr = p.Translations.FirstOrDefault(x => x.Language == listingLang)
+                         ?? p.Translations.FirstOrDefault();
+                var label = tr?.Type ?? "Traveler";
+                var retail = Math.Round(p.RetailPrice * rate.ValueOrDefault, 2);
+                var isFree = retail <= 0;
+                var group = p.UserType.HasFlag(UserType.VIP) ? "VIP" : "Public";
+                list.Add(new UserTourPriceTierDto(p.Id, label, retail, isFree, group));
+            }
+        return list;
     }
 }

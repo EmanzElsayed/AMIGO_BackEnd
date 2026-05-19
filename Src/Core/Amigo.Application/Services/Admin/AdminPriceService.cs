@@ -60,17 +60,26 @@ namespace Amigo.Application.Services.Admin
             foreach (var dto in prices)
             {
                 Price price;
-
+                
                 if (dto.Id.HasValue &&
                     existingPricesDict.TryGetValue(dto.Id.Value, out var existingPrice))
                 {
                     price = existingPrice;
-
+                    var tr = price.Translations
+                            .Where(t => t.Language == lang).FirstOrDefault();
                     if (dto.Cost is not null)
                         price.Cost = dto.Cost.Value;
 
                     if (dto.Discount is not null)
                         price.Discount = dto.Discount.Value;
+
+                    if(dto.UserType is not null) price.UserType = dto.UserType.Value;
+
+                    if (!string.IsNullOrEmpty(dto.ActivityType))
+                        tr.ActivityType = dto.ActivityType;
+
+                    if (!string.IsNullOrEmpty(dto.Type))
+                        tr.Type = dto.Type;
                 }
                 else
                 {
@@ -80,8 +89,17 @@ namespace Amigo.Application.Services.Admin
                         Discount = dto.Discount ?? 0,
                         UserType = dto.UserType ?? UserType.Public,
                         TourId = tour.Id,
-                        
-                        Translations = new List<PriceTranslation>()
+                        //ActivityType = string.IsNullOrWhiteSpace(dto.ActivityType) ? null : EnumsMapping.ToEnum<ActivityType>(dto.ActivityType, false),
+                        Translations = (!string.IsNullOrWhiteSpace(dto.Type)) ? new List<PriceTranslation>()
+                        {
+                           new PriceTranslation()
+                           {
+                                Language = lang,
+                                Type =  dto.Type ,
+                                ActivityType = !string.IsNullOrWhiteSpace(dto.ActivityType) ? dto.ActivityType : null
+                           }
+                        }
+                        : new List<PriceTranslation>()
                     };
 
                     tour.Prices.Add(price);

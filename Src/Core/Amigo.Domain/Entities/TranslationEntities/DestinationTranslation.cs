@@ -9,7 +9,7 @@ public class DestinationTranslation:BaseEntity<Guid>, ITranslationEntity
   
     public Destination Destination { get; set; } = null!;
 
-  
+   
     public string Name { get; set; } = null!;
 
     public SupportedLanguage Language { get; set; }

@@ -64,7 +64,7 @@ public record UserTourDetailDto(
     
     string? DestinationName,
     string? CountryName,
-
+    IReadOnlyList<string>? ActivityTypes,
     IReadOnlyList<UserTourPriceTierDto> PriceTiers,
     IReadOnlyList<UserTourScheduleDayDto> ScheduleDays,
     IReadOnlyList<UserTourReviewItemDto> RecentReviews,

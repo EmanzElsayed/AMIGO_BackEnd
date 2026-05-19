@@ -64,6 +64,8 @@ public static class DependencyInjection
 
         services.AddScoped<ISlotsRepo, SlotsRepo>();
 
+        services.AddScoped<ITourTranslationQueryService, TourTranslationQueryService>();
+
         services.AddSingleton<ICacheRepo, MemoryCacheRepo>();
 
         services.AddMemoryCache();

@@ -13,4 +13,6 @@ public class Destination : BaseEntity<Guid>
     public ICollection<Tour> Tours { get; set; } = new List<Tour>();
 
     public ICollection<DestinationTranslation> Translations { get; set; } = new List<DestinationTranslation>();
+
+    public bool isFullyTranslated => Translations.Count() == 6  ;
 }

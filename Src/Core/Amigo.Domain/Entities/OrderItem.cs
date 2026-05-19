@@ -15,6 +15,7 @@ public class OrderItem:BaseEntity<Guid>
 
     // Snapshot Data
 
+    public string? ActivityType { get; set; }
     public string TourTitle { get; set; } = null!;
     public string DestinationName { get; set; } = null!;
     public DateOnly TourDate { get; set; }

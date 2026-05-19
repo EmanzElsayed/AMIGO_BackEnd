@@ -11,6 +11,7 @@ namespace Amigo.Application.Mapping
     {
         public static List<Price> PricesDTOToEntity(List<CreatePriceRequestDTO> requestDTO, Tour tour,string language)
         {
+            
             SupportedLanguage mappedlanguage = EnumsMapping.ToLanguageEnum(language);
             return
                 requestDTO.Select(priceDTO => new Price
@@ -22,25 +23,19 @@ namespace Amigo.Application.Mapping
                 Cost = priceDTO.Cost,
                 Discount = priceDTO.Discount ?? 0,
                 UserType = priceDTO.UserType,
-
                 Translations =  new List<PriceTranslation> 
                 {
                     new PriceTranslation
                     {
                         Id = Guid.NewGuid(),
                         Language = mappedlanguage,
-                        Type = priceDTO.Type
+                        Type = priceDTO.Type,
+                        ActivityType = string.IsNullOrWhiteSpace(priceDTO.ActivityType) ?null : priceDTO.ActivityType,
                     }
                 }
             }).ToList();
 
 
-            
-
-
-            
-
-          
            
         }
 

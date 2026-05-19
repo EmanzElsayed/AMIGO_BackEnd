@@ -1,4 +1,5 @@
 using Amigo.Application.Abstraction.Services;
+using Amigo.Domain.DTO.Price;
 using Amigo.Domain.Entities.Identity;
 using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.DTOs.Tour;
@@ -38,6 +39,15 @@ public class UserTourController(
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return await _catalog.GetTourByPublicPathAsync(query, userType, userId);
     }
+
+    [HttpGet("price-with-activity-type")]
+    public async Task<IResultBase> GetPriceByActivityType([FromBody] PiceWithActivityTypeRequestDTO requestDTO)
+    {
+        var userType = await ResolveEffectiveUserTypeAsync();
+        return await _catalog.GetPriceByActivityTypeAsync(requestDTO, userType);
+    }
+
+
     [EnableRateLimiting("token")]
 
     [HttpGet("categories")]

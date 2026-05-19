@@ -26,6 +26,13 @@ namespace Amigo.Application.Validators.Price
                .Must(BusinessRules.IsValidFlagsEnumNullable)
                .WithMessage("User Type Code (VIP, Public)")
                .When(x => x.UserType is not null);
+
+
+            RuleFor(x => x.ActivityType)
+
+               .Must(BusinessRules.BeAValidActivity)
+               .WithMessage("Activity Type Code (Standard, Luxury)")
+               .When(x => !string.IsNullOrWhiteSpace(x.ActivityType));
         }
     }
 }

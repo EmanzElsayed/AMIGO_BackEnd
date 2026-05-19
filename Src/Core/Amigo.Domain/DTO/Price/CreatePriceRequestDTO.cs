@@ -9,6 +9,7 @@ namespace Amigo.Domain.DTO.Price
         decimal? Discount,
         string Type,
         decimal Cost,
-        UserType UserType
+        UserType UserType,
+        string? ActivityType
     );
 }

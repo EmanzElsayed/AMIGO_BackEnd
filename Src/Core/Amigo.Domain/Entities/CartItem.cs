@@ -10,6 +10,7 @@ public class CartItem:BaseEntity<Guid>
     public Guid TourId { get; set; }
     public Tour Tour { get; set; } = null!;
 
+    public string? ActivityType{ get; set; }
     public Guid SlotId { get; set; }
     public AvailableSlots Slot { get; set; } = null!;
 

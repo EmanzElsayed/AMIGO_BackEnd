@@ -3,6 +3,7 @@ using System;
 using Amigo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    partial class AmigoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519082733_ApplyActivityType")]
+    partial class ApplyActivityType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,9 +369,6 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("ActivityType")
-                        .HasColumnType("text");
 
                     b.Property<Guid>("CartId")
                         .HasColumnType("uuid");
@@ -977,9 +977,6 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("ActivityType")
-                        .HasColumnType("text");
 
                     b.Property<int>("CancelationPolicyType")
                         .HasColumnType("integer");

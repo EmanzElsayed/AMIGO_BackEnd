@@ -5,6 +5,7 @@ using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.Enum;
 
 
 namespace Amigo.Application.Services
@@ -135,10 +136,11 @@ namespace Amigo.Application.Services
             if (!rate.IsSuccess)
                 return Result.Fail(rate.Errors);
 
-
+            string? activityType = null; 
             foreach (var p in requestDTO.Prices)
             {
-                var retailPrice = GetPriceFromTour(tour, p.Type,requestDTO.Language,userType);
+                activityType = p.ActivityType;
+                var retailPrice = GetPriceFromTour(tour, p.Type,requestDTO.Language,userType,p.ActivityType);
 
                 item.Prices.Add(new CartPrice
                 {
@@ -151,7 +153,7 @@ namespace Amigo.Application.Services
 
                 });
             }
-
+            item.ActivityType = activityType;
             item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
 
             cart.Items.Add(item);
@@ -234,10 +236,13 @@ namespace Amigo.Application.Services
 
                 if (!rate.IsSuccess)
                     return Result.Fail(rate.Errors);
+                
+                string? activityType = null;
 
                 foreach (var p in dto.Prices)
                 {
-                    var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language, userType);
+                    activityType = p.ActivityType;
+                    var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language, userType,p.ActivityType);
 
                     item.Prices.Add(new CartPrice
                     {
@@ -250,7 +255,7 @@ namespace Amigo.Application.Services
                         ExchangeRate = rate.ValueOrDefault
                     });
                 }
-
+                item.ActivityType = activityType;
             }
 
             List<TravelerDraft> travelers = new List<TravelerDraft>();
@@ -281,7 +286,7 @@ namespace Amigo.Application.Services
                     await travelerRepo.AddRangeAsync(travelers);
                     //item.Travelers.Add(newTraveler);
             }
-
+           
             item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
 
             RecalculateCart(cart);
@@ -381,14 +386,16 @@ namespace Amigo.Application.Services
                     var priceDict = tours
                           .SelectMany(t => t.Prices
                               .Where(p => p.UserType == userType)
-                              .SelectMany(p => p.Translations.Select(tr => new
+                              .SelectMany(p => p.Translations
+                              .Select(tr => new
                               {
                                   TourId = t.Id,
                                   Price = p,
                                   Type = tr.Type,
+                                  ActivityType = tr.ActivityType, 
                                   Language = tr.Language
                               })))
-                          .ToLookup(x => (x.TourId, x.Type, x.Language), x => x.Price);
+                          .ToLookup(x => (x.TourId, x.Type,x.ActivityType ,x.Language), x => x.Price);
 
 
                     //create slots dictionary
@@ -506,6 +513,7 @@ namespace Amigo.Application.Services
                             SlotId = item.SlotId,
                             TourDate = item.TourDate,
                             StartTime = item.StartTime,
+                            ActivityType = item.ActivityType,
                             //CurrencyCode = cart.CurrencyCode,
                             Language = item.Language,
                             MeetingPoint = tour.MeetingPoint,
@@ -532,7 +540,7 @@ namespace Amigo.Application.Services
 
                         foreach (var cartPrice in prices)
                         {
-                            var priceEntity =  priceDict[(tour.Id, cartPrice.Type, item.Language)]
+                            var priceEntity =  priceDict[(tour.Id, cartPrice.Type,item.ActivityType ,item.Language)]
                                                                     .SingleOrDefault(); 
 
                             if (priceEntity is null)
@@ -665,12 +673,13 @@ namespace Amigo.Application.Services
             cart.TotalAmount = cart.Items.Sum(x => x.TotalAmount);
             cart.LastUpdatedAt = DateTime.UtcNow;
         }
-        private decimal GetPriceFromTour(Tour tour, string type, SupportedLanguage lang,UserType userType)
+        private decimal GetPriceFromTour(Tour tour, string type, SupportedLanguage lang,UserType userType,string? activityType)
         {
             var price = tour.Prices
                 .FirstOrDefault(p => p.UserType == userType &&
                     p.Translations.Any(t =>
                         t.Type == type &&
+                        (string.IsNullOrWhiteSpace(activityType) || t.ActivityType == activityType ) &&
                         t.Language == lang));
             
             if (price == null)
