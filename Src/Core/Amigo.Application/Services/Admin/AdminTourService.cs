@@ -220,13 +220,13 @@ namespace Amigo.Application.Services.Admin
             var MappingTours = tours.Select(tour =>
             {
                 var vipPrice = tour.Prices
-                .Where(p => !p.IsDeleted && p.UserType == UserType.VIP)
+                .Where(p => !p.IsDeleted && p.UserType == UserType.VIP && (p.IsMainActivityType == null || p.IsMainActivityType == true))
                 .OrderByDescending(p => p.RetailPrice)
                 .FirstOrDefault();
 
 
                 var publicPrice = tour.Prices
-                .Where(p => !p.IsDeleted && p.UserType == UserType.Public)
+                .Where(p => !p.IsDeleted && p.UserType == UserType.Public && (p.IsMainActivityType == null || p.IsMainActivityType == true))
                 .OrderByDescending(p => p.RetailPrice)
                 .FirstOrDefault();
 
@@ -485,7 +485,7 @@ namespace Amigo.Application.Services.Admin
                         Cost: p.Cost,
 
                         UserType: p.UserType,
-
+                        IsMainActivityType : p.IsMainActivityType,
                         ActivityType: p.Translations
                             .FirstOrDefault(t => t.Language == language)?
                             .ActivityType ?? ""

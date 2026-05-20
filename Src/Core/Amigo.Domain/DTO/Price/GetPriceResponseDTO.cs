@@ -11,6 +11,7 @@ namespace Amigo.Domain.DTO.Price
         string Type,
         decimal Cost,
         UserType UserType,
-        string? ActivityType
+        string? ActivityType,
+        bool? IsMainActivityType
     );
 }

@@ -6,7 +6,11 @@ public class Price : BaseEntity<Guid>
 {
     public Guid TourId { get; set; }
     public Tour Tour { get; set; } = null!;
-   
+
+
+    //main activity type if exist
+    public bool? IsMainActivityType { get; set; } 
+
     public decimal Cost { get; set; }
 
     public UserType UserType { get; set; } 

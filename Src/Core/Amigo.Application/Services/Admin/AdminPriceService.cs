@@ -70,6 +70,10 @@ namespace Amigo.Application.Services.Admin
                     if (dto.Cost is not null)
                         price.Cost = dto.Cost.Value;
 
+                    if ((!string.IsNullOrWhiteSpace(tr.ActivityType) || !string.IsNullOrWhiteSpace(dto.ActivityType)))
+                        
+                        price.IsMainActivityType = dto.IsMainActivityType == true;
+
                     if (dto.Discount is not null)
                         price.Discount = dto.Discount.Value;
 
@@ -89,7 +93,9 @@ namespace Amigo.Application.Services.Admin
                         Discount = dto.Discount ?? 0,
                         UserType = dto.UserType ?? UserType.Public,
                         TourId = tour.Id,
-                        //ActivityType = string.IsNullOrWhiteSpace(dto.ActivityType) ? null : EnumsMapping.ToEnum<ActivityType>(dto.ActivityType, false),
+                        IsMainActivityType = string.IsNullOrWhiteSpace(dto.ActivityType)
+                        ? null
+                        : dto.IsMainActivityType == true,
                         Translations = (!string.IsNullOrWhiteSpace(dto.Type)) ? new List<PriceTranslation>()
                         {
                            new PriceTranslation()

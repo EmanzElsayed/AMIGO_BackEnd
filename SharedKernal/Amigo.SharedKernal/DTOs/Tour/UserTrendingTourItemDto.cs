@@ -7,7 +7,9 @@ public record UserTrendingTourItemDto(
     decimal? AverageRating,
     int ReviewCount,
     string FilteredCurrency,
+    
     decimal? FromPrice,
+    
     string BaseCurrency,
     decimal? BaseAmount,
     string TourSlug,

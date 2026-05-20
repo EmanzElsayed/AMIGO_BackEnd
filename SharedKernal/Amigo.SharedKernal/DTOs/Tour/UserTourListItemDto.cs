@@ -20,6 +20,7 @@ public record UserTourListItemDto(
     string? FromPrice,
 
     int? DiscountPercent,
+
     string DurationDisplay,
 
     string? GuideLanguage,

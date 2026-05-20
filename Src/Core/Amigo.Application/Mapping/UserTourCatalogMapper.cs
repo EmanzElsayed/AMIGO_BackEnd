@@ -156,7 +156,7 @@ public static class UserTourCatalogMapper
         var list = new List<UserTourPriceTierDto>();
         var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
         foreach (var p in prices
-            .Where(x => !x.IsDeleted && (x.UserType & allowedUserType) == allowedUserType)
+            .Where(x => !x.IsDeleted && (x.UserType & allowedUserType) == allowedUserType && (x.IsMainActivityType == null || x.IsMainActivityType == true))
             .OrderBy(x => x.RetailPrice))
         {
             var tr = p.Translations.FirstOrDefault(x => x.Language == listingLanguage)
@@ -317,7 +317,7 @@ public static class UserTourCatalogMapper
 
         var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
         var prices = tour.Prices
-            .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType)
+            .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType &&( p.IsMainActivityType == null || p.IsMainActivityType == true))
             .ToList();
 
 

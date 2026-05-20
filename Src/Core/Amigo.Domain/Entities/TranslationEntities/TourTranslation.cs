@@ -4,7 +4,7 @@ namespace Amigo.Domain.Entities.TranslationEntities;
 
 [Table($"{nameof(TourTranslation)}", Schema = SchemaConstants.translation_schema)]
 
-public class TourTranslation:BaseEntity<Guid>, ITranslationEntity
+public class TourTranslation:BaseEntity<Guid>
 {
     public Guid TourId { get; set; }
    

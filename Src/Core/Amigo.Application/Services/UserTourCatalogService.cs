@@ -309,30 +309,20 @@ public class UserTourCatalogService(
 
         if (rows.Count == 0)
             return Result.Ok<IEnumerable<UserTrendingTourItemDto>>([]);
-        //var mappedCurrency = string.IsNullOrWhiteSpace(currency) ? Constants.BaseCurrency: EnumsMapping.ToEnum<CurrencyCode>(currency, false);
-        //decimal exchangeRate = 1m;
 
-        //if (!string.IsNullOrWhiteSpace(currency) && mappedCurrency != Constants.BaseCurrency)
-        //{
 
-        //    var rate = await _currencyRateService.GetRateAsync(
-        //          Constants.BaseCurrency,
-        //          mappedCurrency,true);
 
-        //    if (!rate.IsSuccess)
-        //        return Result.Fail(rate.Errors);
-
-        //    exchangeRate = rate.ValueOrDefault;
-        //}
         var mapped = rows
             .Select(t =>
             {
                 var item = UserTourCatalogMapper.ToListItem(t, listingLang, effectiveUserType,filteredCurrency,rate.ValueOrDefault);
                 var allowedUserType = effectiveUserType == UserType.VIP ? UserType.VIP : UserType.Public;
                 var baseAmount = t.Prices
-                    .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType)
+                    .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType && (p.IsMainActivityType == null || p.IsMainActivityType == true))
                     .Select(p => (decimal?)p.RetailPrice)
                     .Max();
+
+
                 var tr = t.Destination.Translations
                     .FirstOrDefault(x => x.Language == listingLang)
                     ?? t.Destination.Translations.FirstOrDefault();
