@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.Errors;
 using Amigo.Domain.Errors.BusinessErrors;
 
@@ -157,6 +157,9 @@ namespace Amigo.Presentation.Filters
 
             if(errors.OfType<NotFoundEmailError>().Any())
                 return (int)HttpStatusCode.NotFound;
+
+            if (errors.OfType<EmailNotConfirmedError>().Any())
+                return (int)HttpStatusCode.BadRequest;
 
             if (errors.OfType<UnauthorizedError>().Any())
                 return (int)HttpStatusCode.Unauthorized;

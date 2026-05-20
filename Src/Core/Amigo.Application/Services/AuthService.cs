@@ -114,12 +114,16 @@ public class AuthService(
         }
         var user = await _userManager.FindByEmailAsync(requestDTO.Email);
 
-        if (!IsEmailExist(user))
+        if (user is null)
         {
             return Result.Fail(new NotFoundEmailError(requestDTO.Email));
-
-
         }
+
+        if (!user.EmailConfirmed)
+        {
+            return Result.Fail(new EmailNotConfirmedError(requestDTO.Email));
+        }
+
         var resetEmailResult =  await SendResetPasswordEmail(user);
         if(!resetEmailResult.IsSuccess)
         {
@@ -128,7 +132,6 @@ public class AuthService(
 
         return Result.Ok()
            .WithSuccess(new Success("If an account is associated with this email, you’ll receive a password reset link."));
-           
     }
 
     public async Task<Result> ResetPassword(ResetPasswordRequestDTO requestDTO)

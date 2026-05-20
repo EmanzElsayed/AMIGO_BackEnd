@@ -4,11 +4,10 @@ using System.Text;
 
 namespace Amigo.Domain.Errors.BusinessErrors
 {
-    public class NotFoundEmailError
-        : BaseDomainError
+    public class EmailNotConfirmedError : BaseDomainError
     {
-        public NotFoundEmailError(string email)
-            :base ("Auth_EmailNotFound",email)
+        public EmailNotConfirmedError(string email)
+            : base("Auth_EmailNotConfirmed", email)
         {
             
         }

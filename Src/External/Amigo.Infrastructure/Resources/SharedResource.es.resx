@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -161,5 +161,11 @@
   </data>
   <data name="Validation_Password_Uppercase" xml:space="preserve">
     <value>La contraseña debe contener al menos una letra mayúscula</value>
+  </data>
+  <data name="Auth_EmailNotFound" xml:space="preserve">
+    <value>No existe ninguna cuenta con este correo electrónico.</value>
+  </data>
+  <data name="Auth_EmailNotConfirmed" xml:space="preserve">
+    <value>Este correo electrónico está registrado pero no confirmado. Por favor, compruebe su bandeja de entrada para confirmar su correo electrónico.</value>
   </data>
 </root>

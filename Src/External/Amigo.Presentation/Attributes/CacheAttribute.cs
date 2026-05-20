@@ -1,4 +1,4 @@
-﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,8 +19,7 @@ namespace Amigo.Presentation.Attributes
 
             if (cacheValue is not null)
             {
-                context.Result = new JsonResult(cacheValue)
-                  
+                context.Result = new ObjectResult(cacheValue)
                 {
                     StatusCode = StatusCodes.Status200OK
                 };
@@ -35,20 +34,12 @@ namespace Amigo.Presentation.Attributes
                 var type = valueToCache.GetType();
 
                 if (type.IsGenericType &&
-                    type.GetProperty("Value") is not null)
+                    type.GetProperty("IsSuccess") is not null)
                 {
-
-
-                    var isSuccess =
-                    (bool)type.GetProperty("IsSuccess")!
+                    var isSuccess = (bool)type.GetProperty("IsSuccess")!
                         .GetValue(valueToCache)!;
 
-                    if (isSuccess)
-                    {
-                        valueToCache = type.GetProperty("Value")!
-                            .GetValue(valueToCache)!;
-                    }
-                    else
+                    if (!isSuccess)
                     {
                         return;
                     }

@@ -12,7 +12,6 @@ public static class TopDestinationCommonSpecification
     {
         return d =>
             d.IsActive
-            && !d.IsDeleted
-            && d.Tours.Any(t => !t.IsDeleted);
+            && !d.IsDeleted;
     }
 }

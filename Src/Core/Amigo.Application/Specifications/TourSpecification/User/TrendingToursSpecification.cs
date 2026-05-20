@@ -25,13 +25,6 @@ public class TrendingToursSpecification : BaseSpecification<Tour, Guid>
         return t =>
             !t.IsDeleted
             && !t.Destination.IsDeleted
-            && t.Destination.IsActive
-            && t.AvailableTimes.Any(ts =>
-                !ts.IsDeleted
-                && ts.AvailableDateStatus == AvailableDateTimeStatus.Available
-                && ts.StartDate >= todayUtc
-                && ts.AvailableSlots.Any(s =>
-                    !s.IsDeleted
-                    && s.AvailableTimeStatus == AvailableDateTimeStatus.Available));
+            && t.Destination.IsActive;
     }
 }
