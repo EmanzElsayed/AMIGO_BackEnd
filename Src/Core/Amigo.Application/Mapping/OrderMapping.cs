@@ -1,6 +1,7 @@
 using Amigo.Domain.DTO.Order;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -31,6 +32,7 @@ namespace Amigo.Application.Mapping
                          )).ToList(),
                      Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
                             OrderItemId: item.Id,
+                            BookingId: item.Booking is null ? null: item.Booking.Id,
                             BookingNumber: item.Booking is null ? "" : item.Booking.BookingNumber,
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
 
@@ -87,6 +89,7 @@ namespace Amigo.Application.Mapping
                          )).ToList(),
                      Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
                             OrderItemId: item.Id,
+                           BookingId: item.Booking is null ? null : item.Booking.Id,
                             BookingNumber: item.Booking is null ? "" : item.Booking.BookingNumber,
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
                             TourId: item.TourId,
@@ -137,6 +140,7 @@ namespace Amigo.Application.Mapping
                          )).ToList(),
                      Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
                             OrderItemId: item.Id,
+                            BookingId : item.Booking is null ? null : item.Booking.Id,
                             BookingNumber: item.Booking is null ? "" : item.Booking.BookingNumber,
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
 
@@ -192,6 +196,7 @@ namespace Amigo.Application.Mapping
                          )).ToList(),
                      Items: o.OrderItems.Select(item => new OrderItemDetailsDTO(
                             OrderItemId: item.Id,
+                            BookingId: item.Booking is null ? null : item.Booking.Id,
                             BookingNumber: item.Booking is null ? "" : item.Booking.BookingNumber,
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
                             TourId: item.TourId,

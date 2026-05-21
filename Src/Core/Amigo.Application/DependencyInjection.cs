@@ -176,6 +176,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrencyProvider, CurrencyApiProvider>();
         services.AddScoped<IOpenAiBatchTranslationService, OpenAiBatchTranslationService>();
         services.AddScoped<IAutoTranslationService, TourBatchTranslationService>();
+        services.AddScoped<IAdminCancellationService, AdminCancellationService>();
 
         services.AddHttpContextAccessor();
 
@@ -184,6 +185,19 @@ public static class DependencyInjection
             CurrentUserService>();
 
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+
+
+        services
+        .AddScoped<IRefundProvider,
+        PaypalRefundProvider>();
+
+        services
+            .AddScoped<IRefundProviderResolver,
+                RefundProviderResolver>();
+
+        services
+            .AddHostedService<
+                RefundProcessorService>();
         return services;
     }
 }

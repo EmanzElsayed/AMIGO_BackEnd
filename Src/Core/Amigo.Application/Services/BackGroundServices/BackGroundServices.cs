@@ -144,7 +144,7 @@ public sealed class BookingBackgroundService(
         var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
 
         var reservationsCount = await reservationRepo.GetGroupedCountAsync(
-            x => avialableSlotsIds.Contains(x.SlotId),
+            x => avialableSlotsIds.Contains(x.SlotId) && x.Status == ReservationStatus.Confirmed,
             x => x.SlotId
         );
 

@@ -14,10 +14,10 @@ namespace Amigo.Domain.Entities.TranslationEntities;
         public Guid PriceId { get; set; }
     
         [Required]
-        public string Type { get; set; } = null!;
+        public string Type { get; set; } = null!; // adult or child
 
        
-        public string? ActivityType { get; set; }
+        public string? ActivityType { get; set; } // standard or luxury
         
         public SupportedLanguage Language { get; set; }
 

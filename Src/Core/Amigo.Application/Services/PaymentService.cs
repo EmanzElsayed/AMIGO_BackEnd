@@ -96,6 +96,9 @@ namespace Amigo.Application.Services
             if (result.Success)
             {
                 payment.Status = PaymentStatus.Captured;
+                payment.ProviderCaptureId =
+                    result.CaptureId;
+
                 payment.SetModifiedDate(DateTime.UtcNow) ;
             }
             else

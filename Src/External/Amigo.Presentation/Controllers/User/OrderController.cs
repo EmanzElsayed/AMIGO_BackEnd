@@ -19,7 +19,7 @@ namespace Amigo.Presentation.Controllers.User
         [EnableRateLimiting("token")]
         [HttpGet]
         [Authorize]
-        [Cache(900)]
+        //[Cache(900)]
         public async Task<IResultBase> getAllOrders([FromQuery] GetAllOrdersQuery query)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

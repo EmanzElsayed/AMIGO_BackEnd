@@ -131,9 +131,24 @@ public class PaypalPaymentProvider : IPaymentProvider
             request.RequestBody(new OrderActionRequest());
             var response = await _client.Execute(request);
             var result = response.Result<PayPalCheckoutSdk.Orders.Order>();
+            
+            // IMPORTANT
+            var capture =
+                result.PurchaseUnits
+                    .FirstOrDefault()?
+                    .Payments?
+                    .Captures?
+                    .FirstOrDefault();
+            if (capture == null)
+            {
+                throw new Exception(
+                    "Capture ID not found");
+            }
+            var captureId = capture?.Id;
             return  new CapturePaymentResponseDTO
             {
                 PaymentProviderReferenceId = result.Id,
+                CaptureId = captureId,
                 Status = result.Status,
                 Success = result.Status == "COMPLETED"
             }; 

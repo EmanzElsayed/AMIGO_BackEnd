@@ -168,4 +168,10 @@
   <data name="Auth_EmailNotConfirmed" xml:space="preserve">
     <value>Este correo electrónico está registrado pero no confirmado. Por favor, compruebe su bandeja de entrada para confirmar su correo electrónico.</value>
   </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Cuenta no encontrada.</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>No autorizado.</value>
+  </data>
 </root>

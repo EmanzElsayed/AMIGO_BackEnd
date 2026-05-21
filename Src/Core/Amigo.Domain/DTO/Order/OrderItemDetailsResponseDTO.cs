@@ -7,6 +7,7 @@ namespace Amigo.Domain.DTO.Order
     public record OrderItemDetailsDTO
     (
         Guid OrderItemId,
+        Guid? BookingId,
         string? BookingNumber,
         string? BookingStatus,
         Guid? TourId,

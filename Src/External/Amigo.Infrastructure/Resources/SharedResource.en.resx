@@ -168,4 +168,10 @@
   <data name="Auth_EmailNotConfirmed" xml:space="preserve">
     <value>This email is registered but not confirmed. Please check your inbox to confirm your email.</value>
   </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Not Found .</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Unauthorized</value>
+  </data>
 </root>
