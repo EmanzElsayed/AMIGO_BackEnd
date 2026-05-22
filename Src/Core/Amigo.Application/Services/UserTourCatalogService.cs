@@ -360,13 +360,17 @@ public class UserTourCatalogService(
         return Result.Ok<IEnumerable<UserTrendingTourItemDto>>(mapped);
     }
 
-    public async Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(PiceWithActivityTypeRequestDTO requestDTO, string? userType)
+    public async Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync( string Id,PiceWithActivityTypeRequestQuery requestDTO, string? userType)
     {
-        var validationResult = await _validationService.ValidateAsync(requestDTO);
-        if (!validationResult.IsSuccess)
-            return validationResult;
+        //var validationResult = await _validationService.ValidateAsync(requestDTO);
+        //if (!validationResult.IsSuccess)
+        //    return validationResult;
+        if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+            return Result.Fail("Invalid UUID");
 
-        var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new GetTourByIdWithPriceIncludingOnlySpecification(requestDTO.TourId));
+        Guid tourId = guid;
+
+        var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new GetTourByIdWithPriceIncludingOnlySpecification(tourId));
 
         if (tour is null)
         {
@@ -374,7 +378,6 @@ public class UserTourCatalogService(
         }
         var listingLang = _currentUserService.Language;
         var filteredCurrency = _currentUserService.Currency;
-
         var rate = await _currencyRateService.GetRateAsync(
                        Constants.BaseCurrency,
                        filteredCurrency, true);
@@ -383,8 +386,22 @@ public class UserTourCatalogService(
             return Result.Fail(rate.Errors);
 
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
+       
 
-        var prices = tour.Prices
+        var prices = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ?
+            tour.Prices
+                .Where(p => !p.IsDeleted
+                    && (p.UserType & effectiveUserType) == effectiveUserType
+                    &&
+                    p.IsMainActivityType == true
+
+                    && p.Translations.Any(tr =>
+                        tr.Language == listingLang))
+                .OrderBy(x => x.RetailPrice)
+                .ToList()
+            
+            :
+            tour.Prices
                 .Where(p => !p.IsDeleted
                     && (p.UserType & effectiveUserType) == effectiveUserType
                     && p.Translations.Any(tr =>

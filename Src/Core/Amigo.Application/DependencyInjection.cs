@@ -154,7 +154,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateAvailableSlotsRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
-        services.AddValidatorsFromAssemblyContaining<PiceWithActivityTypeRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<PiceWithActivityTypeRequestQuery>();
 
 
         services.AddHostedService<BookingBackgroundService>();

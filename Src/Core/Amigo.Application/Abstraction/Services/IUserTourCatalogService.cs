@@ -17,6 +17,6 @@ public interface IUserTourCatalogService
 
     Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 10);
 
-    Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(PiceWithActivityTypeRequestDTO requestDTO, string? userType);
+    Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(string id,PiceWithActivityTypeRequestQuery requestDTO, string? userType);
 
 }
