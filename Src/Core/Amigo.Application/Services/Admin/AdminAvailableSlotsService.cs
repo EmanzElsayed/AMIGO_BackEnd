@@ -1,4 +1,4 @@
-﻿using Amigo.Domain.DTO.AvailableSlots;
+using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.SharedKernal.DTOs.TourSchedule;
 using System;
 using System.Collections.Generic;
@@ -6,8 +6,7 @@ using System.Text;
 
 namespace Amigo.Application.Services.Admin
 {
-    public class AdminAvailableSlotsService(IValidationService _validationService
-                                    ) 
+    public class AdminAvailableSlotsService() 
         : IAdminAvailableSlotsService
     {
         

@@ -1,4 +1,5 @@
 ﻿using Amigo.Domain.DTO.Tour;
+using Amigo.Application.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,7 @@ namespace Amigo.Application.Mapping
     {
         public static Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination,UserType userType)
         {
-            
+
             CurrencyCode currency = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.Currency, false);
 
             SupportedLanguage? guideLanguage = requestDTO.GuideLanguage is null ? null
@@ -46,6 +47,38 @@ namespace Amigo.Application.Mapping
             };
         }
 
+        public static List<TourTranslation> TourTranslationsToEntity(CreateTourRequestDTO requestDTO, Tour tour)
+        {
+            SupportedLanguage sourceLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            var translations = new List<TourTranslation>();
+
+            translations.Add(new TourTranslation
+            {
+                Id = Guid.NewGuid(),
+                Title = requestDTO.Title,
+                Description = requestDTO.Description,
+                Language = sourceLanguage,
+                TourId = tour.Id,
+                Tour = tour
+            });
+
+            var otherLanguages = TranslationLanguageHelper.GetTargetLanguages(sourceLanguage);
+            foreach (var lang in otherLanguages)
+            {
+                translations.Add(new TourTranslation
+                {
+                    Id = Guid.NewGuid(),
+                    Title = requestDTO.Title,
+                    Description = requestDTO.Description,
+                    Language = lang,
+                    TourId = tour.Id,
+                    Tour = tour
+                });
+            }
+
+            return translations;
+        }
+
         public static void UpdateTour(
                 UpdateTourRequestDTO requestDTO,
                 Tour tour,
@@ -66,7 +99,7 @@ namespace Amigo.Application.Mapping
                                             SupportedLanguage.None,
                                             (acc, lang) => acc | lang);
             }
-             
+
             if (requestDTO.UserType is not null)
             {
                 tour.UserType = requestDTO.UserType is null ? UserType.Public
@@ -74,7 +107,7 @@ namespace Amigo.Application.Mapping
                                            UserType.None,
                                            (acc, type) => acc | type);
             }
-              
+
 
             if (requestDTO.Currency is not null)
                 tour.CurrencyCode = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.Currency, false);

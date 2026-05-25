@@ -1,33 +1,34 @@
-﻿using System;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
-namespace Amigo.Application.Services.BackGroundServices
+namespace Amigo.Application.BackgroundTasks
 {
-    public class BackgroundTaskQueue : IBackgroundTaskQueue
+    public sealed class BackgroundTaskQueue : IBackgroundTaskQueue
     {
-        private readonly Channel<
-            Func<CancellationToken, IServiceProvider, Task>
-        > _queue =
-            Channel.CreateUnbounded<
-                Func<CancellationToken, IServiceProvider, Task>
-            >();
+    private readonly Channel<Func<IServiceProvider, CancellationToken, Task>> _queue;
 
-        public void QueueTask(
-            Func<CancellationToken, IServiceProvider, Task> task)
+   
+    public BackgroundTaskQueue(int capacity = 200)
+    {
+        var options = new BoundedChannelOptions(capacity)
         {
-            if (task == null)
-                throw new ArgumentNullException(nameof(task));
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,   // only the hosted service reads
+            SingleWriter = false   // multiple request threads can write
+        };
 
-            _queue.Writer.TryWrite(task);
-        }
-
-        public async Task<
-            Func<CancellationToken, IServiceProvider, Task>
-        > DequeueAsync(CancellationToken token)
-        {
-            return await _queue.Reader.ReadAsync(token);
-        }
+        _queue = Channel.CreateBounded<Func<IServiceProvider, CancellationToken, Task>>(options);
     }
+
+    public async ValueTask EnqueueAsync(
+        Func<IServiceProvider, CancellationToken, Task> workItem,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(workItem);
+        await _queue.Writer.WriteAsync(workItem, cancellationToken);
+    }
+
+    public async ValueTask<Func<IServiceProvider, CancellationToken, Task>> DequeueAsync(
+        CancellationToken cancellationToken) =>
+        await _queue.Reader.ReadAsync(cancellationToken);
+}
 }

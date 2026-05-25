@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Amigo.Application.BackgroundTasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace Amigo.Application.Services.BackGroundServices
                
                 using var scope = _serviceProvider.CreateScope();
 
-                await workItem(stoppingToken, scope.ServiceProvider);
+                await workItem(scope.ServiceProvider, stoppingToken);
             }
         }
     }

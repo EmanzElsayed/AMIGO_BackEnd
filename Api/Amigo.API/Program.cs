@@ -3,6 +3,7 @@ using Amigo.API.MiddleWare;
 using Amigo.Application;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Authentication;
+using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Services;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
@@ -44,6 +45,13 @@ namespace Amigo.API
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
             builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+            builder.Services.AddSingleton<IBackgroundTaskQueue>(
+             _ => new BackgroundTaskQueue(capacity: 200));
+            builder.Services.AddHostedService<TranslationWorkerService>();
+            builder.Services.AddHttpClient<ITranslationService, GeminiTranslationService>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(60); 
+            });
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
@@ -66,7 +74,10 @@ namespace Amigo.API
 
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddProblemDetails();
+
             var app = builder.Build();
+            app.UseDeveloperExceptionPage();
 
             #region Localization
             var localizationOptions =
