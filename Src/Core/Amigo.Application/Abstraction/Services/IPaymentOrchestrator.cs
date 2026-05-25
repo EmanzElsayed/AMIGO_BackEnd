@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace Amigo.Application.Abstraction.Services
 {
@@ -8,5 +9,7 @@ namespace Amigo.Application.Abstraction.Services
     {
         Task HandleSuccessAsync(PaymentProvider provider, string payload);
         Task HandleFailureAsync(PaymentProvider provider, string payload);
+        Task HandleRefundCompleted(
+       JsonElement root);
     }
 }

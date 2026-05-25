@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Amigo.Domain.DTO.Price
 {
-    public record PiceWithActivityTypeRequestDTO
+    public record PiceWithActivityTypeRequestQuery
     (
-       Guid TourId,
-       string ActivityType
+       
+       string? ActivityType
      );
 }

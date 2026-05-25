@@ -54,6 +54,8 @@ namespace Amigo.Presentation.Controllers
 
                 if (!isValid)
                     return Unauthorized();
+                var root = JsonDocument.Parse(json)
+                    .RootElement;
                 var eventType = JsonDocument.Parse(json)
                     .RootElement.GetProperty("event_type").GetString();
                 _logger.LogInformation("PayPal event type: {type}", eventType);
@@ -67,6 +69,10 @@ namespace Amigo.Presentation.Controllers
 
                     case "PAYMENT.CAPTURE.DENIED":
                         await _orchestrator.HandleFailureAsync(PaymentProvider.Paypal, json);
+                        break;
+
+                    case "PAYMENT.CAPTURE.REFUNDED":
+                        await _orchestrator.HandleRefundCompleted(root);
                         break;
                 }
 

@@ -7,7 +7,7 @@ namespace Amigo.Domain.Errors.BusinessErrors
     public class NotFoundError : BaseDomainError
     {
         public NotFoundError(string msg)
-            :base(ErrorCode.NotFoundError.ToString(),msg)
+            :base("NotFound", msg)
         {
             
         }

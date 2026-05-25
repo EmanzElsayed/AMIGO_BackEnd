@@ -40,11 +40,11 @@ public class UserTourController(
         return await _catalog.GetTourByPublicPathAsync(query, userType, userId);
     }
 
-    [HttpGet("price-with-activity-type")]
-    public async Task<IResultBase> GetPriceByActivityType([FromBody] PiceWithActivityTypeRequestDTO requestDTO)
+    [HttpGet("{id}/price-with-activity-type")]
+    public async Task<IResultBase> GetPriceByActivityType(string id ,[FromQuery] PiceWithActivityTypeRequestQuery requestDTO)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
-        return await _catalog.GetPriceByActivityTypeAsync(requestDTO, userType);
+        return await _catalog.GetPriceByActivityTypeAsync(id,requestDTO, userType);
     }
 
 

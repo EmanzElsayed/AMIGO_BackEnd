@@ -8,7 +8,7 @@ namespace Amigo.Domain.Enum
     {
         Pending = 1,      // تم إنشاء الطلب
         Processing = 2,   // جاري التنفيذ مع بوابة الدفع
-        Succeeded = 3,    // تم رد المبلغ
+        Completed = 3,    // تم رد المبلغ
         Failed = 4,       // فشل
         Rejected = 5,     // مرفوض حسب السياسة
         Cancelled = 6,    // تم إلغاء طلب الاسترجاع

@@ -21,6 +21,7 @@ using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Amigo.API
@@ -38,8 +39,11 @@ namespace Amigo.API
                             .AddApplicationDependencyInjection(builder.Configuration)
                             .AddPresentationDependencyInjection(builder.Configuration)
                             .AddInfrastructureDependencyInjection(builder.Configuration);
-
-
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
             builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
             builder.Services.AddSingleton<IBackgroundTaskQueue>(
              _ => new BackgroundTaskQueue(capacity: 200));

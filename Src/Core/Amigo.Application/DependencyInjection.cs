@@ -155,7 +155,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateAvailableSlotsRequestDTO>();
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
-        services.AddValidatorsFromAssemblyContaining<PiceWithActivityTypeRequestDTO>();
+        services.AddValidatorsFromAssemblyContaining<PiceWithActivityTypeRequestQuery>();
 
 
         services.AddHostedService<BookingBackgroundService>();
@@ -178,6 +178,7 @@ public static class DependencyInjection
         services.AddScoped<IOpenAiBatchTranslationService, OpenAiBatchTranslationService>();
         services.AddScoped<IAutoTranslationService, TourBatchTranslationService>();
         services.AddHttpClient<ITranslationService, GeminiTranslationService>();
+        services.AddScoped<IAdminCancellationService, AdminCancellationService>();
         services.AddHttpContextAccessor();
 
         services.AddScoped<
@@ -185,6 +186,19 @@ public static class DependencyInjection
             CurrentUserService>();
 
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+
+
+        services
+        .AddScoped<IRefundProvider,
+        PaypalRefundProvider>();
+
+        services
+            .AddScoped<IRefundProviderResolver,
+                RefundProviderResolver>();
+
+        services
+            .AddHostedService<
+                RefundProcessorService>();
         return services;
     }
 }

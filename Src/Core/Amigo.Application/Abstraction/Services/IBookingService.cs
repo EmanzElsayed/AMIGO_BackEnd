@@ -1,4 +1,5 @@
 using Amigo.Domain.DTO.Booking;
+using Amigo.Domain.DTO.Refund;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,8 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result<IEnumerable<UserBookingDTO>>> GetUserBookingsAsync(string userId, string? paymentStatus = null);
 
         Task FinalizeBooking(Guid paymentId);
+
+        Task<Result> BookingCancellation(string bookingId , CancellationRequestDTO requestDTO,string userId); 
 
     }
 }

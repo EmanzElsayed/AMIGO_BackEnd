@@ -3,8 +3,11 @@ using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
+using Amigo.Application.Specifications.RefundSpecification;
 using Amigo.Application.Specifications.Travelers;
 using Amigo.Application.Specifications.WebhookEventLogSpecification;
+using Amigo.Domain.Abstraction;
+using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Domain.DTO.Cart;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
@@ -19,10 +22,11 @@ namespace Amigo.Application.Services
     public class PaymentOrchestrator : IPaymentOrchestrator
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public PaymentOrchestrator(IUnitOfWork unitOfWork)
+        private readonly ILogger<PaymentOrchestrator> _logger;
+        public PaymentOrchestrator(IUnitOfWork unitOfWork, ILogger<PaymentOrchestrator> logger)
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
 
@@ -207,8 +211,165 @@ namespace Amigo.Application.Services
             throw new Exception("Unsupported provider");
         }
 
+        public async Task HandleRefundCompleted(JsonElement root)
+        {
+            try
+            {
+                var resource =
+                    root.GetProperty("resource");
+
+                // PAYPAL REFUND ID
+
+                var providerRefundId =
+                    resource.GetProperty("id")
+                        .GetString();
+                var slotRepo =
+                        _unitOfWork.GetRepository<
+                            AvailableSlots,
+                            Guid>();
+                if (string.IsNullOrWhiteSpace(providerRefundId))
+                {
+                    _logger.LogWarning(
+                        "Webhook refund id is missing");
+
+                    return;
+                }
+
+                // GET REFUND
+
+                var refundRepo =
+                    _unitOfWork.GetRepository<Refund, Guid>();
+
+                var refund =
+                    await refundRepo.GetByIdAsync(new GetRefundWithProviderRefundIdSpecification(providerRefundId));
+                            
+
+                if (refund == null)
+                {
+                    _logger.LogWarning(
+                        "Refund not found for ProviderRefundId: {ProviderRefundId}",
+                        providerRefundId);
+
+                    return;
+                }
+
+                // IDEMPOTENCY
+
+                if (refund.Status ==
+                    RefundStatus.Completed)
+                {
+                    _logger.LogInformation(
+                        "Refund already completed: {RefundId}",
+                        refund.Id);
+
+                    return;
+                }
+
+                // STATUS FROM PAYPAL
+
+                var status =
+                    resource.GetProperty("status")
+                        .GetString();
+
+                if (status != "COMPLETED")
+                {
+                    _logger.LogWarning(
+                        "Refund webhook status is not completed => {Status}",
+                        status);
+
+                    return;
+                }
+
+                // UPDATE REFUND
+
+                refund.Status =
+                    RefundStatus.Completed;
+
+                refund.RefundedAt =
+                    DateTime.UtcNow;
+
+                refund.ProviderResponseJson =
+                    root.ToString();
 
 
-        
+                // BOOKING
+
+                refund.Booking.Status =
+                    BookingStatus.Cancelled;
+
+
+
+                // CANCELLATION REQUEST
+
+                refund.CancellationRequest.Status =
+                    CancellationRequestStatus.Refunded;
+
+                refund.CancellationRequest.ProcessedAt =
+                    DateTime.UtcNow;
+
+                // RELEASE SLOT
+
+
+
+                var slot =
+                    await slotRepo.GetByIdAsync(new GetSlotByIdIncludeReservationSpecification(refund.Booking.OrderItem.SlotId!.Value)
+                       );
+
+                if (slot != null)
+                {
+                    var qty =
+                        refund.Booking.OrderItem
+                            .OrderedPrice
+                            .Sum(x => x.Quantity);
+
+                    slot.ReservedCount -= qty;
+
+                    if (slot.ReservedCount < 0)
+                        slot.ReservedCount = 0;
+
+                    var slotReservation =
+                        slot.SlotReservations
+                            .FirstOrDefault(r =>
+                                r.OrderId ==
+                                refund.Booking.OrderItem.OrderId);
+
+                    if (slotReservation != null)
+                    {
+                        slotReservation.Status =
+                            ReservationStatus.Cancelled;
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "SlotReservation not found for RefundId: {RefundId}, OrderId: {OrderId}",
+                            refund.Id,
+                            refund.Booking.OrderItem.OrderId);
+
+                     
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Available slot not found for RefundId: {RefundId}, SlotId: {SlotId}",
+                        refund.Id,
+                        refund.Booking.OrderItem.SlotId);
+
+                  
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation(
+                    "Refund webhook processed successfully => RefundId: {RefundId}",
+                    refund.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error processing refund webhook");
+            }
+        }
     }
 }

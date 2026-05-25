@@ -19,5 +19,6 @@ public class CancellationRequest : BaseEntity<Guid>
 
     public DateTime RequestedAt { get; set; }
 
+    public string? AdminNotes { get; set; }
     public DateTime? ProcessedAt { get; set; }
 }

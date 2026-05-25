@@ -19,7 +19,7 @@ namespace Amigo.Infrastructure.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class SharedResource {
@@ -57,6 +57,24 @@ namespace Amigo.Infrastructure.Resources {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This email is registered but not confirmed. Please check your inbox to confirm your email..
+        /// </summary>
+        internal static string Auth_EmailNotConfirmed {
+            get {
+                return ResourceManager.GetString("Auth_EmailNotConfirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No account with this email exists..
+        /// </summary>
+        internal static string Auth_EmailNotFound {
+            get {
+                return ResourceManager.GetString("Auth_EmailNotFound", resourceCulture);
             }
         }
         
@@ -115,11 +133,29 @@ namespace Amigo.Infrastructure.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not Found.
+        /// </summary>
+        internal static string NotFound {
+            get {
+                return ResourceManager.GetString("NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This Destination Not Found.
         /// </summary>
         internal static string NotFoundDestination {
             get {
                 return ResourceManager.GetString("NotFoundDestination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unauthorized.
+        /// </summary>
+        internal static string Unauthorized {
+            get {
+                return ResourceManager.GetString("Unauthorized", resourceCulture);
             }
         }
         

@@ -2,12 +2,16 @@ using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
+using Amigo.Application.Specifications.RefundSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Booking;
 using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.DTO.Refund;
+using Polly.Caching;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Amigo.Application.Services
@@ -193,6 +197,86 @@ namespace Amigo.Application.Services
         private string GenerateBookingNumber()
         {
             return $"AMG-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(1000, 9999)}";
+        }
+
+        public async Task<Result> BookingCancellation(string Id, CancellationRequestDTO requestDTO,string userId)
+        {
+
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid bookingId = guid;
+
+
+            var booking = await _unitOfWork.GetRepository<Booking, Guid>().GetByIdAsync(new GetBookingByIdIncludeOrderItemSpecification(bookingId));
+            if (booking is null)
+            {
+                return Result.Fail(new NotFoundError("Not Found"));
+            }
+            if (booking.UserId != userId)
+            {
+                return Result.Fail(new UnauthorizedError("Unauthorized"));
+
+            }
+            if (booking.Status != BookingStatus.Confirmed)
+            {
+                return Result.Fail(new ConfilctError($"Booking is {booking.Status}"));
+            }
+            
+
+            var tripDateTime =
+                    booking.OrderItem.TourDate.ToDateTime(
+                        booking.OrderItem.StartTime);
+
+            if (tripDateTime <= DateTime.UtcNow)
+            {
+                return Result.Fail(new ConfilctError($"Booking is up to date"));
+
+            }
+
+            var total =
+                 booking.OrderItem.OrderedPrice.Sum(x => x.FinalPrice);
+
+            var remaining =
+            tripDateTime - DateTime.UtcNow;
+            var refundAmount = 0m;
+            if (remaining < booking.OrderItem.CancellationBefore)
+            {
+                return Result.Fail(new ConfilctError($"Cancellation is not allowed at this time. Please cancel before the allowed deadline before the tour starts."));
+
+            }
+            else
+            {
+                refundAmount =
+                   total * booking.OrderItem.RefundPercentage / 100m;
+            }
+
+            var cancellationRequest = new CancellationRequest
+            {
+                BookingId = booking.Id,
+                Booking = booking,
+                RefundAmount = refundAmount,
+                Reason = requestDTO.Reason,
+                Status = CancellationRequestStatus.Pending,
+                RequestedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.GetRepository<CancellationRequest, Guid>().AddAsync(cancellationRequest);
+            
+            booking.Status =
+                BookingStatus.PendingCancellation;
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return Result.Ok().WithSuccess(new Success("Cancellation Request Created Successfully"));
+
+            }
+            catch (Exception ex) {
+                return FluentValidationExtension.FromException(details: ex.Message);
+            }
+
+
         }
     }
 }

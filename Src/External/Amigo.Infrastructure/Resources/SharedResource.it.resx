@@ -162,4 +162,16 @@
   <data name="Validation_Password_Uppercase" xml:space="preserve">
     <value>La password deve contenere almeno una lettera maiuscola.</value>
   </data>
+  <data name="Auth_EmailNotFound" xml:space="preserve">
+    <value>Non esiste alcun account con questa e-mail.</value>
+  </data>
+  <data name="Auth_EmailNotConfirmed" xml:space="preserve">
+    <value>Questa e-mail è registrata ma non è stata confermata. Controlla la tua casella di posta per confermare la tua e-mail.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Account non trovato.</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Non autorizzato</value>
+  </data>
 </root>

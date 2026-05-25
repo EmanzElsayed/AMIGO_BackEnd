@@ -18,7 +18,7 @@ public class Payment:BaseEntity<Guid>
     public string? ProviderTransactionId { get; set; }
     public string? PaymentProviderReferenceId { get; set; }
     public string? IdempotencyKey { get; set; }
-
+    public string? ProviderCaptureId { get; set; }
     public string? FailureReason { get; set; }
     public string? RawResponseJson { get; set; }
 
