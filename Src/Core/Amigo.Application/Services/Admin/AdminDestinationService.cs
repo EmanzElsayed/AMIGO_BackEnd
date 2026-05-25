@@ -1,51 +1,186 @@
-﻿
+
 
 using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Application.BackgroundTasks;
 using Amigo.Domain.Enum;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Amigo.Application.Services.Admin
 {
     public class AdminDestinationService(IValidationService _validationService,
                                     IUnitOfWork _unitOfWork,
                                     ICurrentUserService _currentUserService,
-                                    ImageCloudService _imageCloud) : IAdminDestinationService
+                                    ImageCloudService _imageCloud,
+                                    ILogger<AdminDestinationService> _logger,
+                                    IBackgroundTaskQueue _backgroundTaskQueue) : IAdminDestinationService
     {
         public async Task<Result> CreateDestinationAsync(CreateDestinationRequestDTO requestDTO)
         {
             var validationResult = await _validationService.ValidateAsync(requestDTO);
-            if (!validationResult.IsSuccess)
-            {
-                return validationResult;
-            }
-            CountryCode countryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
-            SupportedLanguage language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
-            var countryInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetByIdAsync(new GetCountryByCountryCodeSpecification(countryCode,language));
 
-            if (countryInfo is null)
-            {
-                return Result.Fail(new NotFoundError("This County Not Found"));
-            }
-            var destination = requestDTO.DestinationToEntity(countryInfo);
+            if (!validationResult.IsSuccess)
+                return validationResult;
+
+            CountryCode countryCode =
+                EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
 
             try
             {
-                await _unitOfWork.GetRepository<Destination, Guid>().AddAsync(destination);
+                SupportedLanguage requestLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+                var countryInfoRepo = _unitOfWork.GetRepository<CountryInfo, Guid>();
+                var countryInfo =
+                    await countryInfoRepo
+                        .GetByIdAsync(
+                            new GetCountryByCountryCodeSpecification(
+                                countryCode,
+                                requestLanguage));
+
+                if (countryInfo is null)
+                    return Result.Fail(new NotFoundError("This Country Not Found"));
+
+                var destination = new Destination
+                {
+                    IsActive = requestDTO.IsActive ?? true,
+                    ImageUrl = requestDTO.ImageUrl,
+                    ImagePublicId = requestDTO.PublicId,
+                    CountryInfoId = countryInfo.Id,
+                    CountryInfo = countryInfo
+                };
+
+                await _unitOfWork
+                    .GetRepository<Destination, Guid>()
+                    .AddAsync(destination);
 
                 await _unitOfWork.SaveChangesAsync();
-                 
+
+                var destinationTranslation = new DestinationTranslation
+                {
+                    Name = requestDTO.Name,
+                    Language = requestLanguage,
+                    DestinationId = destination.Id
+                };
+
+                await _unitOfWork
+                    .GetRepository<DestinationTranslation, Guid>()
+                    .AddAsync(destinationTranslation);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                var destinationId = destination.Id;
+                var originalName = requestDTO.Name;
+
+                await _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
+                {
+                    await TranslateDestinationInBackgroundAsync(destinationId, originalName, requestLanguage, serviceProvider);
+                });
 
                 return Result.Ok()
-                                .WithSuccess(new Success("Destination Created Successfully")
-                                .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
+                    .WithSuccess(new Success("Destination Created Successfully")
+                    .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error creating destination");
                 return FluentValidationExtension.FromException(details: ex.Message);
             }
-            
         }
 
+        private async Task TranslateDestinationInBackgroundAsync(
+    Guid destinationId,
+    string originalName,
+    SupportedLanguage requestLanguage,
+    IServiceProvider serviceProvider)
+        {
+            try
+            {
+                using var scope =
+                    serviceProvider.CreateScope();
 
+                var unitOfWork =
+                    scope.ServiceProvider
+                         .GetRequiredService<IUnitOfWork>();
+
+                var translationService =
+                    scope.ServiceProvider
+                         .GetRequiredService<ITranslationService>();
+
+                var logger =
+                    scope.ServiceProvider
+                         .GetRequiredService<
+                             ILogger<AdminDestinationService>>();
+
+                var languageMap =
+                    new Dictionary<SupportedLanguage, string>
+                    {
+                { SupportedLanguage.en, "English" },
+                { SupportedLanguage.es, "Spanish" },
+                { SupportedLanguage.fr, "French" },
+                { SupportedLanguage.it, "Italian" },
+                { SupportedLanguage.pt, "Portuguese" },
+                { SupportedLanguage.br, "Brazilian Portuguese" }
+                    };
+
+                var targetLanguages =
+                    languageMap
+                        .Where(x => x.Key != requestLanguage)
+                        .ToList();
+
+                var translations =
+                    await translationService.TranslateAsync(
+                        originalName,
+                        targetLanguages
+                            .Select(x => x.Value)
+                            .ToList());
+
+                foreach (var language in targetLanguages)
+                {
+                    if (!translations.TryGetValue(
+                            language.Value,
+                            out var translatedName))
+                    {
+                        logger.LogWarning(
+                            "Missing translation for {Language}",
+                            language.Value);
+
+                        continue;
+                    }
+
+                    var destinationTranslation =
+                        new DestinationTranslation
+                        {
+                            Name = translatedName,
+                            Language = language.Key,
+                            DestinationId = destinationId
+                        };
+
+                    await unitOfWork
+                        .GetRepository<
+                            DestinationTranslation,
+                            Guid>()
+                        .AddAsync(destinationTranslation);
+                }
+
+                await unitOfWork.SaveChangesAsync();
+
+                logger.LogInformation(
+                    "Destination {DestinationId} translated successfully",
+                    destinationId);
+            }
+            catch (Exception ex)
+            {
+                var logger =
+                    serviceProvider
+                        .GetRequiredService<
+                            ILogger<AdminDestinationService>>();
+
+                logger.LogError(
+                    ex,
+                    "Error translating destination {DestinationId}",
+                    destinationId);
+            }
+        }
         public async Task<Result> UpdateDestination(UpdateDestinationRequestDTO requestDTO, string Id)
         {
             var validationResult = await _validationService.ValidateAsync(requestDTO);

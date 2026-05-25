@@ -1,4 +1,5 @@
 using Amigo.Application.Abstraction;
+using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Application.Abstraction.Services.Authentication;
@@ -176,7 +177,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrencyProvider, CurrencyApiProvider>();
         services.AddScoped<IOpenAiBatchTranslationService, OpenAiBatchTranslationService>();
         services.AddScoped<IAutoTranslationService, TourBatchTranslationService>();
-
+        services.AddHttpClient<ITranslationService, GeminiTranslationService>();
         services.AddHttpContextAccessor();
 
         services.AddScoped<

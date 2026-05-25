@@ -1,5 +1,6 @@
 ﻿using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.Enum;
+using Amigo.Application.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -23,19 +24,34 @@ namespace Amigo.Application.Mapping
                 CancelationPolicyType = cancellationType,
                 Translations = string.IsNullOrWhiteSpace(requestDTO.Description) 
                                 ? new List<CancellationTranslation>()
-                                : new List<CancellationTranslation>() {
-
-                                    new CancellationTranslation
-                                    {
-                                        Id = Guid.NewGuid(),
-                                        Description = requestDTO.Description.Trim(),
-                                        Language = mappedlanguage
-                                    }
-
-                                }
+                                : CreateCancellationTranslationsForAllLanguages(requestDTO.Description.Trim(), mappedlanguage)
 
             };
         }
-        
+
+        private static List<CancellationTranslation> CreateCancellationTranslationsForAllLanguages(string description, SupportedLanguage sourceLanguage)
+        {
+            var translations = new List<CancellationTranslation>();
+
+            translations.Add(new CancellationTranslation
+            {
+                Id = Guid.NewGuid(),
+                Description = description,
+                Language = sourceLanguage
+            });
+
+            var otherLanguages = TranslationLanguageHelper.GetTargetLanguages(sourceLanguage);
+            foreach (var lang in otherLanguages)
+            {
+                translations.Add(new CancellationTranslation
+                {
+                    Id = Guid.NewGuid(),
+                    Description = description,
+                    Language = lang
+                });
+            }
+
+            return translations;
+        }
     }
 }

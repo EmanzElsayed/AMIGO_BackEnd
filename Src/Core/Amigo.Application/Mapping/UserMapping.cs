@@ -1,4 +1,4 @@
-﻿
+
 
 using Amigo.Domain.DTO.User;
 
@@ -17,8 +17,8 @@ namespace Amigo.Application;
     public static UserInfoResponseDTO ToUserDTO(this ApplicationUser user,string role)
     {
         return new UserInfoResponseDTO(
-                FullName:user.FullName,
-                Email:user.Email,
+                FullName: user.FullName ?? string.Empty,
+                Email: user.Email ?? string.Empty,
                 Phone: user.PhoneNumber,
                 ImageUrl : user.ImageUrl,
                 Gender : user.Gender.ToString(),

@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Amigo.Application.Abstraction.Services
+﻿
+using System.Threading.Channels;
+namespace Amigo.Application.BackgroundTasks
 {
     public interface IBackgroundTaskQueue
     {
-        void QueueTask(Func<CancellationToken, IServiceProvider, Task> task);
-        Task<Func<CancellationToken, IServiceProvider, Task>> DequeueAsync(CancellationToken token);
+        ValueTask EnqueueAsync(
+            Func<IServiceProvider, CancellationToken, Task> workItem,
+            CancellationToken cancellationToken = default);
+
+        ValueTask<Func<IServiceProvider, CancellationToken, Task>> DequeueAsync(
+            CancellationToken cancellationToken);
     }
+
+
 }

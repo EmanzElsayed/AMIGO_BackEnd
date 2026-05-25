@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Amigo.Application.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -51,17 +52,34 @@ namespace Amigo.Application.Mapping
                     Tour = tour,
                     TourId = tour.Id,
                     IsIncluded = include.IsIncluded,
-                    Translations = new List<InclusionTranslation>
-                    {
-                        new InclusionTranslation
-                        {
-                            Id = Guid.NewGuid(),
-                            Text = include.Text,
-                            Language = mappedLanguage
-                        }
-                    }
+                    Translations = CreateInclusionTranslationsForAllLanguages(include.Text, mappedLanguage)
                 })
                 .ToList();
+        }
+
+        private static List<InclusionTranslation> CreateInclusionTranslationsForAllLanguages(string text, SupportedLanguage sourceLanguage)
+        {
+            var translations = new List<InclusionTranslation>();
+
+            translations.Add(new InclusionTranslation
+            {
+                Id = Guid.NewGuid(),
+                Text = text,
+                Language = sourceLanguage
+            });
+
+            var otherLanguages = TranslationLanguageHelper.GetTargetLanguages(sourceLanguage);
+            foreach (var lang in otherLanguages)
+            {
+                translations.Add(new InclusionTranslation
+                {
+                    Id = Guid.NewGuid(),
+                    Text = text,
+                    Language = lang
+                });
+            }
+
+            return translations;
         }
     }
 }

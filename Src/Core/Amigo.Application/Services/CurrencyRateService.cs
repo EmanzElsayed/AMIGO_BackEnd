@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services;
+using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.CurrencyRateSpecification;
 using Amigo.Domain.DTO.Currency;
@@ -97,7 +98,7 @@ namespace Amigo.Application.Services
             {
                 if (isHit)
                 {
-                    _backgroundQueue.QueueTask(async (token, sp) =>
+                    _ = _backgroundQueue.EnqueueAsync(async (sp, token) =>
                     {
                         using var scope = sp.CreateScope();
 
