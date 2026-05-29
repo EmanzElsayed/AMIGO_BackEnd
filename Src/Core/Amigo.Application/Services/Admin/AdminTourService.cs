@@ -556,12 +556,14 @@ namespace Amigo.Application.Services.Admin
             var translation = tour.Translations.FirstOrDefault(t => t.Language == language);
             var destinationTranslation = tour.Destination?.Translations.FirstOrDefault(t => t.Language == language);
             var cancellation = tour.Cancellation;
-
+            var countryName = tour.Destination?.CountryInfo?.Translations?
+                .FirstOrDefault(t => t.Language == language)?
+                .Name ?? "";
             return new GetTourResponseDTO(
                 Id: tour.Id,
                 GuideLanguage: tour.GuideLanguage.ToString() ?? "",
                 MeetingPoint: tour.MeetingPoint,
-
+                Country: countryName,
                 Images: tour.Images?
                     .Select(i => new GetImageUrlResponseDTO(i.Id, i.ImageUrl))
                     .ToList(),

@@ -22,10 +22,10 @@ namespace Amigo.Application.Validators.Tour
                 .WithMessage("Length Of Title Must Be Less Than 400");
 
             // Description
-            RuleFor(x => x.Description)
-                .MaximumLength(2000)
-                .WithMessage("Description Must Be Less Than 2000 Characters")
-                .When(x => !string.IsNullOrEmpty(x.Description));
+            //RuleFor(x => x.Description)
+            //    .MaximumLength(2000)
+            //    .WithMessage("Description Must Be Less Than 2000 Characters")
+            //    .When(x => !string.IsNullOrEmpty(x.Description));
 
             // SupportedLanguage
             RuleFor(x => x.Language)

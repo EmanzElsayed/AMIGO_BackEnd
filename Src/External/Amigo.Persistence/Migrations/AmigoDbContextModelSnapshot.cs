@@ -2346,8 +2346,7 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()

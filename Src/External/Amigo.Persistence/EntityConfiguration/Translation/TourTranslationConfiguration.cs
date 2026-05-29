@@ -18,8 +18,8 @@ namespace Amigo.Persistence.EntityConfiguration.Translation
                    .HasMaxLength(400)
                    .IsRequired();
 
-            builder.Property(t => t.Description)
-                   .HasMaxLength(2000);
+            //builder.Property(t => t.Description)
+            //       .HasMaxLength(2000);
 
             builder.Property(t => t.Language)
                    .HasConversion<int>();

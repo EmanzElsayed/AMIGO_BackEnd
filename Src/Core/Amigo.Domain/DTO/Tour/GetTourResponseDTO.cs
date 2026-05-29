@@ -14,7 +14,7 @@ namespace Amigo.Domain.DTO.Tour
          string GuideLanguage,
          string MeetingPoint,
          string Description,
-
+         string Country,
          List<GetImageUrlResponseDTO>? Images,
 
 

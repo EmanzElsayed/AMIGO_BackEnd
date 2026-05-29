@@ -32,11 +32,11 @@ namespace Amigo.Application.Validators.Price
                .WithMessage("User Type Code (VIP, Public)");
 
 
-            RuleFor(x => x.ActivityType)
+            //RuleFor(x => x.ActivityType)
                
-               .Must(BusinessRules.BeAValidActivity)
-               .When(x =>  !string.IsNullOrWhiteSpace(x.ActivityType))
-               .WithMessage("Activity Type Code (Standard, Luxury)");
+            //   .Must(BusinessRules.BeAValidActivity)
+            //   .When(x =>  !string.IsNullOrWhiteSpace(x.ActivityType))
+            //   .WithMessage("Activity Type Code (Standard, Luxury)");
         }
     }
 }

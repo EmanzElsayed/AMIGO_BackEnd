@@ -29,6 +29,7 @@ namespace Amigo.API.MiddleWare
                 if (context.Response.StatusCode == StatusCodes.Status404NotFound)
                 {
                     #region Response Body
+                    //Should remove 
                     var Body = new ApiResponse<string>()
                     {
                         StatusCode = context.Response.StatusCode,
