@@ -12,7 +12,7 @@ namespace Amigo.Presentation.Controllers.User
 {
     [Route("api/v1/user/booking")]
 
-    public class BookingController(IBookingService _bookingService):BaseController
+    public class BookingController(IServiceManager _serviceManager):BaseController
     {
         [HttpPost("{bookingId}/cancel-request")]
         [Authorize]
@@ -23,7 +23,7 @@ namespace Amigo.Presentation.Controllers.User
             {
                 return Result.Fail(new UnauthorizedError("Unauthorized"));
             }
-            return await _bookingService.BookingCancellation(bookingId,requestDTO,userId);
+            return await _serviceManager.BookingService.BookingCancellation(bookingId,requestDTO,userId);
         }
     }
 }

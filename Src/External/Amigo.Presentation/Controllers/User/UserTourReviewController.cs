@@ -9,7 +9,8 @@ using System.Security.Claims;
 namespace Amigo.Presentation.Controllers.User;
 
 [Route("api/v1/user/tours")]
-public class UserTourReviewController(IUserTourReviewService reviews) : BaseController
+public class UserTourReviewController( IServiceManager _serviceManager ) 
+    : BaseController
 {
     [EnableRateLimiting("token")]
 
@@ -18,7 +19,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
     public async Task<IResultBase> GetReviewEligibility([FromRoute] Guid tourId)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return await reviews.GetEligibilityAsync(userId, tourId);
+        return await _serviceManager.UserTourReviewService.GetEligibilityAsync(userId, tourId);
     }
     [EnableRateLimiting("token")]
 
@@ -30,7 +31,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-        return await reviews.SubmitReviewAsync(userId, body);
+        return await _serviceManager.UserTourReviewService.SubmitReviewAsync(userId, body);
     }
     [EnableRateLimiting("token")]
 
@@ -40,7 +41,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        return await reviews.MarkAsHelpfulAsync(reviewId, userId, ip);
+        return await _serviceManager.UserTourReviewService.MarkAsHelpfulAsync(reviewId, userId, ip);
     }
     [EnableRateLimiting("token")]
 
@@ -52,7 +53,7 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-        return await reviews.UpdateReviewAsync(userId, reviewId, body);
+        return await _serviceManager.UserTourReviewService.UpdateReviewAsync(userId, reviewId, body);
     }
     [EnableRateLimiting("token")]
 
@@ -64,6 +65,6 @@ public class UserTourReviewController(IUserTourReviewService reviews) : BaseCont
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-        return await reviews.DeleteReviewAsync(userId, reviewId);
+        return await _serviceManager.UserTourReviewService.DeleteReviewAsync(userId, reviewId);
     }
 }

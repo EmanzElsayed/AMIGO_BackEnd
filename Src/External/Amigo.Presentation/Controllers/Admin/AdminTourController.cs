@@ -1,3 +1,4 @@
+using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Tour;
@@ -13,21 +14,21 @@ namespace Amigo.Presentation.Controllers.Admin
 {
     [Route("api/v1/admin/tour")]
     [Authorize(Roles = "Admin")]
-    public class AdminTourController(IAdminTourService _adminTourService) 
+    public class AdminTourController( IServiceManager _serviceManager ) 
         :BaseController
     {
         [HttpPost]
         public async Task<IResultBase> CreateTour([FromBody] CreateTourRequestDTO requestDTO)
         {
            
-            return await _adminTourService.CreateTourAsync(requestDTO);
+            return await _serviceManager.AdminTourService.CreateTourAsync(requestDTO);
 
         }
         [HttpPatch("{id}")]
         public async Task<IResultBase> UpdateTour([FromBody] UpdateTourRequestDTO requestDTO, string id)
         {
 
-            return await _adminTourService.UpdateTourAsync(requestDTO, id);
+            return await _serviceManager.AdminTourService.UpdateTourAsync(requestDTO, id);
 
         }
         [HttpGet]
@@ -35,7 +36,7 @@ namespace Amigo.Presentation.Controllers.Admin
         public async Task<IResultBase> GetTours([FromQuery] GetAllAdminTourQuery requestDTO)
         {
 
-            return await _adminTourService.GetAllToursAsync(requestDTO);
+            return await _serviceManager.AdminTourService.GetAllToursAsync(requestDTO);
 
         }
         [HttpGet("{id}")]
@@ -43,7 +44,7 @@ namespace Amigo.Presentation.Controllers.Admin
         public async Task<IResultBase> GetTourById(string id, [FromQuery] GetTourByIdRequestDTO requestDTO)
         {
 
-            return await _adminTourService.GetTourById(id , requestDTO);
+            return await _serviceManager.AdminTourService.GetTourById(id , requestDTO);
 
         }
 
@@ -51,7 +52,7 @@ namespace Amigo.Presentation.Controllers.Admin
         [HttpGet("stats")]
         public async Task<IResultBase> GetActivityStats()
         {
-            return await _adminTourService.GetActivityStatsAsync();
+            return await _serviceManager.AdminTourService.GetActivityStatsAsync();
         }
 
         //    private static string EscapeLikePattern(string value)

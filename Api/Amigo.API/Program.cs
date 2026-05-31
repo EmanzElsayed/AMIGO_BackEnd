@@ -44,9 +44,11 @@ namespace Amigo.API
                 {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
-            builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+            //builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+          
             builder.Services.AddSingleton<IBackgroundTaskQueue>(
              _ => new BackgroundTaskQueue(capacity: 200));
+            
             builder.Services.AddHostedService<TranslationWorkerService>();
             builder.Services.AddHttpClient<ITranslationService, GeminiTranslationService>(client =>
             {

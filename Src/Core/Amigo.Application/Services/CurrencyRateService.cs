@@ -89,9 +89,21 @@ namespace Amigo.Application.Services
             // 2. DB fallback
             var dbRate = await repo.GetByIdAsync(new GetCurrencyRateWithCurrencyTypeSpecification(from, to));
 
+            //if (dbRate is null)
+            //{
+            //    return Result.Fail(new NotFoundError($"Currency rate not found: {from} -> {to}"));
+
+            //}
             if (dbRate is null)
             {
-                return Result.Fail(new NotFoundError($"Currency rate not found: {from} -> {to}"));
+                await SyncRates();
+                var updatedCached = await _cacheService.GetAsync<decimal?>(key);
+                if (updatedCached.HasValue)
+                {
+                    return Result.Ok(updatedCached.Value);
+                }
+                else
+                    return Result.Fail(new NotFoundError($"Currency rate not found: {from} -> {to}"));
 
             }
             if (dbRate.ExpiresAt <= DateTime.UtcNow)

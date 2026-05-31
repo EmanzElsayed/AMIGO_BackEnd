@@ -8,12 +8,12 @@ using System.Text;
 namespace Amigo.Presentation.Controllers
 {
     [Route("api/v1/customer")]
-    public class CustomerController(IUserService _customerService) :BaseController
+    public class CustomerController( IServiceManager _serviceManager ) :BaseController
     {
         [HttpPost("continue-with-email")]
         public async Task<IResultBase> ContinueWithEmail([FromBody] CreateAccountRequestDTO requestDTO)
         {
-            return await _customerService.ContinueWithEmail(requestDTO);
+            return await _serviceManager.UserService.ContinueWithEmail(requestDTO);
         }
 
     }

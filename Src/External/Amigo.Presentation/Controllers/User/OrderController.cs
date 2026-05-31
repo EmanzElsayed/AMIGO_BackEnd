@@ -14,7 +14,7 @@ namespace Amigo.Presentation.Controllers.User
 {
     [Route("api/v1/user/order")]
 
-    public class OrderController(IOrderService _orderService) :BaseController
+    public class OrderController(IServiceManager _serviceManager) :BaseController
     {
         [EnableRateLimiting("token")]
         [HttpGet]
@@ -27,7 +27,7 @@ namespace Amigo.Presentation.Controllers.User
             {
                 return Result.Fail(new UnauthorizedError("Unauthorized"));
             }
-            return await _orderService.GetAllOrders(userId,query);
+            return await _serviceManager.OrderService.GetAllOrders(userId,query);
         }
         [EnableRateLimiting("token")]
         [HttpGet("{id}")]
@@ -39,7 +39,7 @@ namespace Amigo.Presentation.Controllers.User
             {
                 return Result.Fail(new UnauthorizedError("Unauthorized"));
             }
-            return await _orderService.GetOrderDetailsAsync(id,userId);
+            return await _serviceManager.OrderService.GetOrderDetailsAsync(id,userId);
         }
     }
 }

@@ -17,16 +17,14 @@ namespace Amigo.Presentation.Controllers
     
     [Route("api/v1/lookups")]
     public class EnumsController(
-        IEnumService _enumService,
-        ICurrencyService _currencyService,
-        IHttpClientFactory _httpClientFactory,
-        ICountryInfoService _countryInfoService,
-        IConfiguration _configuration) : BaseController
+        
+        IServiceManager _serviceManager
+       ) : BaseController
     {
         [HttpGet("languages")]
         public IResultBase GetLanguages()
         {
-            return _enumService.GetLanguageEnum();
+            return _serviceManager.EnumService.GetLanguageEnum();
 
          
         }
@@ -36,13 +34,13 @@ namespace Amigo.Presentation.Controllers
         [HttpGet("Currency")]
         public async Task<IResultBase> GetAllCurrency([FromQuery]  GetAllCurrencyQuery requestQuery)
         {
-            return await _currencyService.GetAllCurrencyAsync(requestQuery);
+            return await _serviceManager.CurrencyService.GetAllCurrencyAsync(requestQuery);
 
         }
         [HttpGet("Currency/{id}")]
         public async Task<IResultBase> GetCurrencyById([FromQuery] GetLanuageQuery requestQuery, string id)
         {
-            return await _currencyService.GetCurrencyByIdAsync(id,requestQuery);
+            return await _serviceManager.CurrencyService.GetCurrencyByIdAsync(id,requestQuery);
 
         }
 
@@ -50,78 +48,15 @@ namespace Amigo.Presentation.Controllers
         [HttpGet("Country-info")]
         public async Task<IResultBase> GetAllCountryInfo([FromQuery] GetAllCountryInfoQuery requestQuery)
         {
-            return await _countryInfoService.GetAllCountryInfoAsync(requestQuery);
+            return await _serviceManager.CountryInfoService.GetAllCountryInfoAsync(requestQuery);
 
         }
         [HttpGet("Country-info/{id}")]
         public async Task<IResultBase> GetCountryInfoById([FromQuery] GetLanuageQuery requestQuery, string id)
         {
-            return await _countryInfoService.GetCountryInfoByIdAsync(id, requestQuery);
+            return await _serviceManager.CountryInfoService.GetCountryInfoByIdAsync(id, requestQuery);
 
         }
-
-        [HttpGet("currency-rates")]
-        public async Task<IResultBase> GetCurrencyRates([FromQuery] string? @base = "USD")
-        {
-            var baseCurrency = string.IsNullOrWhiteSpace(@base) ? "USD" : @base.Trim().ToUpperInvariant();
-            if (baseCurrency.Length != 3)
-            {
-                return Result.Fail("Base currency must be a 3-letter ISO code.");
-            }
-
-            var apiKey = _configuration["CurrencyApi:ApiKey"];
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                return Result.Fail("CurrencyCode API key is not configured.");
-            }
-
-            var providerBaseUrl = _configuration["CurrencyApi:BaseUrl"] ?? "https://currencyapi.net/api/v2";
-            var endpoint = QueryHelpers.AddQueryString(
-                $"{providerBaseUrl.TrimEnd('/')}/rates",
-                new Dictionary<string, string?>
-                {
-                    ["base"] = baseCurrency,
-                    ["output"] = "json",
-                    ["key"] = apiKey
-                });
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-            using var client = _httpClientFactory.CreateClient();
-            using var response = await client.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
-            {
-                return Result.Fail($"CurrencyCode provider failed with status {(int)response.StatusCode}.");
-            }
-
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            using var payload = await JsonDocument.ParseAsync(stream);
-
-            if (!payload.RootElement.TryGetProperty("rates", out var ratesElement) ||
-                ratesElement.ValueKind != JsonValueKind.Object)
-            {
-                return Result.Fail("CurrencyCode provider returned an invalid rates payload.");
-            }
-
-            var rates = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            foreach (var property in ratesElement.EnumerateObject())
-            {
-                var code = property.Name.Trim().ToUpperInvariant();
-                if (code.Length != 3) continue;
-                if (property.Value.ValueKind != JsonValueKind.Number) continue;
-                if (!property.Value.TryGetDecimal(out var value)) continue;
-                if (value <= 0) continue;
-                rates[code] = value;
-            }
-            rates["USD"] = 1m;
-
-            var result = Result.Ok(new
-            {
-                @base = baseCurrency,
-                rates
-            });
-            return result;
-        }
-
 
 
        

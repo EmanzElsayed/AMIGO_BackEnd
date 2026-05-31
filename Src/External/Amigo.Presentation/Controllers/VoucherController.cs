@@ -8,12 +8,12 @@ using System.Text;
 namespace Amigo.Presentation.Controllers
 {
     [Route("api/v1/voucher")]
-    public class VoucherController(IVoucherService voucherService):BaseController
+    public class VoucherController( IServiceManager _serviceManager):BaseController
     {
         [HttpGet("validate")]
         public async Task<IResultBase> validateVoucher([FromQuery] string token)
         {
-            return await voucherService.ValidateVoucher(token);
+            return await _serviceManager.VoucherService.ValidateVoucher(token);
         }
 
     }

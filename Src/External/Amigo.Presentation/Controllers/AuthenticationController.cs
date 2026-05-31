@@ -1,3 +1,4 @@
+using Amigo.Application.Abstraction.Services;
 using Amigo.Infrastructure;
 using Microsoft.Extensions.Localization;
 using PayPalCheckoutSdk.Core;
@@ -6,7 +7,7 @@ namespace Amigo.Presentation.Controllers
 {
     
     [Route("api/v1/auth")]
-    public class AuthenticationController(IAuthService _authService, IStringLocalizer<SharedResource> _localizer)
+    public class AuthenticationController( IServiceManager _serviceManager)
         : BaseController
     {
 
@@ -14,16 +15,15 @@ namespace Amigo.Presentation.Controllers
         public async Task<IResultBase> Register([FromBody] RegisterRequestDTO registerRequestDTO)
         {
 
-            return await _authService.RegisterAsync(registerRequestDTO);
+            return await _serviceManager.AuthService.RegisterAsync(registerRequestDTO);
             
            
         }
         [HttpPost("login")]
         public async Task<IResultBase> Login(CancellationToken cancellationToken,[FromBody] LoginRequestDTO loginRequestDTO)
         {
-            //var result = _localizer["GreetingToAmigo"]; 
-            //return Result.Ok(result);
-            return await _authService.LoginAsync(loginRequestDTO, cancellationToken);
+           
+            return await _serviceManager.AuthService.LoginAsync(loginRequestDTO, cancellationToken);
 
           
 
@@ -32,7 +32,7 @@ namespace Amigo.Presentation.Controllers
         [HttpPost("confirm-email")]
         public async Task<IResultBase> ConfirmEmail([FromBody] ConfirmEmailRequestDTO confirmEmailDTO)
         {
-            return await _authService.ConfirmEmail(confirmEmailDTO);
+            return await _serviceManager.AuthService.ConfirmEmail(confirmEmailDTO);
 
             
         }
@@ -40,14 +40,14 @@ namespace Amigo.Presentation.Controllers
         [HttpPost("resend-confirmation")]
         public async Task<IResultBase> ResendConfirmEmail([FromBody] ResendConfrimEmailRequestDTO requestDTO)
         {
-            return await _authService.ResendConfirmEmail(requestDTO);
+            return await _serviceManager.AuthService.ResendConfirmEmail(requestDTO);
 
         }
 
         [HttpPost("forget-password")]
         public async Task<IResultBase> ForgotPassword([FromBody] ForgetPasswordRequestDTO requestDTO)
         {
-            return await _authService.ForgetPassword(requestDTO);
+            return await _serviceManager.AuthService.ForgetPassword(requestDTO);
 
            
         }
@@ -56,26 +56,26 @@ namespace Amigo.Presentation.Controllers
         [HttpPost("reset-password")]
         public async Task<IResultBase> ResetPasswod([FromBody] ResetPasswordRequestDTO requestDTO)
         {
-            return await _authService.ResetPassword(requestDTO);
+            return await _serviceManager.AuthService.ResetPassword(requestDTO);
 
         }
         [HttpPost("refresh")]
         public async Task<IResultBase> RefreshToken(CancellationToken cancellationToken, [FromBody] RefreshTokenRequestDTO requestDTO)
         {
-            return await _authService.RefreshTokenAsync(cancellationToken, requestDTO);
+            return await _serviceManager.AuthService.RefreshTokenAsync(cancellationToken, requestDTO);
 
         }
 
         [HttpPost("identify-checkout")]
         public async Task<IResultBase> IdentifyEmail([FromBody] IdentifyEmailRequestDTO requestDTO)
         {
-            return await _authService.IdentifyEmailAsync(requestDTO);
+            return await _serviceManager.AuthService.IdentifyEmailAsync(requestDTO);
         }
 
         [HttpPost("verify-checkout-otp")]
         public async Task<IResultBase> VerifyOTPCheckout([FromBody] VerifyOTPCheckoutRequestDTO requestDTO)
         {
-            return await _authService.VerifyOTPCheckoutAsync(requestDTO);
+            return await _serviceManager.AuthService.VerifyOTPCheckoutAsync(requestDTO);
         }
     }
 }

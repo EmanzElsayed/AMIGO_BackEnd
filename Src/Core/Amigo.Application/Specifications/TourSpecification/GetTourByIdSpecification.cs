@@ -12,38 +12,11 @@ namespace Amigo.Application.Specifications.TourSpecification
             AddInclude(t => t.Translations);
             AddInclude(t => t.Images);
 
-
-
-            AddInclude(t => t
-                   .Include(t => t.AvailableTimes)
-                   .ThenInclude(t => t.AvailableSlots)
-                   );
-            AddInclude(t => t
-                  .Include(t => t.Destination)
-                  .ThenInclude(t => t.CountryInfo)
-                  .ThenInclude(t => t.Translations)
-                  );
-
-
-            AddInclude(t => t
-                  .Include(t => t.Cancellation)
-                  .ThenInclude(t => t.Translations)
-                  );
-
-            AddInclude(t => t
-                .Include(t => t.TourInclusions)
-                .ThenInclude(t => t.Translations)
-                );
-
             AddInclude(t => t
                .Include(t => t.Destination)
                .ThenInclude(t => t.Translations)
                );
 
-            AddInclude(t => t
-                    .Include(t => t.Prices)
-                    .ThenInclude(t => t.Translations)
-                    );
         }
     }
 }

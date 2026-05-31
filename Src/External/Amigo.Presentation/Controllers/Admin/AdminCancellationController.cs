@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Abstraction.Services.Admin;
+﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Domain.DTO.Refund;
 using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.SharedKernal.QueryParams;
@@ -12,22 +13,22 @@ namespace Amigo.Presentation.Controllers.Admin
 {
     [Route("api/v1/admin/cancellation")]
     [Authorize(Roles = "Admin")]
-    public class AdminCancellationController(IAdminCancellationService _adminCancellationService):BaseController
+    public class AdminCancellationController( IServiceManager _serviceManager):BaseController
     {
         [HttpGet]
         public async Task<IResultBase> getAllCancellationRequest([FromQuery] GetAllAdminCancellationRequestQuery requestQuery)
         {
-            return await _adminCancellationService.GetAllCancellationRequestsAsync(requestQuery);
+            return await _serviceManager.AdminCancellationService.GetAllCancellationRequestsAsync(requestQuery);
         }
         [HttpPost("{id}/approve")]
         public async Task<IResultBase> ApproveCancellationRequest(string id)
         {
-            return await _adminCancellationService.ApproveCancellationRequest(id);
+            return await _serviceManager.AdminCancellationService.ApproveCancellationRequest(id);
         }
         [HttpPost("{id}/reject")]
         public async Task<IResultBase> RejectCancellationRequest(string id , [FromBody] RejectCancellationRequestDTO requestDTO)
         {
-            return await _adminCancellationService.RejectCancellationRequest(id, requestDTO);
+            return await _serviceManager.AdminCancellationService.RejectCancellationRequest(id, requestDTO);
         } 
     }
 }

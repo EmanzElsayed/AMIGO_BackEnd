@@ -40,7 +40,8 @@ public static class DependencyInjection
         #endregion
 
         services.AddScoped<ILocalizationService, LocalizationService>();
-
+        services.AddScoped<Func<ILocalizationService>>(provider =>
+            () => provider.GetRequiredService<ILocalizationService>());
         return services;
     }
 }

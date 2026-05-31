@@ -13,7 +13,7 @@ namespace Amigo.Presentation.Controllers
 {
     [Route("api/v1/payment")]
 
-    public class PaymentController(IPaymentService _service ):BaseController
+    public class PaymentController( IServiceManager _serviceManager):BaseController
     {
         [EnableRateLimiting("booking")]
         [HttpPost("create")]
@@ -26,13 +26,13 @@ namespace Amigo.Presentation.Controllers
                 return Result.Fail(
                     "Missing PayPal-Request-Id");
             }
-            return await _service.CreatePaymentAsync(dto,requestId);
+            return await _serviceManager.PaymentService.CreatePaymentAsync(dto,requestId);
         }
         [EnableRateLimiting("booking")]
         [HttpPost("{paymentId:guid}/capture")]
         public async Task<IResultBase> Capture(Guid paymentId)
         {
-            return await _service.CapturePaymentAsync(paymentId);
+            return await _serviceManager.PaymentService.CapturePaymentAsync(paymentId);
         }
 
        

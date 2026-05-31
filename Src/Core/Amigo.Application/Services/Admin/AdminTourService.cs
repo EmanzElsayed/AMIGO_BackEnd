@@ -1,15 +1,18 @@
+using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Helpers;
+using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.Admin;
 using Amigo.Application.Specifications.TourSpecification.User;
-using Amigo.Application.Specifications.OrderSpecification;
-using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.DTO.Price;
 using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.DTO.Translation;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
@@ -20,8 +23,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Amigo.Domain.DTO.Translation;
-using Amigo.Application.BackgroundTasks;
 
 namespace Amigo.Application.Services.Admin
 {
@@ -383,9 +384,24 @@ namespace Amigo.Application.Services.Admin
             SupportedLanguage language = !string.IsNullOrWhiteSpace(requestQuery.Language)
                 ? EnumsMapping.ToLanguageEnum(requestQuery.Language)
                 : Constants.BaseLanguage;
+            var priceRepo = _unitOfWork.GetRepository<Price, Guid>();
 
             var bookedRepo = _unitOfWork.GetRepository<Booking, Guid>();
+
+            var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+
             var tourIds = tours.Select(t => t.Id).ToList();
+
+            var prices = await priceRepo.GetAllAsync(
+               new GetPricesByTourIdsSpecification(tourIds));
+            var pricesByTourId = prices
+                    .GroupBy(p => p.TourId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+           
+
+            var slots = await slotRepo.GetAllAsync(
+                new GetAvailableSlotsByTourIdsSpecification(tourIds));
+
             var bookedData = await bookedRepo.GetAllAsync(new GetBookingsByTourIdsSpecification(tourIds));
 
             var travelersCountByTourId = bookedData
@@ -395,19 +411,26 @@ namespace Amigo.Application.Services.Admin
                     g => g.Key,
                     g => g.Sum(b => b.Travelers?.Count ?? 0));
 
-            var tourCapacity = tours.ToDictionary(
-                t => t.Id,
-                t => t.AvailableTimes.SelectMany(at => at.AvailableSlots).Sum(s => s.MaxCapacity));
+            var tourCapacity = slots
+              .Where(s => s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
+              .GroupBy(s => s.TourSchedule.TourId)
+              .ToDictionary(
+                  g => g.Key,
+                  g => g.Sum(x => x.MaxCapacity));
+
 
             var mappingTours = tours.Select(tour =>
             {
-                var vipPrice = tour.Prices
+                var tourPrices = pricesByTourId
+                .GetValueOrDefault(tour.Id, []);
+
+                var vipPrice = tourPrices
                     .Where(p => !p.IsDeleted && p.UserType == UserType.VIP &&
                                 (p.IsMainActivityType == null || p.IsMainActivityType == true))
                     .OrderByDescending(p => p.RetailPrice)
                     .FirstOrDefault();
 
-                var publicPrice = tour.Prices
+                var publicPrice = tourPrices
                     .Where(p => !p.IsDeleted && p.UserType == UserType.Public &&
                                 (p.IsMainActivityType == null || p.IsMainActivityType == true))
                     .OrderByDescending(p => p.RetailPrice)
@@ -431,15 +454,13 @@ namespace Amigo.Application.Services.Admin
                     EntryAmountPublicLabel = publicPrice?.Translations
                         .FirstOrDefault(t => t.Language == language)?.Type ?? "",
 
-                    TotalCapacity = tour.AvailableTimes
-                        .SelectMany(t => t.AvailableSlots)
-                        .Where(s => s.AvailableTimeStatus == AvailableDateTimeStatus.Available)
-                        .Sum(s => s.MaxCapacity),
+                    TotalCapacity =
+                             tourCapacity.GetValueOrDefault(tour.Id, 0),
 
                     BookedSeats = travelersCountByTourId.GetValueOrDefault(tour.Id, 0),
 
-                    BookedPercentage = tourCapacity[tour.Id] > 0
-                        ? (double)travelersCountByTourId.GetValueOrDefault(tour.Id, 0) / tourCapacity[tour.Id] * 100
+                    BookedPercentage = tourCapacity.GetValueOrDefault(tour.Id, 0) > 0
+                        ? (double)travelersCountByTourId.GetValueOrDefault(tour.Id, 0) / tourCapacity.GetValueOrDefault(tour.Id, 0) * 100
                         : 0
                 };
             });
@@ -459,7 +480,7 @@ namespace Amigo.Application.Services.Admin
       
         public async Task<Result<GetTourResponseDTO>> GetTourById(string Id, GetTourByIdRequestDTO requestDTO)
         {
-            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+            if (!BusinessRules.TryCleanGuid(Id, out Guid tourId))
                 return Result.Fail("Invalid UUID");
 
             SupportedLanguage language = Constants.BaseLanguage;
@@ -468,12 +489,22 @@ namespace Amigo.Application.Services.Admin
 
             var tour = await _unitOfWork
                 .GetRepository<Tour, Guid>()
-                .GetByIdAsync(new GetTourByIdSpecification(guid));
+                .GetByIdAsync(new GetTourByIdSpecification(tourId));
 
             if (tour is null)
                 return Result.Fail(new NotFoundError("This Tour Not Found"));
 
-            return Result.Ok(MapTourToResponseDTO(tour, language));
+            var tourPrice = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new GetPriceWithTourIdSpecification(tourId));
+
+            var tourCancellation = await _unitOfWork.GetRepository<Cancellation, Guid>().GetByIdAsync(new GetCancellationWithTourIdSpecification(tourId));
+            var availableTimes = await _unitOfWork.GetRepository<TourSchedule, Guid>().GetAllAsync(new GetAvailableTimesWithTourIdSpecification(tourId));
+
+            var countryInfo = await _unitOfWork
+                .GetRepository<CountryInfo, Guid>()
+                .GetByIdAsync(new GetCountryInfoByDestinationIdSpecification(tour.DestinationId, language));
+            var inclusions = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(new GetInclustionWithTourIdSpecification(tourId));
+
+            return Result.Ok(MapTourToResponseDTO(tour, language , countryInfo,tourPrice,availableTimes,tourCancellation, inclusions));
         }
 
        
@@ -551,19 +582,19 @@ namespace Amigo.Application.Services.Admin
             });
         }
 
-        public GetTourResponseDTO MapTourToResponseDTO(Tour tour, SupportedLanguage language)
+        public GetTourResponseDTO MapTourToResponseDTO(Tour tour, SupportedLanguage language , CountryInfo? country,IEnumerable< Price>? prices ,IEnumerable< TourSchedule>? tourSchedule ,Cancellation? cancellation ,IEnumerable<TourInclusion>? inclustions)
         {
             var translation = tour.Translations.FirstOrDefault(t => t.Language == language);
             var destinationTranslation = tour.Destination?.Translations.FirstOrDefault(t => t.Language == language);
-            var cancellation = tour.Cancellation;
-            var countryName = tour.Destination?.CountryInfo?.Translations?
+          
+            var countryName = country is null ? null: country.Translations?
                 .FirstOrDefault(t => t.Language == language)?
                 .Name ?? "";
             return new GetTourResponseDTO(
                 Id: tour.Id,
                 GuideLanguage: tour.GuideLanguage.ToString() ?? "",
-                MeetingPoint: tour.MeetingPoint,
-                Country: countryName,
+                MeetingPoint: tour.MeetingPoint ?? "",
+                Country: countryName ?? "",
                 Images: tour.Images?
                     .Select(i => new GetImageUrlResponseDTO(i.Id, i.ImageUrl))
                     .ToList(),
@@ -584,19 +615,19 @@ namespace Amigo.Application.Services.Admin
                     Description: cancellation.Translations
                         .FirstOrDefault(t => t.Language == language)?.Description ?? ""),
 
-                Includes: tour.TourInclusions
+                Includes: inclustions ?
                     .Where(x => x.IsIncluded)
                     .Select(x => x.Translations.FirstOrDefault(t => t.Language == language)?.Text ?? "")
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .ToList(),
 
-                NotIncludes: tour.TourInclusions
+                NotIncludes: inclustions ?
                     .Where(x => !x.IsIncluded)
                     .Select(x => x.Translations.FirstOrDefault(t => t.Language == language)?.Text ?? "")
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .ToList(),
 
-                Prices: tour.Prices?
+                Prices: prices?
                     .Select(p => new GetPriceResponseDTO(
                         Id: p.Id,
                         Discount: p.Discount,
@@ -607,7 +638,7 @@ namespace Amigo.Application.Services.Admin
                         ActivityType: p.Translations.FirstOrDefault(t => t.Language == language)?.ActivityType ?? ""))
                     .ToList(),
 
-                Schedule: tour.AvailableTimes?
+                Schedule: tourSchedule?
                     .Select(s => new GetTourScheduleResponseDTO(
                         Id: s.Id,
                         AvailableDateStatus: s.AvailableDateStatus.ToString(),

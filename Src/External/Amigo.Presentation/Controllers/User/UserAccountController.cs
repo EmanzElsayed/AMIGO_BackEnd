@@ -18,7 +18,7 @@ namespace Amigo.Presentation.Controllers.User;
 
 [Authorize]
 [Route("api/v1/user")]
-public class UserAccountController(IUserService _userService, IFavoriteService _favoriteService) 
+public class UserAccountController(IServiceManager _serviceManager) 
     : BaseController
 {
 
@@ -29,7 +29,7 @@ public class UserAccountController(IUserService _userService, IFavoriteService _
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Unauthorized"));
 
-        return await _userService.GetUserProfile(userId);        
+        return await _serviceManager.UserService.GetUserProfile(userId);        
 
 
     }
@@ -40,7 +40,7 @@ public class UserAccountController(IUserService _userService, IFavoriteService _
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Unauthorized"));
 
-        return await _userService.UpdateUserProfile(requestDTO,userId);
+        return await _serviceManager.UserService.UpdateUserProfile(requestDTO,userId);
 
 
     }
@@ -51,7 +51,7 @@ public class UserAccountController(IUserService _userService, IFavoriteService _
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-        return await _favoriteService.GetFavoritesAsync(userId);
+        return await _serviceManager.FavoriteService.GetFavoritesAsync(userId);
     }
 
     [HttpPost("favorites")]
@@ -64,7 +64,7 @@ public class UserAccountController(IUserService _userService, IFavoriteService _
         if (body is null || body.TourId == Guid.Empty)
             return Result.Fail("tourId is required");
 
-        return await _favoriteService.AddFavoriteAsync(userId, body.TourId);
+        return await _serviceManager.FavoriteService.AddFavoriteAsync(userId, body.TourId);
     }
 
     [HttpDelete("favorites/{tourId:guid}")]
@@ -74,7 +74,7 @@ public class UserAccountController(IUserService _userService, IFavoriteService _
         if (string.IsNullOrWhiteSpace(userId))
             return Result.Fail(new UnauthorizedError("Not authenticated"));
 
-        return await _favoriteService.RemoveFavoriteAsync(userId, tourId);
+        return await _serviceManager.FavoriteService.RemoveFavoriteAsync(userId, tourId);
     }
 
     //[HttpGet("bookings")]

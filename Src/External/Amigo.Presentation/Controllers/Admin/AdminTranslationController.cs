@@ -9,7 +9,8 @@ using System.Text;
 namespace Amigo.Presentation.Controllers.Admin
 {
     [Route("api/v1/admin/translate")]
-    public class AdminTranslationController(IAutoTranslationService _translationService) : BaseController
+    public class AdminTranslationController( IServiceManager _serviceManager ) 
+        : BaseController
 
     {
         [HttpPost]
@@ -18,7 +19,7 @@ namespace Amigo.Presentation.Controllers.Admin
         public async Task<IResultBase> TranslateTours([FromBody] GetLanguageFromBodyDTO requestDTO)
         {
 
-            return await _translationService.TranslateAllPendingTours(requestDTO);
+            return await _serviceManager.AutoTranslationService.TranslateAllPendingTours(requestDTO);
 
         }
     }

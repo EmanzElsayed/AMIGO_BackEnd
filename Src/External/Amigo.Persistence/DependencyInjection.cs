@@ -57,9 +57,30 @@ public static class DependencyInjection
 
         services.AddScoped<IDataSeeding, DataSeeding>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        //services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+
         services.AddScoped<IDestinationSlugResolver, DestinationSlugResolver>();
+
+
+        services.AddScoped<Func<IDestinationSlugResolver>>(provider =>
+            () => provider.GetRequiredService<IDestinationSlugResolver>());
+
         services.AddScoped<ITourReviewEligibilityReader, TourReviewEligibilityReader>();
+        services.AddScoped<Func<ITourReviewEligibilityReader>>(provider =>
+            () => provider.GetRequiredService<ITourReviewEligibilityReader>());
+
+        services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();
+        services.AddScoped<Func<ITopDestinationsReader>>(provider =>
+            () => provider.GetRequiredService<ITopDestinationsReader>());
+
+        services.AddScoped<ITourTranslationQueryService, TourTranslationQueryService>();
+
+        services.AddScoped<Func<ITourTranslationQueryService>>(provider =>
+            () => provider.GetRequiredService<ITourTranslationQueryService>());
+
+        //services.AddScoped<ITranslationDispatcher, TranslationDispatcher>();
+        //services.AddScoped<Func<ITranslationDispatcher>>(provider =>
+        //    () => provider.GetRequiredService<ITranslationDispatcher>());
+
         services.AddScoped<IUserRepo, UserRepo>();
 
         services.AddScoped<ISlotsRepo, SlotsRepo>();

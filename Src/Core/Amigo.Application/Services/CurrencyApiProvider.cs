@@ -34,16 +34,23 @@ public class CurrencyApiProvider : ICurrencyProvider
 
         var baseUrl =
             _configuration["CurrencyApi:BaseUrl"]
-            ?? "https://currencyapi.net/api/v2";
+            ?? "https://api.forexrateapi.com/v1";
 
         var endpoint = QueryHelpers.AddQueryString(
-            $"{baseUrl.TrimEnd('/')}/rates",
-            new Dictionary<string, string?>
-            {
-                ["base"] = baseCurrency.ToString(),
-                ["output"] = "JSON",
-                ["key"] = apiKey
-            });
+        $"{baseUrl.TrimEnd('/')}/latest",
+        new Dictionary<string, string?>
+        {
+            ["api_key"] = apiKey,
+            ["base"] = baseCurrency.ToString()
+        });
+        //var endpoint = QueryHelpers.AddQueryString(
+        //    $"{baseUrl.TrimEnd('/')}/rates",
+        //    new Dictionary<string, string?>
+        //    {
+        //        ["base"] = baseCurrency.ToString(),
+        //        ["output"] = "JSON",
+        //        ["key"] = apiKey
+        //    });
 
         using var client =
             _httpClientFactory.CreateClient();

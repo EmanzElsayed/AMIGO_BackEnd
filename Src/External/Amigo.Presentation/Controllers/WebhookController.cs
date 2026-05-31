@@ -12,8 +12,8 @@ using System.Text.Json;
 namespace Amigo.Presentation.Controllers
 {
     [Route("api/webhook")]
-    public class WebhookController(IConfiguration _config , IPaymentOrchestrator _orchestrator,
-            IPaymentProviderResolver _resolver, ILogger<WebhookController> _logger) : BaseController
+    public class WebhookController(IConfiguration _config ,IServiceManager _serviceManager
+            , ILogger<WebhookController> _logger) : BaseController
     {
         [HttpPost("stripe")]
         public async Task<IActionResult> StripeWebhook()
@@ -28,11 +28,11 @@ namespace Amigo.Presentation.Controllers
             switch (stripeEvent.Type)
             {
                 case "payment_intent.payment_failed":
-                    await _orchestrator.HandleFailureAsync(PaymentProvider.Stripe, json);
+                    await _serviceManager.PaymentOrchestrator.HandleFailureAsync(PaymentProvider.Stripe, json);
                     break;
 
                 case "payment_intent.succeeded":
-                    await _orchestrator.HandleSuccessAsync(PaymentProvider.Stripe, json);
+                    await _serviceManager.PaymentOrchestrator.HandleSuccessAsync(PaymentProvider.Stripe, json);
                     break;
             }
 
@@ -47,7 +47,7 @@ namespace Amigo.Presentation.Controllers
                 var json = await new StreamReader(Request.Body).ReadToEndAsync();
                 _logger.LogInformation("PayPal webhook received: {json}", json);
 
-                var provider = _resolver.Resolve(PaymentProvider.Paypal);
+                var provider = _serviceManager.PaymentProviderResolver.Resolve(PaymentProvider.Paypal);
 
                 var isValid = await provider.VerifyWebhookAsync(Request, json);
 
@@ -64,15 +64,15 @@ namespace Amigo.Presentation.Controllers
                 switch (eventType)
                 {
                     case "PAYMENT.CAPTURE.COMPLETED":
-                        await _orchestrator.HandleSuccessAsync(PaymentProvider.Paypal, json);
+                        await _serviceManager.PaymentOrchestrator.HandleSuccessAsync(PaymentProvider.Paypal, json);
                         break;
 
                     case "PAYMENT.CAPTURE.DENIED":
-                        await _orchestrator.HandleFailureAsync(PaymentProvider.Paypal, json);
+                        await _serviceManager.PaymentOrchestrator.HandleFailureAsync(PaymentProvider.Paypal, json);
                         break;
 
                     case "PAYMENT.CAPTURE.REFUNDED":
-                        await _orchestrator.HandleRefundCompleted(root);
+                        await _serviceManager.PaymentOrchestrator.HandleRefundCompleted(root);
                         break;
                 }
 

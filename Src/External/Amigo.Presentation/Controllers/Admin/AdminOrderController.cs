@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Abstraction.Services.Admin;
+﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,7 @@ namespace Amigo.Presentation.Controllers.Admin
 {
     [Route("api/v1/admin/order")]
     [Authorize(Roles = "Admin")]
-    public class AdminOrderController(IAdminOrderService _adminOrderService):BaseController
+    public class AdminOrderController(/*IAdminOrderService _adminOrderService*/ IServiceManager _serviceManager):BaseController
     {
         [HttpGet]
         public async Task<IResultBase> getAllOrders([FromQuery] GetAllAdminOrdersQuery query)
@@ -21,14 +22,14 @@ namespace Amigo.Presentation.Controllers.Admin
             {
                 return Result.Fail(new UnauthorizedError("Unauthorized"));
             }
-            return await _adminOrderService.GetAllOrders(query);
+            return await _serviceManager.AdminOrderService.GetAllOrders(query);
         }
 
         [HttpGet("{id}")]
         public async Task<IResultBase> getOrderById(string id)
         {
            
-            return await _adminOrderService.GetOrderDetailsAsync(id);
+            return await _serviceManager.AdminOrderService.GetOrderDetailsAsync(id);
         }
 
     }

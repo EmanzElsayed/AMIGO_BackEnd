@@ -11,7 +11,7 @@ namespace Amigo.Presentation.Controllers.User
 {
     [Route("api/v1/user/cart")]
 
-    public class CartController(ICartService _cartService) : BaseController
+    public class CartController(IServiceManager _serviceManager) : BaseController
     {
         [EnableRateLimiting("token")]
         [HttpGet]
@@ -19,7 +19,7 @@ namespace Amigo.Presentation.Controllers.User
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
-            return await _cartService.GetCurrentCartAsync(userId, cartToken);
+            return await _serviceManager.CartService.GetCurrentCartAsync(userId, cartToken);
         }
         [EnableRateLimiting("token")]
         [HttpPost("item")]
@@ -27,7 +27,7 @@ namespace Amigo.Presentation.Controllers.User
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
-            return await _cartService.AddItemAsync(userId, cartToken, requestDTO);
+            return await _serviceManager.CartService.AddItemAsync(userId, cartToken, requestDTO);
         }
         [EnableRateLimiting("token")]
         [HttpPost("item/{id}")]
@@ -35,7 +35,7 @@ namespace Amigo.Presentation.Controllers.User
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
-            return await _cartService.UpdateItemAsync(id,userId, cartToken, requestDTO);
+            return await _serviceManager.CartService.UpdateItemAsync(id,userId, cartToken, requestDTO);
         }
 
         [EnableRateLimiting("booking")]
@@ -44,7 +44,7 @@ namespace Amigo.Presentation.Controllers.User
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
-            return await _cartService.CheckoutAsync(requestDTO, userId, cartToken);
+            return await _serviceManager.CartService.CheckoutAsync(requestDTO, userId, cartToken);
         }
 
 
@@ -55,7 +55,7 @@ namespace Amigo.Presentation.Controllers.User
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
 
-            return await _cartService.RemoveItemAsync(id, userId, cartToken);
+            return await _serviceManager.CartService.RemoveItemAsync(id, userId, cartToken);
         }
         [EnableRateLimiting("token")]
         [HttpDelete]
@@ -64,7 +64,7 @@ namespace Amigo.Presentation.Controllers.User
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var cartToken = Request.Headers["X-Cart-Token"].FirstOrDefault();
 
-            return await _cartService.ClearAsync(userId, cartToken);
+            return await _serviceManager.CartService.ClearAsync(userId, cartToken);
         }
 
         //[HttpPost("merge")]

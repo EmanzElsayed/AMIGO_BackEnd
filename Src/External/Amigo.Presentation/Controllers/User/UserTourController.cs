@@ -12,8 +12,8 @@ namespace Amigo.Presentation.Controllers.User;
 
 [Route("api/v1/user/tour")]
 public class UserTourController(
-                    IUserTourCatalogService _catalog,
-                    ICheckoutQuoteService _checkoutQuote,
+                   
+                    IServiceManager _serviceManager,
                     UserManager<ApplicationUser> _userManager)
                      : BaseController
 {
@@ -25,7 +25,7 @@ public class UserTourController(
     {
         var userType = await ResolveEffectiveUserTypeAsync();
         query.UserType = userType;
-        return await _catalog.GetToursAsync(query);
+        return await _serviceManager.UserTourCatalogService.GetToursAsync(query);
     }
 
 
@@ -37,14 +37,14 @@ public class UserTourController(
     {
         var userType = await ResolveEffectiveUserTypeAsync();
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return await _catalog.GetTourByPublicPathAsync(query, userType, userId);
+        return await _serviceManager.UserTourCatalogService.GetTourByPublicPathAsync(query, userType, userId);
     }
 
     [HttpGet("{id}/price-with-activity-type")]
     public async Task<IResultBase> GetPriceByActivityType(string id ,[FromQuery] PiceWithActivityTypeRequestQuery requestDTO)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
-        return await _catalog.GetPriceByActivityTypeAsync(id,requestDTO, userType);
+        return await _serviceManager.UserTourCatalogService.GetPriceByActivityTypeAsync(id,requestDTO, userType);
     }
 
 
@@ -54,7 +54,7 @@ public class UserTourController(
     //[Cache(900)]
     public async Task<IResultBase> GetCategories([FromQuery] Guid destinationId, [FromQuery] string? language)
     {
-        return await _catalog.GetTourCategoriesAsync(destinationId, language);
+        return await _serviceManager.UserTourCatalogService.GetTourCategoriesAsync(destinationId, language);
     }
     [EnableRateLimiting("token")]
 
@@ -63,7 +63,7 @@ public class UserTourController(
 
     public async Task<IResultBase> GetMaxDurationHours([FromQuery] Guid destinationId)
     {
-        return await _catalog.GetMaxDurationHoursForDestinationAsync(destinationId);
+        return await _serviceManager.UserTourCatalogService.GetMaxDurationHoursForDestinationAsync(destinationId);
     }
     [EnableRateLimiting("token")]
 
@@ -73,7 +73,7 @@ public class UserTourController(
     public async Task<IResultBase> GetTrendingTours([FromQuery] string? language, [FromQuery] string? currency, [FromQuery] int take = 6)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
-        return await _catalog.GetTrendingToursAsync(language, currency, userType, take);
+        return await _serviceManager.UserTourCatalogService.GetTrendingToursAsync(language, currency, userType, take);
     }
     [EnableRateLimiting("token")]
 
@@ -81,7 +81,7 @@ public class UserTourController(
     public async Task<IResultBase> PostCheckoutQuote([FromBody] CheckoutQuoteRequestDto body)
     {
         body = body with { EffectiveUserType = await ResolveEffectiveUserTypeAsync() };
-        return await _checkoutQuote.QuoteAsync(body);
+        return await _serviceManager.CheckoutQuoteService.QuoteAsync(body);
     }
 
     private async Task<string> ResolveEffectiveUserTypeAsync()
