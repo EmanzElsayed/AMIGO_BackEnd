@@ -7,7 +7,7 @@ namespace Amigo.Domain.DTO.Cart
     public record UpdateCartItemRequestDTO
     (
         List<AddCartPriceRequestDTO> Prices,
-        List<CheckoutTravelersRequestDTO>? Travelers,
-        string? ActivityType
+        List<CheckoutTravelersRequestDTO>? Travelers
+        
     );
 }

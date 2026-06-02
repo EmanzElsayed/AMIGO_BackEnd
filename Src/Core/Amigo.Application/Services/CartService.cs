@@ -112,7 +112,8 @@ namespace Amigo.Application.Services
                 .FirstOrDefault(t => t.Language == requestDTO.Language)?.Name
                 ?? tour.Destination?.Translations?.FirstOrDefault()?.Name
                 ?? string.Empty;
-            string? activityType = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ? null : requestDTO.ActivityType;
+            string? activityType =  requestDTO.Prices
+                                    .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ActivityType))?.ActivityType ?? null;
 
             var item = new CartItem
             {
@@ -244,7 +245,8 @@ namespace Amigo.Application.Services
                 if (!rate.IsSuccess)
                     return Result.Fail(rate.Errors);
 
-                string? activityType = string.IsNullOrWhiteSpace(dto.ActivityType) ? null : dto.ActivityType;
+                string? activityType = dto.Prices
+                                                  .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ActivityType))?.ActivityType ?? null;
 
                 var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(item.TourId, userType));
 

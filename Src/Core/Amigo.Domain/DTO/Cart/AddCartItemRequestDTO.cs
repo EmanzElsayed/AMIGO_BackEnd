@@ -16,8 +16,8 @@ namespace Amigo.Domain.DTO.Cart
          TimeOnly StartTime,
          
 
-         List<AddCartPriceRequestDTO> Prices ,
-         string? ActivityType
+         List<AddCartPriceRequestDTO> Prices 
+         
 
 
      );

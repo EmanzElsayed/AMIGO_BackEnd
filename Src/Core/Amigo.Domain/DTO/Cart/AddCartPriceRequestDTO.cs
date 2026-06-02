@@ -7,7 +7,7 @@ namespace Amigo.Domain.DTO.Cart
     public record AddCartPriceRequestDTO
     (
         string Type ,
-        
+           string? ActivityType,
         int Quantity 
         
     );
