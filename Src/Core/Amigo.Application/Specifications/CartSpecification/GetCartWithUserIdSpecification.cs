@@ -16,10 +16,10 @@ namespace Amigo.Application.Specifications.CartSpecification
                     .ThenInclude(t => t.Prices)
                     .Include(t => t.Items)
                     .ThenInclude(t => t.Travelers)
-                    .Include(t => t.Items)
-                    .ThenInclude(t => t.Tour)
-                    .ThenInclude(t => t.Prices)
-                    .ThenInclude(t => t.Translations)
+                    //.Include(t => t.Items)
+                    //.ThenInclude(t => t.Tour)
+                    //.ThenInclude(t => t.Prices)
+                    //.ThenInclude(t => t.Translations)
                     );
 
 

@@ -3,8 +3,10 @@ using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.TourSpecification;
+using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
 
 
@@ -110,6 +112,8 @@ namespace Amigo.Application.Services
                 .FirstOrDefault(t => t.Language == requestDTO.Language)?.Name
                 ?? tour.Destination?.Translations?.FirstOrDefault()?.Name
                 ?? string.Empty;
+            string? activityType = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ? null : requestDTO.ActivityType;
+
             var item = new CartItem
             {
                 
@@ -124,7 +128,8 @@ namespace Amigo.Application.Services
                 StartTime = requestDTO.StartTime,
                 TourTitle = translatedTitle,
     
-                DestinationName = destinationName
+                DestinationName = destinationName,
+                ActivityType = activityType
             };
 
             var userType = await GetUserType(userId);
@@ -136,11 +141,13 @@ namespace Amigo.Application.Services
             if (!rate.IsSuccess)
                 return Result.Fail(rate.Errors);
 
-            string? activityType = null; 
+
+            var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(tour.Id, userType));
+            
             foreach (var p in requestDTO.Prices)
             {
-                activityType = p.ActivityType;
-                var retailPrice = GetPriceFromTour(tour, p.Type,requestDTO.Language,userType,p.ActivityType);
+                
+                var retailPrice = GetPriceFromTour(prices, p.Type,requestDTO.Language, activityType);
 
                 item.Prices.Add(new CartPrice
                 {
@@ -236,13 +243,15 @@ namespace Amigo.Application.Services
 
                 if (!rate.IsSuccess)
                     return Result.Fail(rate.Errors);
-                
-                string? activityType = null;
+
+                string? activityType = string.IsNullOrWhiteSpace(dto.ActivityType) ? null : dto.ActivityType;
+
+                var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(item.TourId, userType));
+
 
                 foreach (var p in dto.Prices)
                 {
-                    activityType = p.ActivityType;
-                    var retailPrice = GetPriceFromTour(item.Tour, p.Type, item.Language, userType,p.ActivityType);
+                    var retailPrice = GetPriceFromTour(prices, p.Type, item.Language,activityType);
 
                     item.Prices.Add(new CartPrice
                     {
@@ -673,10 +682,10 @@ namespace Amigo.Application.Services
             cart.TotalAmount = cart.Items.Sum(x => x.TotalAmount);
             cart.LastUpdatedAt = DateTime.UtcNow;
         }
-        private decimal GetPriceFromTour(Tour tour, string type, SupportedLanguage lang,UserType userType,string? activityType)
+        private decimal GetPriceFromTour(IEnumerable<Price> prices , string type, SupportedLanguage lang,string? activityType)
         {
-            var price = tour.Prices
-                .FirstOrDefault(p => p.UserType == userType &&
+            var price = prices
+                .FirstOrDefault( p =>
                     p.Translations.Any(t =>
                         t.Type == type &&
                         (string.IsNullOrWhiteSpace(activityType) || t.ActivityType == activityType ) &&
