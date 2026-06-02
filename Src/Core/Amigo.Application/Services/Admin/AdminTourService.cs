@@ -554,10 +554,20 @@ namespace Amigo.Application.Services.Admin
                     TourMapping.UpdateTour(requestDTO, tour, translation, languageEnum);
 
                     if (requestDTO.Prices is not null && requestDTO.Prices.Any())
-                        await _adminPriceService.UpdatePricesAsync(tour, requestDTO.Prices, languageEnum);
+                    {
+                        var existingPrices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PriceWithoutUserTypeForTourSpecification(tour.Id));
+                        await _adminPriceService.UpdatePricesAsync(tour, requestDTO.Prices, languageEnum, existingPrices);
+
+                    }
 
                     if (requestDTO.Schedule is not null && requestDTO.Schedule.Any())
-                        await _adminTourScheduleService.UpdateScheduleAsync(tour, requestDTO.Schedule);
+                    {
+                        var schedule = await _unitOfWork.GetRepository<TourSchedule, Guid>().GetAllAsync(new GetAvailableTimesWithTourIdSpecification(tour.Id));
+                        await _adminTourScheduleService.UpdateScheduleAsync(tour, requestDTO.Schedule,schedule);
+                    
+                    }
+                        
+                    
 
                     if ((requestDTO.Includes is not null && requestDTO.Includes.Any()) ||
                         (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any()))

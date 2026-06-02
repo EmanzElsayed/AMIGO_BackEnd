@@ -17,6 +17,7 @@ namespace Amigo.Application.Specifications.TourSpecification
                .ThenInclude(t => t.Translations)
                );
 
+            
         }
     }
 }

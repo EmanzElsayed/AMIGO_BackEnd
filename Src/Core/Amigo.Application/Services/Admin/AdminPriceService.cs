@@ -1,4 +1,5 @@
 ﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.Domain.DTO.Price;
 using Amigo.SharedKernal.DTOs.Price;
 using System;
@@ -43,50 +44,54 @@ namespace Amigo.Application.Services.Admin
 
         //    }
         //}
-        public Task UpdatePricesAsync(
+        public  Task UpdatePricesAsync(
              Tour tour,
              List<UpdatePriceRequestDTO> prices,
-             SupportedLanguage? language)
+             SupportedLanguage? language,
+             IEnumerable<Price>? existingPrices)
         {
             if (tour == null || language is null || prices == null || prices.Count == 0)
                 return Task.CompletedTask;
 
             var lang = language.Value;
+           
+              
 
-            var existingPricesDict = tour.Prices
-                .Where(p => p.Id != Guid.Empty)
-                .ToDictionary(p => p.Id, p => p);
+            if (existingPrices is not null && existingPrices.Any())
+            {
+                _unitOfWork.GetRepository<Price, Guid>().RemoveRange(existingPrices);
+            }
 
             foreach (var dto in prices)
             {
                 Price price;
                 
-                if (dto.Id.HasValue &&
-                    existingPricesDict.TryGetValue(dto.Id.Value, out var existingPrice))
-                {
-                    price = existingPrice;
-                    var tr = price.Translations
-                            .Where(t => t.Language == lang).FirstOrDefault();
-                    if (dto.Cost is not null)
-                        price.Cost = dto.Cost.Value;
+                //if (dto.Id.HasValue &&
+                //    existingPricesDict.TryGetValue(dto.Id.Value, out var existingPrice))
+                //{
+                //    price = existingPrice;
+                //    var tr = price.Translations
+                //            .Where(t => t.Language == lang).FirstOrDefault();
+                //    if (dto.Cost is not null)
+                //        price.Cost = dto.Cost.Value;
 
-                    if ((!string.IsNullOrWhiteSpace(tr.ActivityType) || !string.IsNullOrWhiteSpace(dto.ActivityType)))
+                //    if ((!string.IsNullOrWhiteSpace(tr.ActivityType) || !string.IsNullOrWhiteSpace(dto.ActivityType)))
                         
-                        price.IsMainActivityType = dto.IsMainActivityType == true;
+                //        price.IsMainActivityType = dto.IsMainActivityType == true;
 
-                    if (dto.Discount is not null)
-                        price.Discount = dto.Discount.Value;
+                //    if (dto.Discount is not null)
+                //        price.Discount = dto.Discount.Value;
 
-                    if(dto.UserType is not null) price.UserType = dto.UserType.Value;
+                //    if(dto.UserType is not null) price.UserType = dto.UserType.Value;
 
-                    if (!string.IsNullOrEmpty(dto.ActivityType))
-                        tr.ActivityType = dto.ActivityType;
+                //    if (!string.IsNullOrEmpty(dto.ActivityType))
+                //        tr.ActivityType = dto.ActivityType;
 
-                    if (!string.IsNullOrEmpty(dto.Type))
-                        tr.Type = dto.Type;
-                }
-                else
-                {
+                //    if (!string.IsNullOrEmpty(dto.Type))
+                //        tr.Type = dto.Type;
+                //}
+                //else
+                //{
                     price = new Price
                     {
                         Cost = dto.Cost ?? 0,
@@ -109,7 +114,7 @@ namespace Amigo.Application.Services.Admin
                     };
 
                     tour.Prices.Add(price);
-                }
+                //}
 
                 var translation = price.Translations
                     .FirstOrDefault(t => t.Language == lang);

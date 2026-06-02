@@ -13,6 +13,8 @@ namespace Amigo.Application.Abstraction.Services.Admin
         //Task<Result<CreateTourScheduleResponseDTO>> CreateTourScheduleAsync(CreateTourScheduleRequestDTO requestDTO);
         Task UpdateScheduleAsync(
                   Tour tour,
-                  List<UpdateTourScheduleRequestDTO> schedulesDto);
+                  List<UpdateTourScheduleRequestDTO> schedulesDto,
+                  IEnumerable<TourSchedule> existingSchedules
+            );
     }
 }

@@ -331,9 +331,9 @@ public class UserTourCatalogService(
         var scheduleRepo = _unitOfWork.GetRepository<TourSchedule, Guid>();
         var reviewRepo = _unitOfWork.GetRepository<Review, Guid>();
         var reviewTrRepo = _unitOfWork.GetRepository<ReviewTranslation, Guid>();
-        var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
+        //var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
 
-        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id,allowedUserType))).ToList();
+        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id, effectiveUserType))).ToList();
         var schedules = (await scheduleRepo.GetAllAsync(new TourSchedulesForTourSpecification(match.Id))).ToList();
         var reviews = (await reviewRepo.GetAllAsync(new ReviewsForTourSpecification(match.Id))).ToList();
         var reviewTranslations = Array.Empty<ReviewTranslation>();
@@ -603,7 +603,7 @@ public class UserTourCatalogService(
                 .ToList();
         var list = new List<UserTourPriceTierDto>();
 
-        foreach (var p in prices)
+        foreach (var p in filterdPrices)
                 
             {
                 var tr = p.Translations.FirstOrDefault(x => x.Language == listingLang)

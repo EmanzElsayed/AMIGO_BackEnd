@@ -47,33 +47,37 @@ namespace Amigo.Application.Services.Admin
         //}
         public Task UpdateScheduleAsync(
                     Tour tour,
-                    List<UpdateTourScheduleRequestDTO> schedulesDto)
+                    List<UpdateTourScheduleRequestDTO> schedulesDto,
+                    IEnumerable<TourSchedule> ? existingSchedules)
         {
             if (schedulesDto is null || schedulesDto.Count == 0)
                 return Task.CompletedTask;
 
             //  تحسين الأداء
-            var existingSchedulesDict = tour.AvailableTimes
-                .Where(s => s.Id != Guid.Empty)
-                .ToDictionary(s => s.Id, s => s);
+            
+
+            if (existingSchedules is not null && existingSchedules.Any())
+            {
+                _unitOfWork.GetRepository<TourSchedule, Guid>().RemoveRange(existingSchedules);
+            }
 
             foreach (var scheduleDto in schedulesDto)
             {
-                if (scheduleDto.Id is not null &&
-                    existingSchedulesDict.TryGetValue(scheduleDto.Id.Value, out var existingSchedule))
-                {
-                    // Update Schedule
-                    if (scheduleDto.StartDate is not null)
-                        existingSchedule.StartDate = scheduleDto.StartDate.Value;
+                //if (scheduleDto.Id is not null &&
+                //    existingSchedulesDict.TryGetValue(scheduleDto.Id.Value, out var existingSchedule))
+                //{
+                //    // Update Schedule
+                //    if (scheduleDto.StartDate is not null)
+                //        existingSchedule.StartDate = scheduleDto.StartDate.Value;
 
-                    if (!string.IsNullOrWhiteSpace(scheduleDto.AvailableDateStatus))
-                        existingSchedule.AvailableDateStatus = EnumsMapping.ToAvailableSheduleStatus(scheduleDto.AvailableDateStatus);
+                //    if (!string.IsNullOrWhiteSpace(scheduleDto.AvailableDateStatus))
+                //        existingSchedule.AvailableDateStatus = EnumsMapping.ToAvailableSheduleStatus(scheduleDto.AvailableDateStatus);
 
-                    //  Update Slots
-                    _adminAvailableSlotsService.UpdateAvailableSlots(existingSchedule, scheduleDto.availableSlots);
-                }
-                else
-                {
+                //    //  Update Slots
+                //    _adminAvailableSlotsService.UpdateAvailableSlots(existingSchedule, scheduleDto.availableSlots);
+                //}
+                //else
+                //{
                     //  Create Schedule
                     var newSchedule = new TourSchedule
                     {
@@ -87,7 +91,7 @@ namespace Amigo.Application.Services.Admin
                     _adminAvailableSlotsService.AddAvailableSlots(newSchedule, scheduleDto.availableSlots);
 
                     tour.AvailableTimes.Add(newSchedule);
-                }
+                //}
             }
 
             return Task.CompletedTask;
