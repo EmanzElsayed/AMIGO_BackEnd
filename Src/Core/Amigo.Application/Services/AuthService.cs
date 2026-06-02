@@ -5,6 +5,7 @@ using Amigo.Domain.DTO.Authentication;
 using Amigo.Domain.Entities.Identity;
 using Amigo.Domain.Enum;
 using Microsoft.Extensions.Localization;
+using PhoneNumbers;
 using System.Net;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -24,7 +25,8 @@ public class AuthService(
                          IJWTTokenService _jWTTokenService
     ) : IAuthService
 {
-    
+
+    private readonly PhoneNumberUtil _phoneUtil = PhoneNumberUtil.GetInstance();
 
     public async Task<Result<LoginResponseDTO>> LoginAsync(LoginRequestDTO requestDTO  , CancellationToken cancellationToken)
     {
@@ -445,6 +447,8 @@ public class AuthService(
 
         if (user != null && user.EmailConfirmed)
         {
+            user.FullName = request.FullName ?? request.Email.Split('@')[0];
+            user.PhoneNumber = !string.IsNullOrWhiteSpace(request.PhoneNumber) && !string.IsNullOrWhiteSpace(request.CountryIsoCode) ? FormatPhone(request.PhoneNumber, request.CountryIsoCode) : null;
             return Result.Ok(new IdentifyEmailResponseDTO("Confirmed", false, "Email already confirmed. Please proceed to login or payment."));
         }
 
@@ -483,6 +487,11 @@ public class AuthService(
 
     public async Task<Result<LoginResponseDTO>> VerifyOTPCheckoutAsync(VerifyOTPCheckoutRequestDTO request)
     {
+        var validationResult = await _validationService.ValidateAsync(request);
+        if (!validationResult.IsSuccess)
+        {
+            return validationResult;
+        }
         var otpRepo = _unitOfWork.GetRepository<OTP, Guid>();
         var spec = new OTPVerifySpecification(request.Email, request.Code, OtpPurpose.CheckoutVerification);
         var isValid = await otpRepo.AnyAsync(spec);
@@ -506,7 +515,9 @@ public class AuthService(
                 UserName = request.Email,
                 FullName = request.FullName ?? request.Email.Split('@')[0],
                 EmailConfirmed = true, 
-                IsActive = true
+                IsActive = true,
+                PhoneNumber = !string.IsNullOrWhiteSpace(request.PhoneNumber) && !string.IsNullOrWhiteSpace(request.CountryIsoCode) ? FormatPhone(request.PhoneNumber, request.CountryIsoCode) : null,
+
             };
 
             var tempPassword = "Amigo@" + Guid.NewGuid().ToString("N").Substring(0, 10);
@@ -517,7 +528,7 @@ public class AuthService(
                 return FluentValidationExtension.FromIdentityErrors(createResult.Errors);
             }
 
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, "Public");
             isNewAccount = true;
 
             
@@ -556,6 +567,11 @@ public class AuthService(
         await _unitOfWork.SaveChangesAsync();
 
         return Result.Ok(data).WithSuccess(new Success(isNewAccount ? "Account created and verified successfully!" : "Identity verified successfully!"));
+    }
+    private string FormatPhone(string phone, string region)
+    {
+        var number = _phoneUtil.Parse(phone, region);
+        return _phoneUtil.Format(number, PhoneNumberFormat.E164);
     }
 
     private async Task SendAccountCreatedEmail(ApplicationUser user)

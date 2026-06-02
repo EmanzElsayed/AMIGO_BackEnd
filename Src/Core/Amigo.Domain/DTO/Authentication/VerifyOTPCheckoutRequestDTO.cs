@@ -4,5 +4,7 @@ public record VerifyOTPCheckoutRequestDTO(
     string Email,
     string Code,
     string? FullName,
+    string? CountryIsoCode,
+    string? PhoneNumber,
     string? ReturnUrl
 );

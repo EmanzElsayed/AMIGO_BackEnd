@@ -63,6 +63,7 @@ namespace Amigo.Persistence
         public DbSet<CartPrice> CartPrices { get; set; }
 
         public DbSet<Favorites> Favorites { get; set; }
+        public DbSet<OTP> OTP { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
