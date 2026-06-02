@@ -28,11 +28,11 @@ namespace Amigo.Application.Validators.Price
                .When(x => x.UserType is not null);
 
 
-            RuleFor(x => x.ActivityType)
+            //RuleFor(x => x.ActivityType)
 
-               .Must(BusinessRules.BeAValidActivity)
-               .WithMessage("Activity Type Code (Standard, Luxury)")
-               .When(x => !string.IsNullOrWhiteSpace(x.ActivityType));
+            //   .Must(BusinessRules.BeAValidActivity)
+            //   .WithMessage("Activity Type Code (Standard, Luxury)")
+            //   .When(x => !string.IsNullOrWhiteSpace(x.ActivityType));
         }
     }
 }

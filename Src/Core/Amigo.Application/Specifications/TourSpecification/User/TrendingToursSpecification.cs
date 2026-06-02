@@ -12,11 +12,11 @@ public class TrendingToursSpecification : BaseSpecification<Tour, Guid>
     {
         AddInclude(t => t.Translations);
         AddInclude(t => t.Images);
-        AddInclude(t => t.Prices);
-        AddInclude(t => t.Reviews);
+        //AddInclude(t => t.Prices);
+        //AddInclude(t => t.Reviews);
         AddInclude(t => t.Destination);
         AddInclude(t => t.Destination.Translations);
-        AddInclude(t => t.AvailableTimes);
+        //AddInclude(t => t.AvailableTimes);
         AddOrderBYDescending(t => t.Reviews.Count);
     }
 

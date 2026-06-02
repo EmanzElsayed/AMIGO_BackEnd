@@ -55,7 +55,7 @@ public class CheckoutQuoteService(
             return Result.Fail<CheckoutQuoteResponseDto>("This time is not available for the selected date.");
 
         var priceRepo = _unitOfWork.GetRepository<Price, Guid>();
-        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(request.TourId))).ToList();
+        var prices = (await priceRepo.GetAllAsync(new PriceWithoutUserTypeForTourSpecification(request.TourId))).ToList();
 
         var lineDtos = new List<CheckoutQuoteTierLineDto>();
         decimal total = 0;

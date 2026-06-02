@@ -10,21 +10,6 @@ public class TourCatalogForSlugResolutionSpecification : BaseSpecification<Tour,
     {
         AddInclude(t => t.Translations);
         AddInclude(t => t.Images);
-        AddInclude(t => t.Prices);
-        AddInclude(t => t.Reviews);
-        AddInclude(t => t.Cancellation!);
-        AddInclude(t => t
-               .Include(t => t.TourInclusions)
-               .ThenInclude(t => t.Translations)
-               );
-        AddInclude(t => t
-               .Include(t => t.Destination)
-               .ThenInclude(d => d.Translations)
-               );
-        AddInclude(t => t
-             .Include(t => t.Destination)
-             .ThenInclude(d => d.CountryInfo)
-             .ThenInclude(d => d.Translations)
-             );
+      
     }
 }

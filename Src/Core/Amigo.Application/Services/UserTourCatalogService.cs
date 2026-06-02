@@ -1,9 +1,11 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Application.Mapping;
+using Amigo.Application.Specifications.CountriesInfo;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.Domain.DTO.Price;
+using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
@@ -45,13 +47,13 @@ public class UserTourCatalogService(
             && cc != CountryCode.None)
 
             country = cc;
-        
+
         CurrencyCode filteredCurrency = _currentUserService.Currency;
         var rate = await _currencyRateService.GetRateAsync(
                     Constants.BaseCurrency,
                     filteredCurrency, true);
 
-        UserType? userType = ParseUserType(query.UserType); 
+        UserType? userType = ParseUserType(query.UserType);
 
 
         DateOnly? availabilityDate = null;
@@ -86,7 +88,101 @@ public class UserTourCatalogService(
             applyPaging: true);
 
         var tours = (await tourRepo.GetAllAsync(listSpec)).ToList();
-        var data = tours.Select(t => UserTourCatalogMapper.ToListItem(t, listingLang, userType,filteredCurrency,rate.ValueOrDefault)).ToList();
+
+        var tourIds = tours
+                .Select(x => x.Id)
+                .ToList();
+        var effectiveUserType = NormalizeEffectiveUserType(userType);
+        var prices =
+                await _unitOfWork.PriceRepo
+                    .GetTourPriceSummariesAsync(tourIds, effectiveUserType);
+        var priceMap = prices
+            .GroupBy(p => p.TourId)
+            .ToDictionary(
+                g => g.Key,
+                g => new TourPriceSummaryDto
+                {
+                    TourId = g.Key,
+                    MaxRetailPrice = g.Max(x => x.RetailPrice),
+                    MaxCostPrice = g.Max(x => x.CostPrice)
+                });
+        var reviewRows =
+             await _unitOfWork.ReviewRepo
+                .GetTourReviewSummariesAsync(tourIds);
+        var reviewMap = reviewRows
+        .GroupBy(x => x.TourId)
+        .ToDictionary(
+            g => g.Key,
+            g => new TourReviewSummaryDto
+            {
+                TourId = g.Key,
+                ReviewCount = g.Count(),
+                AverageRating = g.Average(x => x.Rate)
+            });
+        var cancellationRows =
+            await _unitOfWork.CancellationRepo
+                .GetFreeCancellationLookupAsync(tourIds);
+        var cancellationMap = cancellationRows
+            .GroupBy(x => x.TourId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Any(x => x.IsFree));
+        var data = tours.Select(
+
+        t =>
+        {
+
+            var tr = t.Translations
+              .FirstOrDefault(x => x.Language == listingLang)
+              ?? t.Translations.FirstOrDefault();
+            var hero = t.Images
+                  .Where(i => !i.IsDeleted)
+                  .OrderBy(i => i.Id)
+                  .FirstOrDefault();
+
+            priceMap.TryGetValue(t.Id, out var price);
+            reviewMap.TryGetValue(t.Id, out var review);
+            string? originalDisplay = null;
+            int? discountPct = null;
+            if (price is not null && price.MaxRetailPrice is not null && price.MaxCostPrice is not null && price.MaxCostPrice > price.MaxRetailPrice + 0.0001m)
+            {
+                var inferredPct = (int)Math.Round((1 - price.MaxRetailPrice.Value / price.MaxCostPrice.Value) * 100m);
+                if (inferredPct > 0)
+                {
+                    discountPct = inferredPct;
+                    originalDisplay = $"{filteredCurrency} {Math.Round(price.MaxCostPrice.Value * rate.ValueOrDefault, 2):0.##}";
+                }
+            }
+            var dur = t.Duration;
+            var title = tr?.Title ?? string.Empty;
+            return
+            new UserTourListItemDto(
+                        TourId: t.Id,
+                        Title: title,
+                        Description: tr?.Description,
+                        HeroImageUrl : hero?.ImageUrl,
+                        AverageRating: review?.AverageRating,
+                        ReviewCount: review?.ReviewCount ?? 0,
+                          FreeCancellation: cancellationMap.GetValueOrDefault(t.Id),
+
+                        IsWheelchairAvailable: t.IsWheelchairAvailable,
+                        IsPitsAllowed: t.IsPitsAllowed,
+                        OriginalPrice: originalDisplay,
+                        FromPrice: price is null || price.MaxRetailPrice is null ? null:
+                        $"{filteredCurrency} {Math.Round(price.MaxRetailPrice.Value * rate.ValueOrDefault, 2):0.##}",
+                        DiscountPercent : discountPct,
+                        DurationDisplay : dur.TotalHours >= 24
+                            ? $"{(int)dur.TotalDays}d {dur.Hours}h"
+                            : dur.TotalHours >= 1
+                                ? $"{(int)dur.TotalHours}h {dur.Minutes}m"
+                                : $"{dur.Minutes}m",
+                        GuideLanguage : t.GuideLanguage?.ToString(),
+                         TourSlug: SlugHelper.ToUrlSlug(title)
+                                    );
+        }
+            ).ToList();
+            
+            
 
         var totalPages = query.PageSize <= 0
             ? 0
@@ -235,8 +331,9 @@ public class UserTourCatalogService(
         var scheduleRepo = _unitOfWork.GetRepository<TourSchedule, Guid>();
         var reviewRepo = _unitOfWork.GetRepository<Review, Guid>();
         var reviewTrRepo = _unitOfWork.GetRepository<ReviewTranslation, Guid>();
+        var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
 
-        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id))).ToList();
+        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id,allowedUserType))).ToList();
         var schedules = (await scheduleRepo.GetAllAsync(new TourSchedulesForTourSpecification(match.Id))).ToList();
         var reviews = (await reviewRepo.GetAllAsync(new ReviewsForTourSpecification(match.Id))).ToList();
         var reviewTranslations = Array.Empty<ReviewTranslation>();
@@ -247,16 +344,23 @@ public class UserTourCatalogService(
                 new ReviewTranslationsForReviewsSpecification(ids, listingLang))).ToArray();
         }
 
-        string? cancellationPolicyDescription = null;
-        if (match.Cancellation is { IsDeleted: false })
-        {
-            var ctRepo = _unitOfWork.GetRepository<CancellationTranslation, Guid>();
-            var ctRows = (await ctRepo.GetAllAsync(
-                new CancellationTranslationsForCancellationSpecification(match.Cancellation.Id))).ToList();
-            var pick = ctRows.FirstOrDefault(x => x.Language == listingLang)
-                       ?? ctRows.FirstOrDefault();
-            cancellationPolicyDescription = pick?.Description;
-        }
+        var ctRepo = _unitOfWork.GetRepository<Cancellation, Guid>();
+        var ctRow = (await ctRepo.GetByIdAsync(
+            new CancellationForTourSpecification(match.Id)));
+        
+        var pick = ctRow is null ? null : ctRow.Translations.FirstOrDefault(x => x.Language == listingLang)
+                      ?? ctRow.Translations.FirstOrDefault();
+
+        string? cancellationPolicyDescription = pick is null ? null : pick.Description;
+
+        var countryInfo = await _unitOfWork
+               .GetRepository<CountryInfo, Guid>()
+               .GetByIdAsync(new GetCountryInfoByDestinationIdSpecification(destId.Value, listingLang));
+       
+        var inclusions = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(new GetInclustionWithTourIdSpecification(match.Id));
+
+        var destination = await _unitOfWork.GetRepository<Destination, Guid>().GetByIdAsync(new GetDestinationWithTranslationsSpecification(destId.Value));
+        
 
         var detail = UserTourCatalogMapper.ToDetail(
             match,
@@ -269,13 +373,18 @@ public class UserTourCatalogService(
             todayUtc,
             rate.ValueOrDefault,
             filteredCurrency,
+            countryInfo,
+            inclusions,
+            ctRow,
+            destination,
             cancellationPolicyDescription,
             currentUserId
         );
 
         return Result.Ok(detail);
     }
-
+    private static UserType NormalizeEffectiveUserType(UserType? effectiveUserType)
+      => effectiveUserType == UserType.VIP ? UserType.VIP : UserType.Public;
     private static UserType? ParseUserType(string? s)
     {
         if (string.IsNullOrWhiteSpace(s))
@@ -310,23 +419,105 @@ public class UserTourCatalogService(
         if (rows.Count == 0)
             return Result.Ok<IEnumerable<UserTrendingTourItemDto>>([]);
 
+        var tourIds = rows
+              .Select(x => x.Id)
+              .ToList();
 
+        var prices =
+             await _unitOfWork.PriceRepo
+                 .GetTourPriceSummariesAsync(tourIds, effectiveUserType);
+        var priceMap = prices
+            .GroupBy(p => p.TourId)
+            .ToDictionary(
+                g => g.Key,
+                g => new TourPriceSummaryDto
+                {
+                    TourId = g.Key,
+                    MaxRetailPrice = g.Max(x => x.RetailPrice),
+                    MaxCostPrice = g.Max(x => x.CostPrice)
+                });
+
+        var reviewRows =
+            await _unitOfWork.ReviewRepo
+               .GetTourReviewSummariesAsync(tourIds);
+        var reviewMap = reviewRows
+        .GroupBy(x => x.TourId)
+        .ToDictionary(
+            g => g.Key,
+            g => new TourReviewSummaryDto
+            {
+                TourId = g.Key,
+                ReviewCount = g.Count(),
+                AverageRating = g.Average(x => x.Rate)
+            });
+        var cancellationRows =
+            await _unitOfWork.CancellationRepo
+                .GetFreeCancellationLookupAsync(tourIds);
+        var cancellationMap = cancellationRows
+            .GroupBy(x => x.TourId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Any(x => x.IsFree));
 
         var mapped = rows
             .Select(t =>
             {
-                var item = UserTourCatalogMapper.ToListItem(t, listingLang, effectiveUserType,filteredCurrency,rate.ValueOrDefault);
-                var allowedUserType = effectiveUserType == UserType.VIP ? UserType.VIP : UserType.Public;
-                var baseAmount = t.Prices
-                    .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType && (p.IsMainActivityType == null || p.IsMainActivityType == true))
-                    .Select(p => (decimal?)p.RetailPrice)
-                    .Max();
+                var tr = t.Translations
+                .FirstOrDefault(x => x.Language == listingLang)
+                ?? t.Translations.FirstOrDefault();
+                    var hero = t.Images
+                          .Where(i => !i.IsDeleted)
+                          .OrderBy(i => i.Id)
+                          .FirstOrDefault();
+
+                priceMap.TryGetValue(t.Id, out var price);
+                reviewMap.TryGetValue(t.Id, out var review);
+                string? originalDisplay = null;
+                int? discountPct = null;
+                if (price is not null && price.MaxRetailPrice is not null && price.MaxCostPrice is not null && price.MaxCostPrice > price.MaxRetailPrice + 0.0001m)
+                {
+                    var inferredPct = (int)Math.Round((1 - price.MaxRetailPrice.Value / price.MaxCostPrice.Value) * 100m);
+                    if (inferredPct > 0)
+                    {
+                        discountPct = inferredPct;
+                        originalDisplay = $"{filteredCurrency} {Math.Round(price.MaxCostPrice.Value * rate.ValueOrDefault, 2):0.##}";
+                    }
+                }
+                var dur = t.Duration;
+                var title = tr?.Title ?? string.Empty;
+                
+                var item = new UserTourListItemDto(
+                            TourId: t.Id,
+                            Title: title,
+                            Description: tr?.Description,
+                            HeroImageUrl: hero?.ImageUrl,
+                            AverageRating: review?.AverageRating,
+                            ReviewCount: review?.ReviewCount ?? 0,
+                            FreeCancellation: cancellationMap.GetValueOrDefault(t.Id),
+
+                            IsWheelchairAvailable: t.IsWheelchairAvailable,
+                            IsPitsAllowed: t.IsPitsAllowed,
+                            OriginalPrice: originalDisplay,
+                            FromPrice: price is null || price.MaxRetailPrice is null ? null :
+                            $"{filteredCurrency} {Math.Round(price.MaxRetailPrice.Value * rate.ValueOrDefault, 2):0.##}",
+                            DiscountPercent: discountPct,
+                            DurationDisplay: dur.TotalHours >= 24
+                                ? $"{(int)dur.TotalDays}d {dur.Hours}h"
+                                : dur.TotalHours >= 1
+                                    ? $"{(int)dur.TotalHours}h {dur.Minutes}m"
+                                    : $"{dur.Minutes}m",
+                            GuideLanguage: t.GuideLanguage?.ToString(),
+                             TourSlug: SlugHelper.ToUrlSlug(title)
+                                        );
+            
+            
+     
 
 
-                var tr = t.Destination.Translations
+                var destinationTranslation = t.Destination.Translations
                     .FirstOrDefault(x => x.Language == listingLang)
                     ?? t.Destination.Translations.FirstOrDefault();
-                var destinationName = tr?.Name ?? string.Empty;
+                var destinationName = destinationTranslation?.Name ?? string.Empty;
 
                 return new
                 {
@@ -334,23 +525,26 @@ public class UserTourCatalogService(
                     DestinationSlug = SlugHelper.ToUrlSlug(destinationName),
                     Rating = item.AverageRating ?? 0m,
                     BaseCurrency = Constants.BaseCurrency.ToString(),
-                    BaseAmount = baseAmount,
-                    FromPrice = baseAmount is null ? 0 : Math.Round(baseAmount.Value * rate.ValueOrDefault ,2)
+                    Discount = item.DiscountPercent,
+                    BaseAmount = item.OriginalPrice,
+                    FromPrice = item.FromPrice
                 };
             })
             .Where(x => !string.IsNullOrWhiteSpace(x.DestinationSlug))
-            .Where(x => x.BaseAmount.HasValue)
+            .Where(x => !string.IsNullOrWhiteSpace( x.FromPrice))
             .OrderByDescending(x => x.Item.ReviewCount)
             .ThenByDescending(x => x.Rating)
             .Take(top)
             .Select(x => new UserTrendingTourItemDto(
                 TourId: x.Item.TourId,
                 Title: x.Item.Title,
+                Description : x.Item.Description,
                 HeroImageUrl: x.Item.HeroImageUrl,
                 AverageRating: x.Item.AverageRating,
                 ReviewCount: x.Item.ReviewCount,
                 FilteredCurrency : filteredCurrency.ToString(),
                 FromPrice: x.FromPrice,
+                Discount : x.Discount,
                 BaseCurrency: x.BaseCurrency,
                 BaseAmount: x.BaseAmount,
                 TourSlug: x.Item.TourSlug,
@@ -386,13 +580,12 @@ public class UserTourCatalogService(
             return Result.Fail(rate.Errors);
 
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
-       
 
-        var prices = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ?
+        var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(tourId, effectiveUserType));
+        var filterdPrices = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ?
             tour.Prices
-                .Where(p => !p.IsDeleted
-                    && (p.UserType & effectiveUserType) == effectiveUserType
-                    &&
+                .Where( p => 
+                    
                     p.IsMainActivityType == true
 
                     && p.Translations.Any(tr =>
@@ -402,9 +595,8 @@ public class UserTourCatalogService(
             
             :
             tour.Prices
-                .Where(p => !p.IsDeleted
-                    && (p.UserType & effectiveUserType) == effectiveUserType
-                    && p.Translations.Any(tr =>
+                .Where(p =>
+                     p.Translations.Any(tr =>
                         tr.Language == listingLang &&
                         tr.ActivityType == requestDTO.ActivityType))
                 .OrderBy(x => x.RetailPrice)

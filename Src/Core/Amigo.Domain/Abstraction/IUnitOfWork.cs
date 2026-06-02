@@ -14,7 +14,9 @@ namespace Amigo.Domain.Abstraction
         ISlotsRepo SlotsRepo { get; }
         ICartItemRepo CartItemsRepo { get; }
         IFavoriteRepo FavoritesRepo { get; }
-
+        IPriceRepo PriceRepo { get; }
+        IReviewRepo ReviewRepo { get; }
+        ICancellationRepo CancellationRepo { get; }
         public Task<int> SaveChangesAsync(CancellationToken ct = default);
         public Task<IDbContextTransaction> BeginTransactionAsync();
 

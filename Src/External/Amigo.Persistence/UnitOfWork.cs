@@ -45,6 +45,19 @@ namespace Amigo.Persistence
         public IFavoriteRepo FavoritesRepo
             => _favoritesRepo ??= new FavoriteRepo(_dbContext);
 
+        private IPriceRepo? _pricesRepo;
+        public IPriceRepo PriceRepo
+            => _pricesRepo ??= new PriceRepo(_dbContext);
+
+        private IReviewRepo? _reviewsRepo;
+        public IReviewRepo ReviewRepo
+            => _reviewsRepo ??= new ReviewRepo(_dbContext);
+
+
+        private ICancellationRepo? _cancellationRepo;
+        public ICancellationRepo CancellationRepo
+            => _cancellationRepo ??= new CancellationRepo(_dbContext);
+
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
                 => await _dbContext.SaveChangesAsync(ct);
 

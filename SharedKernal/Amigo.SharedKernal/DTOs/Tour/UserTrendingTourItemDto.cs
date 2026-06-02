@@ -3,14 +3,15 @@ namespace Amigo.SharedKernal.DTOs.Tour;
 public record UserTrendingTourItemDto(
     Guid TourId,
     string Title,
+    string? Description,
     string? HeroImageUrl,
     decimal? AverageRating,
     int ReviewCount,
     string FilteredCurrency,
     
-    decimal? FromPrice,
-    
+    string? FromPrice,
+    decimal ? Discount,
     string BaseCurrency,
-    decimal? BaseAmount,
+    string? BaseAmount,
     string TourSlug,
     string DestinationSlug);

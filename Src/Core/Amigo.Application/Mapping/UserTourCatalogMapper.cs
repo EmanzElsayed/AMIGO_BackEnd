@@ -16,14 +16,18 @@ public static class UserTourCatalogMapper
         IReadOnlyList<TourSchedule> schedules,
         IReadOnlyList<Review> reviews,
         IReadOnlyList<ReviewTranslation> reviewTranslations,
-        DateOnly todayUtc,
-         decimal rate,
-         CurrencyCode filteredcurrency,
+        DateOnly todayUtc,  
+        decimal rate,
+        CurrencyCode filteredcurrency,
+        CountryInfo? countryInfo,
+        IEnumerable<TourInclusion>? tourInclusions,
+        Cancellation? cancellation,
+        Destination? destination,
         string? cancellationPolicyDescription,
         string? currentUserId = null
        )
     {
-        var baseItem = ToListItem(tour, listingLanguage, effectiveUserType,filteredcurrency,rate);
+        var baseItem = ToListItem(tour, listingLanguage, effectiveUserType,filteredcurrency,rate, pricesWithTranslations, reviews, cancellation);
         var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType,rate);
         var activityTypes = MapActivityTypes(pricesWithTranslations, listingLanguage, effectiveUserType);
         var days = MapScheduleDays(schedules, todayUtc);
@@ -36,8 +40,8 @@ public static class UserTourCatalogMapper
             .Distinct()
             .ToList();
 
-        var destTr = tour.Destination?.Translations.FirstOrDefault(x => x.Language == listingLanguage)
-                     ?? tour.Destination?.Translations.FirstOrDefault();
+        var destTr = destination?.Translations.FirstOrDefault(x => x.Language == listingLanguage)
+                     ?? destination?.Translations.FirstOrDefault();
 
         return new UserTourDetailDto(
             TourId: baseItem.TourId,
@@ -58,24 +62,27 @@ public static class UserTourCatalogMapper
             TourSlug: baseItem.TourSlug,
             CurrencyCode: filteredcurrency.ToString(),
             DestinationName: destTr?.Name,
-            CountryName: tour.Destination?.CountryInfo is null? null: tour.Destination?.CountryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
-            ActivityTypes: activityTypes.Any() ? activityTypes : null,
+            CountryName: countryInfo is null? null: countryInfo.Translations.Where(t => t.Language == listingLanguage).Select(t => t.Name).FirstOrDefault(),
+            ActivityTypes: activityTypes is null || !activityTypes.Any() ? null : activityTypes,
             PriceTiers: tiers,
             ScheduleDays: days,
             RecentReviews: recent,
             TravelerPhotos: travelerPhotos,
             MeetingPoint: string.IsNullOrWhiteSpace(tour.MeetingPoint) ? null : tour.MeetingPoint.Trim(),
-            Included: MapIncludedLines(tour, listingLanguage),
-            NotIncluded: MapNotIncludedLines(tour, listingLanguage),
+            Included: MapIncludedLines(tourInclusions, listingLanguage),
+            NotIncluded: MapNotIncludedLines(tourInclusions, listingLanguage), 
             CancellationPolicyDescription: string.IsNullOrWhiteSpace(cancellationPolicyDescription)
                 ? null
                 : cancellationPolicyDescription.Trim());
     }
 
-    private static IReadOnlyList<string> MapIncludedLines(Tour tour, SupportedLanguage lang)
+    private static IReadOnlyList<string> MapIncludedLines(IEnumerable<TourInclusion>? tourInclusions, SupportedLanguage lang)
     {
-        var inclusions = tour.TourInclusions
-            .Where(i => !i.IsDeleted && i.IsIncluded) 
+        if (tourInclusions is null || !tourInclusions.Any()) return [];
+
+        var inclusions =  
+             tourInclusions
+            .Where(i =>  i.IsIncluded) 
             .ToList();
 
         if (inclusions.Count == 0)
@@ -98,10 +105,12 @@ public static class UserTourCatalogMapper
             .ToList();
     }
 
-    private static IReadOnlyList<string> MapNotIncludedLines(Tour tour, SupportedLanguage lang)
+    private static IReadOnlyList<string> MapNotIncludedLines(IEnumerable<TourInclusion>? tourInclusions, SupportedLanguage lang)
     {
-        var inclusions = tour.TourInclusions
-           .Where(i => !i.IsDeleted && !i.IsIncluded)
+        if (tourInclusions is null || !tourInclusions.Any()) return [];
+
+        var inclusions = tourInclusions
+           .Where(i => !i.IsIncluded)
            .ToList();
 
         if (inclusions.Count == 0)
@@ -129,12 +138,10 @@ public static class UserTourCatalogMapper
      SupportedLanguage listingLanguage,
      UserType? effectiveUserType)
     {
-        var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
+        //var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
 
         return prices
-            .Where(x =>
-                !x.IsDeleted &&
-                (x.UserType & allowedUserType) == allowedUserType)
+            
             .Select(p =>
             {
                 var tr = p.Translations.FirstOrDefault(x => x.Language == listingLanguage)
@@ -154,9 +161,9 @@ public static class UserTourCatalogMapper
         decimal rate)
     {
         var list = new List<UserTourPriceTierDto>();
-        var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
+        //var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
         foreach (var p in prices
-            .Where(x => !x.IsDeleted && (x.UserType & allowedUserType) == allowedUserType && (x.IsMainActivityType == null || x.IsMainActivityType == true))
+            .Where(x =>  (x.IsMainActivityType == null || x.IsMainActivityType == true))
             .OrderBy(x => x.RetailPrice))
         {
             var tr = p.Translations.FirstOrDefault(x => x.Language == listingLanguage)
@@ -291,10 +298,10 @@ public static class UserTourCatalogMapper
         return rows;
     }
 
-    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, CurrencyCode filteredCurrency, decimal rate)
-        => ToListItem(tour, listingLanguage, null,filteredCurrency,rate);
+    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, CurrencyCode filteredCurrency, decimal rate, IReadOnlyList<Price> prices, IReadOnlyList<Review>? reviews, Cancellation? cancellation)
+        => ToListItem(tour, listingLanguage, null,filteredCurrency,rate,prices,reviews,cancellation);
 
-    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, UserType? effectiveUserType, CurrencyCode filteredCurrency,decimal rate)
+    public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, UserType? effectiveUserType, CurrencyCode filteredCurrency,decimal rate,IReadOnlyList<Price> prices , IReadOnlyList<Review>? reviews , Cancellation? cancellation)
     {
         var tr = tour.Translations
             .FirstOrDefault(x => x.Language == listingLanguage)
@@ -308,47 +315,14 @@ public static class UserTourCatalogMapper
             .OrderBy(i => i.Id)
             .FirstOrDefault();
 
-        var reviews = tour.Reviews.Where(r => !r.IsDeleted).ToList();
-        decimal? avg = reviews.Count == 0 ? null : reviews.Average(r => r.Rate);
+        decimal? avg =  reviews is null || reviews.Count == 0 ? null : reviews.Average(r => r.Rate);
 
-        var free = tour.Cancellation != null
+        var free = cancellation != null 
                    && !tour.Cancellation.IsDeleted
                    && tour.Cancellation.CancelationPolicyType == CancelationPolicyType.Free;
 
-        var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
-        var prices = tour.Prices
-            .Where(p => !p.IsDeleted && (p.UserType & allowedUserType) == allowedUserType &&( p.IsMainActivityType == null || p.IsMainActivityType == true))
-            .ToList();
-
-
-        //decimal? minRetail = prices.Count == 0
-        //    ? null
-        //    : prices.Min(p => p.RetailPrice);
-
-        //var currency = filteredCurrency;
-
-        //string? fromDisplay = minRetail.HasValue ? $"{currency} {minRetail.Value:0.##}" : null;
-
-        //string? originalDisplay = null;
-        //int? discountPct = null;
-        //if (prices.Count > 0 && minRetail.HasValue)
-        //{
-        //    var originalMaxPrice = prices.Min(p => p.Cost);
-        //    if (tour.Discount is > 0)
-        //    {
-        //        discountPct = (int)Math.Round(tour.Discount.Value);
-        //        originalDisplay = $"{currency} {originalMaxPrice:0.##}";
-        //    }
-        //    else if (originalMaxPrice > minRetail.Value + 0.0001m)
-        //    {
-        //        var inferredPct = (int)Math.Round((1 - minRetail.Value / originalMaxPrice) * 100m);
-        //        if (inferredPct > 0)
-        //        {
-        //            discountPct = inferredPct;
-        //            originalDisplay = $"{currency} {originalMaxPrice:0.##}";
-        //        }
-        //    }
-        //}
+        //var allowedUserType = NormalizeEffectiveUserType(effectiveUserType); filtered it in spec
+        prices = prices.Where(p => (p.IsMainActivityType == null || p.IsMainActivityType == true)).ToList();
 
         decimal? maxRetail = prices.Count == 0
             ? null
@@ -395,7 +369,7 @@ public static class UserTourCatalogMapper
             Description: description,
             HeroImageUrl: hero?.ImageUrl,
             AverageRating: avg,
-            ReviewCount: reviews.Count,
+            ReviewCount: reviews is null ? 0 : reviews.Count,
             FreeCancellation: free,
             IsWheelchairAvailable: tour.IsWheelchairAvailable,
             IsPitsAllowed: tour.IsPitsAllowed,

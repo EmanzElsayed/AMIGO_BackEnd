@@ -30,10 +30,11 @@ public class UserTourCatalogSpecification : BaseSpecification<Tour, Guid>
     {
         AddInclude(t => t.Translations);
         AddInclude(t => t.Images);
-        AddInclude(t => t.Prices);
-        AddInclude(t => t.Reviews);
-        AddInclude(t => t.Cancellation!);
-        AddInclude(t => t.TourInclusions);
+       
+        //AddInclude(t => t.Prices);
+        //AddInclude(t => t.Reviews);
+        //AddInclude(t => t.Cancellation!);
+        //AddInclude(t => t.TourInclusions);
 
         if (applyPaging)
             ApplyPagination(query.PageSize, query.PageNumber);
