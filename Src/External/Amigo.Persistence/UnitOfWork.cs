@@ -58,6 +58,10 @@ namespace Amigo.Persistence
         public ICancellationRepo CancellationRepo
             => _cancellationRepo ??= new CancellationRepo(_dbContext);
 
+        private ITourRepo? _tourRepo;
+        public ITourRepo TourRepo
+            => _tourRepo ??= new TourRepo(_dbContext);
+
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
                 => await _dbContext.SaveChangesAsync(ct);
 
