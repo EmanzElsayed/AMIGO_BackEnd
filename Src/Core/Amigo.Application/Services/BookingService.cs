@@ -123,6 +123,7 @@ namespace Amigo.Application.Services
                     CustomerName = order.User.FullName,
                     CustomerEmail = order.User.Email,
                     PaymentId = payment.Id,
+                    Payment = payment,
                     BookingNumber = GenerateBookingNumber(),
                     Status = BookingStatus.Confirmed,
                     ConfirmedAt = DateTime.UtcNow,
@@ -208,7 +209,9 @@ namespace Amigo.Application.Services
             Guid bookingId = guid;
 
 
-            var booking = await _unitOfWork.GetRepository<Booking, Guid>().GetByIdAsync(new GetBookingByIdIncludeOrderItemSpecification(bookingId));
+            var booking = await _unitOfWork.GetRepository<Booking, Guid>()
+                                        .GetByIdAsync(
+                                        new Specifications.RefundSpecification.GetBookingByIdSpecification(bookingId));
             if (booking is null)
             {
                 return Result.Fail(new NotFoundError("Not Found"));
@@ -220,27 +223,32 @@ namespace Amigo.Application.Services
             }
             if (booking.Status != BookingStatus.Confirmed)
             {
-                return Result.Fail(new ConfilctError($"Booking is {booking.Status}"));
+                return Result.Fail($"Booking is {booking.Status}");
             }
-            
+            var orderItem = await _unitOfWork.GetRepository<OrderItem, Guid>().GetByIdAsync(new GetOrderItemByBookingIdSpecification(bookingId));
+            if (orderItem is null)
+            {
+                return Result.Fail(new ConfilctError($"Order item not found"));
+
+            }
 
             var tripDateTime =
-                    booking.OrderItem.TourDate.ToDateTime(
-                        booking.OrderItem.StartTime);
+                   orderItem.TourDate.ToDateTime(
+                        orderItem.StartTime);
 
             if (tripDateTime <= DateTime.UtcNow)
             {
                 return Result.Fail(new ConfilctError($"Booking is up to date"));
 
             }
-
+          
             var total =
-                 booking.OrderItem.OrderedPrice.Sum(x => x.FinalPrice);
+                 orderItem.OrderedPrice.Sum(x => x.FinalPrice);
 
             var remaining =
             tripDateTime - DateTime.UtcNow;
             var refundAmount = 0m;
-            if (remaining < booking.OrderItem.CancellationBefore)
+            if (remaining < orderItem.CancellationBefore)
             {
                 return Result.Fail(new ConfilctError($"Cancellation is not allowed at this time. Please cancel before the allowed deadline before the tour starts."));
 
@@ -248,7 +256,7 @@ namespace Amigo.Application.Services
             else
             {
                 refundAmount =
-                   total * booking.OrderItem.RefundPercentage / 100m;
+                   total * orderItem.RefundPercentage / 100m;
             }
 
             var cancellationRequest = new CancellationRequest

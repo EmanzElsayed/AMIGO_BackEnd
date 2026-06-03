@@ -8,7 +8,7 @@ namespace Amigo.Application.Specifications.RefundSpecification
     public class PendingRefundOutboxSpecification
      : BaseSpecification<OutboxMessage, Guid>
     {
-        public PendingRefundOutboxSpecification() : base(x =>
+        public PendingRefundOutboxSpecification(DateTime now) : base(x =>
                 x.Type == "RefundRequested"
                 &&
                 x.Status == OutboxStatus.Pending
@@ -16,7 +16,7 @@ namespace Amigo.Application.Specifications.RefundSpecification
                 (
                     x.NextRetryAt == null
                     ||
-                    x.NextRetryAt <= DateTime.UtcNow
+                    x.NextRetryAt <= now
                 ))
         {
         }

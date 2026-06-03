@@ -54,11 +54,13 @@ namespace Amigo.Presentation.Controllers
 
                 if (!isValid)
                     return Unauthorized();
+                //var root = "3333";
                 var root = JsonDocument.Parse(json)
                     .RootElement;
                 var eventType = JsonDocument.Parse(json)
                     .RootElement.GetProperty("event_type").GetString();
                 _logger.LogInformation("PayPal event type: {type}", eventType);
+
                 //var json = "eman";
                 //var eventType = "PAYMENT.CAPTURE.COMPLETED";
                 switch (eventType)

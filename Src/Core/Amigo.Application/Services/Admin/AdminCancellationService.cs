@@ -15,7 +15,7 @@ namespace Amigo.Application.Services.Admin
         public async Task<Result<PaginatedResponse<GetAllCancellationRequestsDTO>>> GetAllCancellationRequestsAsync(GetAllAdminCancellationRequestQuery requestQuery)
         {
             var cancellationRequests = await _unitOfWork.GetRepository<CancellationRequest, Guid>().GetAllAsync(new GetAllCancellationRequestsSpecification(requestQuery));
-            var mappedData = MapToDTO(cancellationRequests);
+            var mappedData =  MapToDTO(cancellationRequests);
 
             var totalItems = await _unitOfWork.GetRepository<CancellationRequest, Guid>().GetCountSpecificationAsync(new CountGetAllCancellationRequestsSpecification(requestQuery));
 
@@ -112,25 +112,27 @@ namespace Amigo.Application.Services.Admin
             }
         }
 
-        private List<GetAllCancellationRequestsDTO> MapToDTO(IEnumerable<CancellationRequest> cancellationRequests)
+        private  List<GetAllCancellationRequestsDTO> MapToDTO(IEnumerable<CancellationRequest> cancellationRequests)
         {
-            return cancellationRequests.Select(request => new GetAllCancellationRequestsDTO(
-                Id : request.Id,
-                BookingId : request.BookingId,
-                BookingNumber:request.Booking.BookingNumber ?? "",
-                TourId : request.Booking.OrderItem.TourId.Value  ,
-                TourTitle : request.Booking.OrderItem.TourTitle,
-                TourDate: request.Booking.OrderItem.TourDate.ToDateTime(request.Booking.OrderItem.StartTime),
-                UserName : request.Booking.CustomerName,
-                UserEmail : request.Booking.CustomerEmail,
-                PaidAmount : request.Booking.OrderItem.OrderedPrice.Sum(p => p.FinalPrice),
-                RefundAmount:request.RefundAmount,
-                RequestedAt : request.RequestedAt,
-                Status : request.Status.ToString(),
-                Reason: request.Reason
+            return cancellationRequests.Select( request => 
+            new GetAllCancellationRequestsDTO(
+                    Id: request.Id,
+                    BookingId: request.BookingId,
+                    BookingNumber: request.Booking.BookingNumber ?? "",
+                    TourId: request.Booking.OrderItem.TourId.Value,
+                    TourTitle: request.Booking.OrderItem.TourTitle,
+                    TourDate: request.Booking.OrderItem.TourDate.ToDateTime(request.Booking.OrderItem.StartTime),
+                    UserName: request.Booking.CustomerName,
+                    UserEmail: request.Booking.CustomerEmail,
+                    PaidAmount: request.Booking.Payment.TotalAmount,
+                    RefundAmount: request.RefundAmount,
+                    RequestedAt: request.RequestedAt,
+                    Status: request.Status.ToString(),
+                    Reason: request.Reason
 
 
-                )).ToList();
+                    )
+                ).ToList();
         
         }
 

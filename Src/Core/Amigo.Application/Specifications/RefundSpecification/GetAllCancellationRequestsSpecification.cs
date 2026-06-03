@@ -18,6 +18,7 @@ namespace Amigo.Application.Specifications.RefundSpecification
             )
         {
             AddInclude(c => c.Include(b => b.Booking).ThenInclude(i => i.OrderItem));
+            AddInclude(c => c.Include(b => b.Booking).ThenInclude(i => i.Payment));
 
         }
     }

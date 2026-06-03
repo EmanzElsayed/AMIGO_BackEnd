@@ -369,7 +369,7 @@ namespace Amigo.Application.Services
 
                     // GEt Ids
 
-                    var tourIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.TourId).Distinct().ToList();
+                    var tourIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.TourId).ToHashSet();
                     var slotIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.SlotId).Distinct().OrderBy(x => x).ToList();
                     var orderId = order.Id;
 
@@ -387,27 +387,30 @@ namespace Amigo.Application.Services
 
                     if (slots is null || !slots.Any() ) return Result.Fail("Slots Not Avaialble");
 
-                    var reservations = await reservationRepo.GetAllAsync(
-                        new GetReservationsBySlotIdsSpecification(slotIds));
+                    //var reservations = await reservationRepo.GetAllAsync(
+                    //    new GetReservationsBySlotIdsSpecification(slotIds));
 
 
                     var tourDict = tours.ToDictionary(x => x.Id);
                     var userType = await GetUserType(userId);
 
                     var priceDict = tours
-                          .SelectMany(t => t.Prices
-                              .Where(p => p.UserType == userType)
-                              .SelectMany(p => p.Translations
-                              .Select(tr => new
-                              {
-                                  TourId = t.Id,
-                                  Price = p,
-                                  Type = tr.Type,
-                                  ActivityType = tr.ActivityType, 
-                                  Language = tr.Language
-                              })))
-                          .ToLookup(x => (x.TourId, x.Type,x.ActivityType ,x.Language), x => x.Price);
-
+                        .SelectMany(t => t.Prices
+                            .Where(p => p.UserType == userType)
+                            .SelectMany(p => p.Translations
+                                .Select(tr => new
+                                {
+                                    Key = (
+                                        t.Id,
+                                        tr.Type.ToLower().Trim(),
+                                        tr.ActivityType?.ToLower().Trim(),
+                                        tr.Language
+                                    ),
+                                    Price = p
+                                })))
+                        .ToDictionary(
+                            x => x.Key,
+                            x => x.Price);
 
                     //create slots dictionary
 
@@ -445,6 +448,14 @@ namespace Amigo.Application.Services
                         return Result.Fail(
                             "One or more slots are full.");
                     }
+
+                    var rate = await _currencyRateService.GetRateAsync(
+                       Constants.BaseCurrency,
+                       cart.CurrencyCode.Value, false);
+
+                    if (!rate.IsSuccess)
+                        return Result.Fail(rate.Errors);
+                    var exchangeRate = rate.ValueOrDefault;
 
                     foreach (var item in cart.Items.Where(i => !i.IsDeleted))
                     {
@@ -541,18 +552,19 @@ namespace Amigo.Application.Services
                         };
 
                         decimal itemTotal = 0;
-                        var rate = await _currencyRateService.GetRateAsync(
-                        Constants.BaseCurrency,
-                        cart.CurrencyCode.Value,false);
-
-                        if (!rate.IsSuccess)
-                            return Result.Fail(rate.Errors);
+                       
 
 
                         foreach (var cartPrice in prices)
                         {
-                            var priceEntity =  priceDict[(tour.Id, cartPrice.Type,item.ActivityType ,item.Language)]
-                                                                    .SingleOrDefault(); 
+                            var key = (
+                                        tour.Id,
+                                        cartPrice.Type.ToLower().Trim(),
+                                        item.ActivityType?.ToLower().Trim(),
+                                        item.Language
+                                    );
+
+                            var found = priceDict.TryGetValue(key, out var priceEntity);
 
                             if (priceEntity is null)
                                 return Result.Fail(
@@ -574,11 +586,11 @@ namespace Amigo.Application.Services
                                 Type = cartPrice.Type,
                                 Quantity = cartPrice.Quantity,
                                 BaseRetailPrice = currentRetailPrice,
-                                ExchangeRate = rate.ValueOrDefault,
-                                ConvertedRetailPrice = rate.ValueOrDefault * currentRetailPrice,
+                                ExchangeRate = exchangeRate,
+                                ConvertedRetailPrice = exchangeRate * currentRetailPrice,
                             });
 
-                            itemTotal += rate.ValueOrDefault * currentRetailPrice * cartPrice.Quantity;
+                            itemTotal += exchangeRate * currentRetailPrice * cartPrice.Quantity;
                         }
 
                         total += itemTotal;

@@ -9,6 +9,7 @@ public class Booking:BaseEntity<Guid>
     public Guid? VoucherId {  get; set; }
    
     public Guid PaymentId { get; set; }
+    public Payment Payment { get; set; }
     public string UserId { get; set; } = null!;
     public ApplicationUser User { get; set; } 
 

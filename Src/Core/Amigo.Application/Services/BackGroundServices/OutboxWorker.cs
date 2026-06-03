@@ -43,11 +43,15 @@ namespace Amigo.Application.Services.BackGroundServices
 
                 return;
 
-            
+
             // 2 mark processing (bulk)
-           
+
             foreach (var msg in messages)
-                msg.Status = OutboxStatus.Processing;
+            {
+                if (msg.Type == "PaymentSucceeded")
+                    msg.Status = OutboxStatus.Processing;
+                else continue;
+            }
 
             await unitOfWork.SaveChangesAsync(ct);
 
@@ -56,6 +60,8 @@ namespace Amigo.Application.Services.BackGroundServices
           
             await Parallel.ForEachAsync(messages, ct, async (msg, token) =>
             {
+                if (msg.Type != "PaymentSucceeded")
+                    return;
                 using var innerScope = _scopeFactory.CreateScope();
 
                 var innerUow = innerScope.ServiceProvider

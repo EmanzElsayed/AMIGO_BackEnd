@@ -53,9 +53,10 @@ namespace Amigo.Application.Services.BackGroundServices
                           unitOfWork.GetRepository<
                               AvailableSlots,
                               Guid>();
+            var now = DateTime.UtcNow;
             var messages =
                 await outboxRepo.GetAllAsync(
-                    new PendingRefundOutboxSpecification());
+                    new PendingRefundOutboxSpecification(now));
 
             foreach (var message in messages)
             {
