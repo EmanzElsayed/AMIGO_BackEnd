@@ -57,7 +57,7 @@ namespace Amigo.Application.Services
             await _cacheService.SetAsync(
                 cacheKey,
                 MappedCart,
-                TimeSpan.FromMinutes(20));
+                TimeSpan.FromMinutes(25));
 
             return Result.Ok(MappedCart);
         }
@@ -174,7 +174,7 @@ namespace Amigo.Application.Services
             await _cacheService.SetAsync(
             BuildCartCacheKey(userId, cartToken),
             dto,
-            TimeSpan.FromMinutes(20));
+            TimeSpan.FromMinutes(25));
 
             return dto;
         }
@@ -316,7 +316,7 @@ namespace Amigo.Application.Services
             await _cacheService.SetAsync(
             BuildCartCacheKey(userId, cartToken),
             dto,
-            TimeSpan.FromMinutes(20));
+            TimeSpan.FromMinutes(25));
 
             return mappedCart;
         }
@@ -801,7 +801,7 @@ namespace Amigo.Application.Services
                 await _cacheService.SetAsync(
                     cacheKey,
                     cart.ToDto(),
-                    TimeSpan.FromMinutes(20));
+                    TimeSpan.FromMinutes(25));
             }
 
             return Result.Ok("Cart Item Deleted Successfully");

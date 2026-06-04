@@ -1,11 +1,12 @@
 
 
-using Amigo.Application.Specifications.CountriesInfo;
 using Amigo.Application.BackgroundTasks;
+using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Domain.DTO.Translation;
+using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
-
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Amigo.Application.Services.Admin
 {
@@ -68,12 +69,23 @@ namespace Amigo.Application.Services.Admin
 
                 await _unitOfWork.SaveChangesAsync();
 
-                var destinationId = destination.Id;
-                var originalName = requestDTO.Name;
-
+               
+                var sourceLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+                var inputTranslate = new DestinationTranslationItem()
+                {
+                    SourceLanguage = sourceLanguage,
+                    DestinationId = destination.Id,
+                    Name = requestDTO.Name
+                };
                 await _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
                 {
-                    await TranslateDestinationInBackgroundAsync(destinationId, originalName, requestLanguage, serviceProvider);
+                    var autoTranslationService =
+                           serviceProvider.GetRequiredService<IAutoTranslationService>();
+
+                    await autoTranslationService.TranslateDestination(
+                        sourceLanguage,
+                        inputTranslate);
+                    //await TranslateDestinationInBackgroundAsync(destinationId, originalName, requestLanguage, serviceProvider);
                 });
 
                 return Result.Ok()
@@ -250,6 +262,29 @@ namespace Amigo.Application.Services.Admin
             try
             {
                 await _unitOfWork.SaveChangesAsync();
+
+                if (!string.IsNullOrWhiteSpace(requestDTO.Language))
+                {
+                    var sourceLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+                    var inputTranslate = new DestinationTranslationItem()
+                    {
+                        SourceLanguage = sourceLanguage,
+                        DestinationId = destination.Id,
+                        Name = requestDTO.Name ?? ""
+                    };
+                    _ = _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
+                    {
+
+                        var autoTranslationService =
+                           serviceProvider.GetRequiredService<IAutoTranslationService>();
+
+                        await autoTranslationService.TranslateDestination(
+                            sourceLanguage,
+                            inputTranslate);
+
+
+                    });
+                }
                 return Result.Ok()
                                .WithSuccess(new Success("Destination Updated Successfully"));
             }

@@ -10,6 +10,7 @@ namespace Amigo.Application.Abstraction.Services
     {
         Task<Result> TranslateAllPendingTours(GetLanguageFromBodyDTO requestDto);
         Task<Result> TranslateTour(SupportedLanguage sourceLanguage, TourTranslationItem tourTranslationItem);
+        Task<Result> TranslateDestination(SupportedLanguage sourceLanguage, DestinationTranslationItem destinationTranslationItem);
         
     }
 }

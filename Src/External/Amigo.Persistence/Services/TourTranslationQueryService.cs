@@ -36,14 +36,7 @@ namespace Amigo.Persistence.Services
                         .Select(x => x.Description)
                         .FirstOrDefault(),
 
-                    Destination = new DestinationTranslationItem
-                    {
-                        DestinationId = t.DestinationId,
-                        Name = t.Destination.Translations
-                            .Where(x => x.Language == baseLanguage)
-                            .Select(x => x.Name)
-                            .FirstOrDefault() ?? ""
-                    },
+                   
 
                     Cancellation = new CancellationTranslationItem
                     {

@@ -15,7 +15,7 @@ namespace Amigo.Presentation.Controllers.User
     {
         [EnableRateLimiting("token")]
         [HttpGet]
-        [Cache(900)]
+        //[Cache(1800)]
         public async Task<IResultBase> GetAllDestination([FromQuery] GetAllDestinationQuery requestQuery, CancellationToken cancellationToken)
         {
             return await _serviceManager.DestinationService.GetAllDestinationAsync(requestQuery, cancellationToken);
@@ -39,7 +39,7 @@ namespace Amigo.Presentation.Controllers.User
 
         [EnableRateLimiting("token")]
         [HttpGet("top")]
-        [Cache(900)]
+        //[Cache(1800)]
         public async Task<IResultBase> GetTopDestinations([FromQuery] GetTopDestinationsQuery requestQuery, CancellationToken cancellationToken)
         {
             return await _serviceManager.DestinationService.GetTopDestinationsAsync(requestQuery, cancellationToken);

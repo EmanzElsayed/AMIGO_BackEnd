@@ -23,7 +23,7 @@ public class UserTourController(
     [EnableRateLimiting("token")]
 
     [HttpGet]
-    //[Cache(900)]
+    //[Cache(1800)]
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
     {
         _logger.LogInformation("GetTours called: DestinationId={DestinationId}, AvailabilityDate={AvailabilityDate}, Language={Language}, Page={PageNumber}, Size={PageSize}", query.DestinationId, query.AvailabilityDate, query.Language, query.PageNumber, query.PageSize);
@@ -37,7 +37,7 @@ public class UserTourController(
     [EnableRateLimiting("token")]
 
     [HttpGet("by-public-path")]
-    //[Cache(900)]
+    //[Cache(1800)]
     public async Task<IResultBase> GetTourByPublicPath([FromQuery] GetTourByPublicPathQuery query)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
@@ -56,7 +56,7 @@ public class UserTourController(
     [EnableRateLimiting("token")]
 
     [HttpGet("categories")]
-    //[Cache(900)]
+    //[Cache(1800)]
     public async Task<IResultBase> GetCategories([FromQuery] Guid destinationId, [FromQuery] string? language)
     {
         return await _serviceManager.UserTourCatalogService.GetTourCategoriesAsync(destinationId, language);
@@ -64,7 +64,7 @@ public class UserTourController(
     [EnableRateLimiting("token")]
 
     [HttpGet("max-duration-hours")]
-    //[Cache(900)]
+    //[Cache(1800)]
 
     public async Task<IResultBase> GetMaxDurationHours([FromQuery] Guid destinationId)
     {
@@ -82,7 +82,7 @@ public class UserTourController(
     [EnableRateLimiting("token")]
 
     [HttpGet("trending")]
-    //[Cache(900)]
+    //[Cache(1800)]
 
     public async Task<IResultBase> GetTrendingTours([FromQuery] string? language, [FromQuery] string? currency, [FromQuery] int take = 6)
     {
