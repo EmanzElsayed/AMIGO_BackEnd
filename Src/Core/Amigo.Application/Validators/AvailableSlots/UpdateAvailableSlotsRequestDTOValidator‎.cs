@@ -15,7 +15,10 @@ namespace Amigo.Application.Validators.AvailableSlots
                .When(t => t.StartTime is not null)
               .WithMessage("StartTime must be a valid time in HH:mm format");
 
-
+            RuleFor(x => x.EndTime)
+               .Must(t => t != default)
+               .When(t => t.EndTime is not null)
+              .WithMessage("EndTime must be a valid time in HH:mm format");
 
             RuleFor(x => x.MaxCapacity)
                 .GreaterThan(0)

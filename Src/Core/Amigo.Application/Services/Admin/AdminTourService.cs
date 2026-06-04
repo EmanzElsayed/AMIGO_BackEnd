@@ -641,7 +641,8 @@ namespace Amigo.Application.Services.Admin
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return FluentValidationExtension.FromException(details: ex.Message);
+                    _logger.LogError(ex, "Error updating tour: {Message}, Inner: {InnerMessage}", ex.Message, ex.InnerException?.Message);
+                    return FluentValidationExtension.FromException(details: $"{ex.Message} | Inner: {ex.InnerException?.Message}");
                 }
             });
         }

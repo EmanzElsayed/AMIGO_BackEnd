@@ -81,7 +81,9 @@ namespace Amigo.Application.Services.Admin
                     //  Create Schedule
                     var newSchedule = new TourSchedule
                     {
+                        Id = scheduleDto.Id ?? Guid.NewGuid(),
                         StartDate = scheduleDto.StartDate ?? default,
+                        EndDate = scheduleDto.EndDate,
                         AvailableDateStatus = EnumsMapping.ToAvailableSheduleStatus(scheduleDto.AvailableDateStatus),
                         TourId = tour.Id,
                         AvailableSlots = new List<AvailableSlots>()

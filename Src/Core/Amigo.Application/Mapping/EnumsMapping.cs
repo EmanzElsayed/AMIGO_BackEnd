@@ -24,16 +24,6 @@ namespace Amigo.Application.Mapping
             if (Enum.TryParse<SupportedLanguage>(language, true, out var parsed) && parsed != SupportedLanguage.None)
                 return parsed;
 
-            foreach (var field in typeof(SupportedLanguage).GetFields(BindingFlags.Public | BindingFlags.Static))
-            {
-                if (field.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
-                    return (SupportedLanguage)field.GetValue(null)!;
-
-                var display = field.GetCustomAttribute<DisplayAttribute>();
-                if (display?.Name != null && display.Name.Equals(language, StringComparison.OrdinalIgnoreCase))
-                    return (SupportedLanguage)field.GetValue(null)!;
-            }
-
             return SupportedLanguage.en;
         }
         public static AvailableDateTimeStatus ToAvailableSheduleStatus(string? availableStatus)

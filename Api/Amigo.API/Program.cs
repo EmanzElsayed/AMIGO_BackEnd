@@ -42,6 +42,7 @@ namespace Amigo.API
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
             //builder.Services.AddScoped<ITopDestinationsReader, TopDestinationsReader>();

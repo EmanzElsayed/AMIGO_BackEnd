@@ -30,6 +30,9 @@ namespace Amigo.Application.Services.Admin
                     if (slotDto.StartTime is not null)
                         existingSlot.StartTime = slotDto.StartTime.Value;
 
+                    if (slotDto.EndTime is not null)
+                        existingSlot.EndTime = slotDto.EndTime.Value;
+
                     if (slotDto.MaxCapacity is not null)
                         existingSlot.MaxCapacity = slotDto.MaxCapacity.Value;
 
@@ -41,7 +44,9 @@ namespace Amigo.Application.Services.Admin
                     //  Create
                     var newSlot = new AvailableSlots
                     {
+                        Id = slotDto.Id ?? Guid.NewGuid(),
                         StartTime = slotDto.StartTime ?? default,
+                        EndTime = slotDto.EndTime,
                         MaxCapacity = slotDto.MaxCapacity ?? 0,
                         AvailableTimeStatus = EnumsMapping.ToAvailableSheduleStatus(slotDto.AvailableTimeStatus),
                         TourScheduleId = schedule.Id
@@ -63,7 +68,9 @@ namespace Amigo.Application.Services.Admin
             {
                 var newSlot = new AvailableSlots
                 {
+                    Id = slotDto.Id ?? Guid.NewGuid(),
                     StartTime = slotDto.StartTime ?? default,
+                    EndTime = slotDto.EndTime,
                     MaxCapacity = slotDto.MaxCapacity ?? 0,
                     AvailableTimeStatus = EnumsMapping.ToAvailableSheduleStatus(slotDto.AvailableTimeStatus),
                     TourScheduleId = schedule.Id

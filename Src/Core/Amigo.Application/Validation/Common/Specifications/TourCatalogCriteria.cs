@@ -68,7 +68,7 @@ public static class TourCatalogCriteria
 
 
             && (!effectiveGuideLanguage.HasValue
-                || t.GuideLanguage == effectiveGuideLanguage.Value)
+                || (t.GuideLanguage.HasValue && ((t.GuideLanguage.Value & effectiveGuideLanguage.Value) == effectiveGuideLanguage.Value)))
 
             && (q.IsPitsAllowed != true || t.IsPitsAllowed)
 
@@ -107,6 +107,12 @@ public static class TourCatalogCriteria
                         !s.IsDeleted
                         && s.AvailableTimeStatus == AvailableDateTimeStatus.Available
                     )
+                )
+            )
+
+            && (q.OnlyInUserLanguage != true
+                || t.Translations.Any(tr =>
+                    tr.Language == translationLanguage
                 )
             );
     }

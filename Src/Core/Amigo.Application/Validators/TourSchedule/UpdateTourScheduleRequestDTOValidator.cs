@@ -15,7 +15,10 @@ namespace Amigo.Application.Validators.TourSchedule
                   .When(x => x.StartDate is not null)
                   .WithMessage("StartDate must be today or in the future");
 
-
+            RuleFor(x => x.EndDate)
+                  .GreaterThanOrEqualTo(x => x.StartDate)
+                  .When(x => x.StartDate is not null && x.EndDate is not null)
+                  .WithMessage("EndDate must be equal or after StartDate");
 
             RuleFor(x => x.AvailableDateStatus)
               .Must(BusinessRules.BeAValidDateStatus)

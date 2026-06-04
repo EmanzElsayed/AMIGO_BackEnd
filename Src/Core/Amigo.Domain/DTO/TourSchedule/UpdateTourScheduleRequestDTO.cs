@@ -9,8 +9,8 @@ namespace Amigo.Domain.DTO.TourSchedule
     (
         Guid? Id,
         string? AvailableDateStatus,
-
         DateOnly? StartDate,
+        DateOnly? EndDate,
         List<UpdateAvailableSlotsRequestDTO>? availableSlots
     );
 }

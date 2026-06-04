@@ -72,6 +72,15 @@ public class UserTourController(
     }
     [EnableRateLimiting("token")]
 
+    [HttpGet("max-price")]
+    //[Cache(900)]
+
+    public async Task<IResultBase> GetMaxPrice([FromQuery] Guid destinationId)
+    {
+        return await _serviceManager.UserTourCatalogService.GetMaxPriceForDestinationAsync(destinationId);
+    }
+    [EnableRateLimiting("token")]
+
     [HttpGet("trending")]
     //[Cache(900)]
 

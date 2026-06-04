@@ -60,8 +60,13 @@ public class UserTourCatalogService(
 
         UserType? userType = ParseUserType(query.UserType);
 
-
         DateOnly? availabilityDate = null;
+        if (!string.IsNullOrWhiteSpace(query.AvailabilityDate) 
+            && DateOnly.TryParse(query.AvailabilityDate, out var parsedDate))
+        {
+            availabilityDate = parsedDate;
+        }
+
         var destId = query.DestinationId;
 
         var countSpec = new UserTourCatalogFilterSpecification(
@@ -262,6 +267,24 @@ public class UserTourCatalogService(
         var hours = maxHours is > 0 ? maxHours.Value : 0.0;
 
         return Result.Ok(new MaxDurationHoursResponseDto { MaxDurationHours = hours });
+    }
+
+    public async Task<Result<MaxPriceResponseDto>> GetMaxPriceForDestinationAsync(Guid destinationId)
+    {
+        if (destinationId == Guid.Empty)
+            return Result.Fail<MaxPriceResponseDto>("DestinationId is required.");
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var spec = new ToursWithFutureSchedulesForDestinationSpecification(destinationId, today);
+        var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
+        var tours = await tourRepo.GetAllAsync(spec);
+
+        var maxPrice = tours
+            .SelectMany(t => t.Prices)
+            .Where(p => !p.IsDeleted)
+            .Max(p => (decimal?)p.RetailPrice) ?? 0m;
+
+        return Result.Ok(new MaxPriceResponseDto { MaxPrice = maxPrice });
     }
 
     public async Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null)

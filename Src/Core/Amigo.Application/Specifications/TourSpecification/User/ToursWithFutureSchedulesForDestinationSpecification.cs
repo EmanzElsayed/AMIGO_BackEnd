@@ -11,6 +11,7 @@ public class ToursWithFutureSchedulesForDestinationSpecification : BaseSpecifica
     public ToursWithFutureSchedulesForDestinationSpecification(Guid destinationId, DateOnly todayUtc)
         : base(BuildCriteria(destinationId, todayUtc))
     {
+        AddInclude(t => t.Prices);
     }
 
     private static Expression<Func<Tour, bool>> BuildCriteria(Guid destinationId, DateOnly todayUtc)

@@ -13,6 +13,8 @@ public interface IUserTourCatalogService
 
     Task<Result<MaxDurationHoursResponseDto>> GetMaxDurationHoursForDestinationAsync(Guid destinationId);
 
+    Task<Result<MaxPriceResponseDto>> GetMaxPriceForDestinationAsync(Guid destinationId);
+
     Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null);
 
     Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 10);
