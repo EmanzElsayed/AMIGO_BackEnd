@@ -7,7 +7,13 @@ public class GetTopDestinationsQuery
     private const int DefaultPageSize = 5;
     private const int MaxPageSize = 50;
 
-    public int PageNumber { get; set; } = 1;
+    private int _pageNumber = 1;
+
+    public int PageNumber
+    {
+        get => _pageNumber;
+        set => _pageNumber = value < 1 ? 1 : value;
+    }
 
     private int pageSize = DefaultPageSize;
 

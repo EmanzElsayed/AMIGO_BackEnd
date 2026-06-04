@@ -7,11 +7,11 @@ namespace Amigo.Application.Specifications.BookingSpecification
 {
     public class GetBookingsForReminderSpecification : BaseSpecification<Booking, Guid>
     {
-        public GetBookingsForReminderSpecification(DateTime from , DateTime to)
+        public GetBookingsForReminderSpecification(DateTime before24Hours, DateTime now)
             : base(b => !b.IsDeleted 
             && b.Status == BookingStatus.Confirmed 
-            &&  b.OrderItem.TourDate.ToDateTime(b.OrderItem.StartTime) >= from 
-            && b.OrderItem.TourDate.ToDateTime(b.OrderItem.StartTime) <= to)
+            &&  b.OrderItem.TourDate.ToDateTime(b.OrderItem.StartTime) <= before24Hours
+            && b.OrderItem.TourDate.ToDateTime(b.OrderItem.StartTime) > now)
         {
         }
     }

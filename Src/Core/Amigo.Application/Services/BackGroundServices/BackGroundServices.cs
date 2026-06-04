@@ -270,13 +270,13 @@ public sealed class BookingBackgroundService(
     IUnitOfWork unitOfWork)
     {
         var now = DateTime.UtcNow;
+        var before24Hours = now.AddHours(24);
 
-        var from = now.AddHours(23);
-        var to = now.AddHours(25);
+       
 
         var bookings = await unitOfWork
             .GetRepository<Booking, Guid>()
-            .GetAllAsync(new GetBookingsForReminderSpecification(from, to));
+            .GetAllAsync(new GetBookingsForReminderSpecification(before24Hours, now));
 
         foreach (var booking in bookings)
         {
