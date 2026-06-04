@@ -22,6 +22,11 @@ namespace Amigo.Application.Services.AutoTranslation
                 apiKey: apiKey);
         }
 
+        public Task<List<DestinationTranslationAiResult>> TranslateDestinationAsync(DestinationTranslationItem destination, SupportedLanguage sourceLanguage)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<List<TourTranslationAiResult>> TranslateTourAsync(TourTranslationItem tour, SupportedLanguage sourceLanguage)
         {
             throw new NotImplementedException();

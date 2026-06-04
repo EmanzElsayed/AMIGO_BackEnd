@@ -14,6 +14,72 @@ namespace Amigo.Application.Services.AutoTranslation
                         ITourTranslationQueryService _queryService)
                 : IAutoTranslationService
     {
+        public async Task<Result> TranslateDestination(SupportedLanguage sourceLanguage, DestinationTranslationItem destinationTranslationItem)
+        {
+            if (destinationTranslationItem is null)
+            {
+                return Result.Fail("Not Found Tour");
+            }
+            try
+            {
+                // 3. Call OpenAI 
+                var result =
+                    await _aiService.TranslateDestinationAsync(destinationTranslationItem, sourceLanguage);
+                // 4. Map back to DB
+
+                var destinationTranslation = new List<DestinationTranslation>();
+
+
+                var existingDestination = await _unitOfWork
+                   .GetRepository<DestinationTranslation, Guid>()
+                   .GetAllWithTrackingAsync();
+
+                var destinationMap = existingDestination
+                 .ToDictionary(x => (x.DestinationId, x.Language));
+
+                foreach (var lang in result)
+                {
+                    var language =
+                        Enum.Parse<SupportedLanguage>(lang.Language, true);
+
+
+
+
+                    if (lang.Destination != null)
+                    {
+                        if (destinationMap.TryGetValue((lang.Destination.DestinationId, language), out var existingDest))
+                        {
+                            existingDest.Name = !string.IsNullOrWhiteSpace(lang.Destination.Name) ? lang.Destination.Name : existingDest.Name;
+                        }
+                        else
+                        {
+                            destinationTranslation.Add(
+                           new DestinationTranslation
+                           {
+                               DestinationId = lang.Destination.DestinationId,
+                               Language = language,
+                               Name = lang.Destination.Name
+                           });
+                        }
+
+
+                    }
+
+                }
+                if (destinationTranslation.Any())
+
+                    await _unitOfWork.GetRepository<DestinationTranslation, Guid>().AddRangeAsync(destinationTranslation);
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.Ok().WithSuccess(new Success("Destination Translated Successfully"));
+
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+
+            }
+        }
 
         public async Task<Result> TranslateTour(SupportedLanguage sourceLanguage , TourTranslationItem tourTranslationItem)
         {
@@ -29,7 +95,7 @@ namespace Amigo.Application.Services.AutoTranslation
                     await _aiService.TranslateTourAsync(tourTranslationItem,sourceLanguage);
                 // 4. Map back to DB
                 var tourTranslations = new List<TourTranslation>();
-                var destinationTranslation = new List<DestinationTranslation>();
+               
                 var cancellationTranslation = new List<CancellationTranslation>();
                 var inclustionsTranslation = new List<InclusionTranslation>();
                 var pricesTranslation = new List<PriceTranslation>();
@@ -42,12 +108,6 @@ namespace Amigo.Application.Services.AutoTranslation
                 .ToDictionary(x => (x.TourId, x.Language));
 
 
-                var existingDestination = await _unitOfWork
-                   .GetRepository<DestinationTranslation, Guid>()
-                   .GetAllWithTrackingAsync();
-
-                var destinationMap = existingDestination
-                 .ToDictionary(x => (x.DestinationId, x.Language));
 
                 var existingCancellation = await _unitOfWork
                  .GetRepository<CancellationTranslation, Guid>()
@@ -80,8 +140,8 @@ namespace Amigo.Application.Services.AutoTranslation
                         if (tourMap.TryGetValue((lang.Tour.TourId, language), out var existing))
                         {
                             // UPDATE
-                            existing.Title = lang.Tour.Title;
-                            existing.Description = lang.Tour.Description;
+                            existing.Title = !string.IsNullOrWhiteSpace(lang.Tour.Title) ? lang.Tour.Title : existing.Title;
+                            existing.Description = !string.IsNullOrWhiteSpace(lang.Tour.Description) ? lang.Tour.Description : existing.Description;
                         }
                         else
                         {
@@ -97,34 +157,15 @@ namespace Amigo.Application.Services.AutoTranslation
 
 
 
-                        // Destination (optional separate table)
+                       
 
 
-                        if (lang.Tour.Destination != null)
-                        {
-                            if (destinationMap.TryGetValue((lang.Tour.Destination.DestinationId, language), out var existingDest))
-                            {
-                                existingDest.Name = lang.Tour.Destination.Name;
-                            }
-                            else
-                            {
-                                destinationTranslation.Add(
-                               new DestinationTranslation
-                               {
-                                   DestinationId = lang.Tour.Destination.DestinationId,
-                                   Language = language,
-                                   Name = lang.Tour.Destination.Name
-                               });
-                            }
-
-
-                        }
-                        // Cancellation
+                        //// Cancellation
                         if (lang.Tour.Cancellation != null)
                         {
                             if (cancellationMap.TryGetValue((lang.Tour.Cancellation.CancellationId, language), out var exisingCancellation))
                             {
-                                exisingCancellation.Description = lang.Tour.Cancellation.Description;
+                                exisingCancellation.Description = !string.IsNullOrWhiteSpace(lang.Tour.Cancellation.Description) ? lang.Tour.Cancellation.Description : exisingCancellation.Description;
                             }
                             else
                             {
@@ -140,12 +181,14 @@ namespace Amigo.Application.Services.AutoTranslation
 
                         }
 
-                        // Inclusions
+                    // Inclusions
+                    if (lang.Tour.Inclusions is not null)
+                    {
                         foreach (var inc in lang.Tour.Inclusions)
                         {
                             if (inclustionMap.TryGetValue((inc.InclusionId, language), out var inclustion))
                             {
-                                inclustion.Text = inc.Text;
+                                inclustion.Text = !string.IsNullOrWhiteSpace(inc.Text) ? inc.Text : inclustion.Text;
                             }
                             else
                             {
@@ -159,14 +202,18 @@ namespace Amigo.Application.Services.AutoTranslation
                             }
 
                         }
+                    }
 
-                        // Prices
+
+                    // Prices
+                    if (lang.Tour.Prices is not null)
+                    {
                         foreach (var price in lang.Tour.Prices)
                         {
                             if (priceMap.TryGetValue((price.PriceId, language), out var exPrice))
                             {
-                                exPrice.ActivityType = price.ActivityType;
-                                exPrice.Type = price.Type;
+                                exPrice.ActivityType = !string.IsNullOrWhiteSpace(price.ActivityType) ? price.ActivityType : exPrice.ActivityType;
+                                exPrice.Type = !string.IsNullOrWhiteSpace(price.Type) ? price.Type : exPrice.Type;
                             }
                             else
                             {
@@ -182,6 +229,8 @@ namespace Amigo.Application.Services.AutoTranslation
                             }
 
                         }
+                    }
+                        
                     
                 }
                 // 5. Bulk save
@@ -193,9 +242,7 @@ namespace Amigo.Application.Services.AutoTranslation
                 if (pricesTranslation.Any())
 
                     await _unitOfWork.GetRepository<PriceTranslation, Guid>().AddRangeAsync(pricesTranslation);
-                if (destinationTranslation.Any())
-
-                    await _unitOfWork.GetRepository<DestinationTranslation, Guid>().AddRangeAsync(destinationTranslation);
+                  
                 if (inclustionsTranslation.Any())
 
                     await _unitOfWork.GetRepository<InclusionTranslation, Guid>().AddRangeAsync(inclustionsTranslation);
@@ -306,28 +353,9 @@ namespace Amigo.Application.Services.AutoTranslation
 
 
 
-                        // Destination (optional separate table)
 
                         
-                        if (tour.Destination != null)
-                        {
-                            if (destinationMap.TryGetValue((tour.Destination.DestinationId, language), out var existingDest))
-                            {
-                                existingDest.Name = tour.Destination.Name;
-                            }
-                            else
-                            {
-                                destinationTranslation.Add(
-                               new DestinationTranslation
-                               {
-                                   DestinationId = tour.Destination.DestinationId,
-                                   Language = language,
-                                   Name = tour.Destination.Name
-                               });
-                            }
-
-                           
-                        }
+                       
                         // Cancellation
                         if (tour.Cancellation != null)
                         {

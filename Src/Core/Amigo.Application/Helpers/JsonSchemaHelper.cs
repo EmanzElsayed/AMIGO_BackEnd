@@ -50,7 +50,20 @@ namespace Amigo.Application.Helpers
             """;
         }
 
-
+        public static string GenerateDestinationTranslationSchema()
+        {
+             return """
+            [
+              {
+                "language": "string",
+                "destination": {
+                  "destinationId":  "guid",
+                  "name": "string"
+                }
+              }
+            ]
+            """;
+        }
         public static string GenerateTourTranslationSchema()
         {
             return """
@@ -62,11 +75,6 @@ namespace Amigo.Application.Helpers
                     "tourId": "guid",
                     "title": "string",
                     "description": "string",
-
-                    "destination": {
-                      "destinationId": "guid",
-                      "name": "string"
-                    },
 
                     "cancellation": {
                       "cancellationId": "guid",

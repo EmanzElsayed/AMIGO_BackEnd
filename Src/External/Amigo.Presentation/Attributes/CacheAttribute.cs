@@ -63,6 +63,8 @@ namespace Amigo.Presentation.Attributes
                .Split('-')[0]
                .ToLower();
 
+            Key.Append($":lang-{language}");
+
             var currency = request.Headers["Accept-Currency"]
               .FirstOrDefault()?
               .Split(',')[0]

@@ -180,7 +180,7 @@ namespace Amigo.Application.Services
                 {
                     existing.Rate = item.Rate;
                     existing.FetchedAt = now;
-                    existing.ExpiresAt = now.AddHours(1);
+                    existing.ExpiresAt = now.AddMinutes(30);
                 }
                 else
                 {
@@ -190,7 +190,7 @@ namespace Amigo.Application.Services
                         TargetCurrency = item.TargetCurrency,
                         Rate = item.Rate,
                         FetchedAt = now,
-                        ExpiresAt = now.AddHours(1)
+                        ExpiresAt = now.AddMinutes(30)
                     });
                 }
 
@@ -225,7 +225,7 @@ namespace Amigo.Application.Services
                     TargetCurrency = to,
                     Rate = rate,
                     FetchedAt = DateTime.UtcNow,
-                    ExpiresAt = DateTime.UtcNow.AddHours(1)
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(30)
                 };
 
                 await _repo.AddAsync(existing);
@@ -234,7 +234,7 @@ namespace Amigo.Application.Services
             {
                 existing.Rate = rate;
                 existing.FetchedAt = DateTime.UtcNow;
-                existing.ExpiresAt = DateTime.UtcNow.AddHours(1);
+                existing.ExpiresAt = DateTime.UtcNow.AddMinutes(30);
             }
 
             // 2. Cache
@@ -273,7 +273,7 @@ namespace Amigo.Application.Services
             await _cacheService.SetAsync(
                 key,
                 rate,
-                TimeSpan.FromHours(1));
+                TimeSpan.FromMinutes(25));
 
         }
     }
