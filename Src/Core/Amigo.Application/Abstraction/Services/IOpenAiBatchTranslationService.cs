@@ -7,7 +7,10 @@ namespace Amigo.Application.Abstraction.Services
 {
     public interface IOpenAiBatchTranslationService
     {
-        Task<List<TourTranslationAiResult>> TranslateToursAsync( List<TourTranslationItem> tours);
-
+        Task<List<ToursTranslationAiResult>> TranslateToursAsync( List<TourTranslationItem> tours);
+        public Task<List<TourTranslationAiResult>> TranslateTourAsync(
+         TourTranslationItem tour,
+         SupportedLanguage sourceLanguage
+         );
     }
 }

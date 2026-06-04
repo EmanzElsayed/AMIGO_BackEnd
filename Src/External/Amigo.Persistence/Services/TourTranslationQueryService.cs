@@ -72,10 +72,15 @@ namespace Amigo.Persistence.Services
                             Type = p.Translations
                                 .Where(x => x.Language == baseLanguage)
                                 .Select(x => x.Type)
+                                .FirstOrDefault() ?? "",
+                            ActivityType =  p.Translations
+                                .Where(x => x.Language == baseLanguage)
+                                .Select(x => x.ActivityType)
                                 .FirstOrDefault() ?? ""
+
                         })
                         .ToList()
-                })
+                }).Take(1)
                 .ToListAsync();
         }
 

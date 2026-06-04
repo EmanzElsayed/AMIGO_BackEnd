@@ -1,6 +1,8 @@
 ﻿using Amigo.Domain.DTO.Enums;
+using Amigo.Domain.DTO.Translation;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
+using PayPalCheckoutSdk.Orders;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,12 +15,207 @@ namespace Amigo.Application.Services.AutoTranslation
                 : IAutoTranslationService
     {
 
+        public async Task<Result> TranslateTour(SupportedLanguage sourceLanguage , TourTranslationItem tourTranslationItem)
+        {
+            if (tourTranslationItem is null)
+            {
+                return Result.Fail("Not Found Tour");
+            }
 
+            try
+            {
+                // 3. Call OpenAI 
+                var result =
+                    await _aiService.TranslateTourAsync(tourTranslationItem,sourceLanguage);
+                // 4. Map back to DB
+                var tourTranslations = new List<TourTranslation>();
+                var destinationTranslation = new List<DestinationTranslation>();
+                var cancellationTranslation = new List<CancellationTranslation>();
+                var inclustionsTranslation = new List<InclusionTranslation>();
+                var pricesTranslation = new List<PriceTranslation>();
+
+                var existingTours = await _unitOfWork
+                    .GetRepository<TourTranslation, Guid>()
+                    .GetAllWithTrackingAsync();
+
+                var tourMap = existingTours
+                .ToDictionary(x => (x.TourId, x.Language));
+
+
+                var existingDestination = await _unitOfWork
+                   .GetRepository<DestinationTranslation, Guid>()
+                   .GetAllWithTrackingAsync();
+
+                var destinationMap = existingDestination
+                 .ToDictionary(x => (x.DestinationId, x.Language));
+
+                var existingCancellation = await _unitOfWork
+                 .GetRepository<CancellationTranslation, Guid>()
+                 .GetAllWithTrackingAsync();
+
+                var cancellationMap = existingCancellation
+                 .ToDictionary(x => (x.CancellationId, x.Language));
+
+                var existingPrice = await _unitOfWork
+               .GetRepository<PriceTranslation, Guid>()
+               .GetAllWithTrackingAsync();
+
+                var priceMap = existingPrice
+                 .ToDictionary(x => (x.PriceId, x.Language));
+
+                var existingInclustion = await _unitOfWork
+              .GetRepository<InclusionTranslation, Guid>()
+              .GetAllWithTrackingAsync();
+
+                var inclustionMap = existingInclustion
+                 .ToDictionary(x => (x.TourInclusionId, x.Language));
+
+
+                foreach (var lang in result)
+                {
+                    var language =
+                        Enum.Parse<SupportedLanguage>(lang.Language, true);
+
+
+                        if (tourMap.TryGetValue((lang.Tour.TourId, language), out var existing))
+                        {
+                            // UPDATE
+                            existing.Title = lang.Tour.Title;
+                            existing.Description = lang.Tour.Description;
+                        }
+                        else
+                        {
+                            tourTranslations.Add(new TourTranslation
+                            {
+                                TourId = lang.Tour.TourId,
+                                Language = language,
+                                Title = lang.Tour.Title,
+                                Description = lang.Tour.Description
+                            });
+                        }
+
+
+
+
+                        // Destination (optional separate table)
+
+
+                        if (lang.Tour.Destination != null)
+                        {
+                            if (destinationMap.TryGetValue((lang.Tour.Destination.DestinationId, language), out var existingDest))
+                            {
+                                existingDest.Name = lang.Tour.Destination.Name;
+                            }
+                            else
+                            {
+                                destinationTranslation.Add(
+                               new DestinationTranslation
+                               {
+                                   DestinationId = lang.Tour.Destination.DestinationId,
+                                   Language = language,
+                                   Name = lang.Tour.Destination.Name
+                               });
+                            }
+
+
+                        }
+                        // Cancellation
+                        if (lang.Tour.Cancellation != null)
+                        {
+                            if (cancellationMap.TryGetValue((lang.Tour.Cancellation.CancellationId, language), out var exisingCancellation))
+                            {
+                                exisingCancellation.Description = lang.Tour.Cancellation.Description;
+                            }
+                            else
+                            {
+                                cancellationTranslation.Add(
+                                      new CancellationTranslation
+                                      {
+                                          CancellationId = lang.Tour.Cancellation.CancellationId,
+                                          Language = language,
+                                          Description = lang.Tour.Cancellation.Description
+                                      });
+                            }
+
+
+                        }
+
+                        // Inclusions
+                        foreach (var inc in lang.Tour.Inclusions)
+                        {
+                            if (inclustionMap.TryGetValue((inc.InclusionId, language), out var inclustion))
+                            {
+                                inclustion.Text = inc.Text;
+                            }
+                            else
+                            {
+                                inclustionsTranslation.Add(
+                                        new InclusionTranslation
+                                        {
+                                            TourInclusionId = inc.InclusionId,
+                                            Language = language,
+                                            Text = inc.Text
+                                        });
+                            }
+
+                        }
+
+                        // Prices
+                        foreach (var price in lang.Tour.Prices)
+                        {
+                            if (priceMap.TryGetValue((price.PriceId, language), out var exPrice))
+                            {
+                                exPrice.ActivityType = price.ActivityType;
+                                exPrice.Type = price.Type;
+                            }
+                            else
+                            {
+                                pricesTranslation.Add(
+                                    new PriceTranslation
+                                    {
+                                        PriceId = price.PriceId,
+                                        Language = language,
+                                        Type = price.Type,
+                                        ActivityType = price.ActivityType
+
+                                    });
+                            }
+
+                        }
+                    
+                }
+                // 5. Bulk save
+                if (tourTranslations.Any())
+                    await _unitOfWork.GetRepository<TourTranslation, Guid>().AddRangeAsync(tourTranslations);
+                if (cancellationTranslation.Any())
+
+                    await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
+                if (pricesTranslation.Any())
+
+                    await _unitOfWork.GetRepository<PriceTranslation, Guid>().AddRangeAsync(pricesTranslation);
+                if (destinationTranslation.Any())
+
+                    await _unitOfWork.GetRepository<DestinationTranslation, Guid>().AddRangeAsync(destinationTranslation);
+                if (inclustionsTranslation.Any())
+
+                    await _unitOfWork.GetRepository<InclusionTranslation, Guid>().AddRangeAsync(inclustionsTranslation);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return Result.Ok().WithSuccess(new Success("Tours Translated Successfully"));
+
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+
+            }
+        }
 
         public async Task<Result> TranslateAllPendingTours(GetLanguageFromBodyDTO requestDto)
         {
 
-            SupportedLanguage baseLanguage = EnumsMapping.ToLanguageEnum(requestDto.language);
+            SupportedLanguage baseLanguage = EnumsMapping.ToLanguageEnum(requestDto.Language);
             
             // 1. Get data
 
@@ -44,6 +241,43 @@ namespace Amigo.Application.Services.AutoTranslation
                 var inclustionsTranslation = new List<InclusionTranslation>();
                 var pricesTranslation = new List<PriceTranslation>();
 
+                var existingTours = await _unitOfWork
+                    .GetRepository<TourTranslation, Guid>()
+                    .GetAllWithTrackingAsync();
+
+                var tourMap = existingTours
+                .ToDictionary(x => (x.TourId, x.Language));
+
+
+                var existingDestination = await _unitOfWork
+                   .GetRepository<DestinationTranslation, Guid>()
+                   .GetAllWithTrackingAsync();
+
+                var destinationMap = existingDestination
+                 .ToDictionary(x => ( x.DestinationId, x.Language ));
+
+                var existingCancellation = await _unitOfWork
+                 .GetRepository<CancellationTranslation, Guid>()
+                 .GetAllWithTrackingAsync();
+
+                var cancellationMap = existingCancellation
+                 .ToDictionary(x => (x.CancellationId, x.Language ));
+
+                var existingPrice = await _unitOfWork
+               .GetRepository<PriceTranslation, Guid>()
+               .GetAllWithTrackingAsync();
+
+                var priceMap = existingPrice
+                 .ToDictionary(x => ( x.PriceId, x.Language ));
+
+                var existingInclustion = await _unitOfWork
+              .GetRepository<InclusionTranslation, Guid>()
+              .GetAllWithTrackingAsync();
+
+                var inclustionMap = existingInclustion
+                 .ToDictionary(x => ( x.TourInclusionId, x.Language ));
+
+
                 foreach (var lang in result)
                 {
                     var language =
@@ -51,71 +285,131 @@ namespace Amigo.Application.Services.AutoTranslation
 
                     foreach (var tour in lang.Tours)
                     {
-                        tourTranslations.Add(new TourTranslation
+
+                        if ( tourMap.TryGetValue((tour.TourId, language), out var existing))
                         {
-                            TourId = tour.TourId,
-                            Language = language,
-                            Title = tour.Title,
-                            Description = tour.Description
-                        });
+                            // UPDATE
+                            existing.Title = tour.Title;
+                            existing.Description = tour.Description;
+                        }
+                        else
+                        {
+                            tourTranslations.Add(new TourTranslation
+                            {
+                                TourId = tour.TourId,
+                                Language = language,
+                                Title = tour.Title,
+                                Description = tour.Description
+                            });
+                        }
+
+
 
 
                         // Destination (optional separate table)
+
+                        
                         if (tour.Destination != null)
                         {
-                            destinationTranslation.Add(
-                                new DestinationTranslation
-                                {
-                                    DestinationId = tour.Destination.DestinationId,
-                                    Language = language,
-                                    Name = tour.Destination.Name
-                                });
+                            if (destinationMap.TryGetValue((tour.Destination.DestinationId, language), out var existingDest))
+                            {
+                                existingDest.Name = tour.Destination.Name;
+                            }
+                            else
+                            {
+                                destinationTranslation.Add(
+                               new DestinationTranslation
+                               {
+                                   DestinationId = tour.Destination.DestinationId,
+                                   Language = language,
+                                   Name = tour.Destination.Name
+                               });
+                            }
+
+                           
                         }
                         // Cancellation
                         if (tour.Cancellation != null)
                         {
-                            cancellationTranslation.Add(
-                                new CancellationTranslation
-                                {
-                                    CancellationId = tour.Cancellation.CancellationId,
-                                    Language = language,
-                                    Description = tour.Cancellation.Description
-                                });
+                            if (cancellationMap.TryGetValue((tour.Cancellation.CancellationId, language), out var exisingCancellation))
+                            {
+                                exisingCancellation.Description = tour.Cancellation.Description;
+                            }
+                            else
+                            {
+                                cancellationTranslation.Add(
+                                      new CancellationTranslation
+                                      {
+                                          CancellationId = tour.Cancellation.CancellationId,
+                                          Language = language,
+                                          Description = tour.Cancellation.Description
+                                      });
+                            }
+
+                              
                         }
 
                         // Inclusions
                         foreach (var inc in tour.Inclusions)
                         {
-                            inclustionsTranslation.Add(
-                                new InclusionTranslation
-                                {
-                                    TourInclusionId = inc.InclusionId,
-                                    Language = language,
-                                    Text = inc.Text
-                                });
+                            if (inclustionMap.TryGetValue((inc.InclusionId, language), out var inclustion))
+                            {
+                                inclustion.Text = inc.Text;
+                            }
+                            else
+                            {
+                                inclustionsTranslation.Add(
+                                        new InclusionTranslation
+                                        {
+                                            TourInclusionId = inc.InclusionId,
+                                            Language = language,
+                                            Text = inc.Text
+                                        });
+                            }
+                                
                         }
 
                         // Prices
                         foreach (var price in tour.Prices)
                         {
-                            pricesTranslation.Add(
-                                new PriceTranslation
-                                {
-                                    PriceId = price.PriceId,
-                                    Language = language,
-                                    Type = price.Type
-                                });
+                            if (priceMap.TryGetValue((price.PriceId, language), out var exPrice))
+                            {
+                                exPrice.ActivityType = price.ActivityType;
+                                exPrice.Type = price.Type;
+                            }
+                            else
+                            {
+                                pricesTranslation.Add(
+                                    new PriceTranslation
+                                    {
+                                        PriceId = price.PriceId,
+                                        Language = language,
+                                        Type = price.Type,
+                                        ActivityType = price.ActivityType
+
+                                    });
+                            }
+                                
                         }
                     }
                 }
                 // 5. Bulk save
-                await _unitOfWork.GetRepository<TourTranslation, Guid>().AddRangeAsync(tourTranslations);
-                await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
-                await _unitOfWork.GetRepository<PriceTranslation, Guid>().AddRangeAsync(pricesTranslation);
-                await _unitOfWork.GetRepository<DestinationTranslation, Guid>().AddRangeAsync(destinationTranslation);
-                await _unitOfWork.GetRepository<InclusionTranslation, Guid>().AddRangeAsync(inclustionsTranslation);
+                if(tourTranslations.Any())
+                     await _unitOfWork.GetRepository<TourTranslation, Guid>().AddRangeAsync(tourTranslations);
+                if(cancellationTranslation.Any())
 
-                await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
+                if (pricesTranslation.Any())
+
+                    await _unitOfWork.GetRepository<PriceTranslation, Guid>().AddRangeAsync(pricesTranslation);
+                if (destinationTranslation.Any())
+
+                    await _unitOfWork.GetRepository<DestinationTranslation, Guid>().AddRangeAsync(destinationTranslation);
+                if (inclustionsTranslation.Any())
+
+                    await _unitOfWork.GetRepository<InclusionTranslation, Guid>().AddRangeAsync(inclustionsTranslation);
+
+                    await _unitOfWork.SaveChangesAsync();
 
                 return Result.Ok().WithSuccess(new Success("Tours Translated Successfully"));
 

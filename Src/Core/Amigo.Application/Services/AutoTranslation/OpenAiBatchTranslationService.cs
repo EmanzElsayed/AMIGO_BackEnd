@@ -22,7 +22,12 @@ namespace Amigo.Application.Services.AutoTranslation
                 apiKey: apiKey);
         }
 
-        public async Task<List<TourTranslationAiResult>>
+        public Task<List<TourTranslationAiResult>> TranslateTourAsync(TourTranslationItem tour, SupportedLanguage sourceLanguage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<ToursTranslationAiResult>>
             TranslateToursAsync(
                 List<TourTranslationItem> tours)
         {
@@ -55,7 +60,7 @@ namespace Amigo.Application.Services.AutoTranslation
                 });
 
             var schema =
-                JsonSchemaHelper.GenerateTourTranslationSchema();
+                JsonSchemaHelper.GenerateToursTranslationSchema();
 
             var prompt = $"""
                 You are a professional tourism translation engine.
@@ -85,17 +90,24 @@ namespace Amigo.Application.Services.AutoTranslation
                 {json}
                 """;
 
-            var response =
-                await _client.CompleteChatAsync(prompt);
+            try
+            {
+                var response = await _client.CompleteChatAsync(prompt);
+                var content =
+                 response.Value.Content[0].Text;
 
-            var content =
-                response.Value.Content[0].Text;
+                var result = JsonSchemaHelper.DeserializeOrThrow<
+                    List<ToursTranslationAiResult>
+                >(content);
 
-            var result = JsonSchemaHelper.DeserializeOrThrow<
-                List<TourTranslationAiResult>
-            >(content);
-
-            return result ?? new();
+                return result ?? new();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+         
         }
     }
 }

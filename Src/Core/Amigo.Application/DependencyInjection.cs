@@ -167,7 +167,10 @@ public static class DependencyInjection
         services.AddScoped<ICurrencyProvider, CurrencyApiProvider>();
         services.AddScoped<Func<ICurrencyProvider>>(provider => () => provider.GetRequiredService<ICurrencyProvider>());
 
-        services.AddScoped<IOpenAiBatchTranslationService, OpenAiBatchTranslationService>();
+        //services.AddScoped<IOpenAiBatchTranslationService, OpenAiBatchTranslationService>();
+        //services.AddScoped<Func<IOpenAiBatchTranslationService>>(provider => () => provider.GetRequiredService<IOpenAiBatchTranslationService>());
+
+        services.AddScoped<IOpenAiBatchTranslationService, GeminiBatchTranslationService>();
         services.AddScoped<Func<IOpenAiBatchTranslationService>>(provider => () => provider.GetRequiredService<IOpenAiBatchTranslationService>());
 
         services.AddScoped<IAutoTranslationService, TourBatchTranslationService>();

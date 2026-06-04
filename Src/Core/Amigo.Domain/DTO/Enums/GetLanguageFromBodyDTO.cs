@@ -6,6 +6,6 @@ namespace Amigo.Domain.DTO.Enums
 {
     public record GetLanguageFromBodyDTO
     (
-       string language  
+       string Language  
      );
 }

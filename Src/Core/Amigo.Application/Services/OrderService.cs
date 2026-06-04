@@ -5,6 +5,7 @@ using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Order;
 using Amigo.Domain.Entities;
 using Amigo.SharedKernal.DTOs.Tour;
+using MailKit.Search;
 using PayPalCheckoutSdk.Orders;
 using Stripe.Climate;
 using System;
@@ -31,10 +32,18 @@ namespace Amigo.Application.Services
             
             var totalItems = await orderRepo.GetCountSpecificationAsync(new GetCountOfOrdersSpecification(userId, query));
 
+            var tourIds = orders
+                .SelectMany(o => o.OrderItems)
+                .Where(i => i.TourId.HasValue)
+                .Select(i => i.TourId!.Value)
+                .Distinct()
+                .ToList();
 
+            var imageDict =
+                        await _unitOfWork.TourRepo
+                            .GetFirstTourImagesAsync(tourIds);
 
-
-            var mappedOrders = orders.ToDTOs();
+            var mappedOrders = orders.ToDTOs(imageDict);
 
             var totalPages = query.PageSize <= 0
                 ? 0
@@ -73,15 +82,14 @@ namespace Amigo.Application.Services
 
 
             var tourIds = order.OrderItems.Where(i => i.TourId.HasValue).Select(i => i.TourId!.Value).Distinct().ToList();
-            var imageRepo = _unitOfWork.GetRepository<TourImage, Guid>();
-            var images = await imageRepo.GetAllAsync(new GetAllImagesWithToursIdsSpecification(tourIds));
+           
+           
 
-            var imageMap = images
-              .GroupBy(img => img.TourId)
-              .ToDictionary(g => g.Key, g => g.OrderBy(x => x.CreatedDate).Select(x => x.ImageUrl).FirstOrDefault());
+            var imageDict =
+                        await _unitOfWork.TourRepo
+                            .GetFirstTourImagesAsync(tourIds);
 
-
-            var mappedOrder = order.ToDTO();
+            var mappedOrder = order.ToDTO(imageDict);
 
             return Result.Ok(mappedOrder);
 

@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Amigo.Domain.Abstraction.Repositories
 {
-    internal class TourRepository
+    public interface ITourRepo
     {
+
+        Task<Dictionary<Guid, string?>> GetFirstTourImagesAsync(
+         IEnumerable<Guid> tourIds);
     }
 }

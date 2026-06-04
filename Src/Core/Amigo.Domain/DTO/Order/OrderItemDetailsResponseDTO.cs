@@ -11,6 +11,7 @@ namespace Amigo.Domain.DTO.Order
         string? BookingNumber,
         string? BookingStatus,
         Guid? TourId,
+        
         string TourTitle,
         string DestinationName,
         DateOnly TourDate,
@@ -19,8 +20,8 @@ namespace Amigo.Domain.DTO.Order
         string CancelationPolicyType,
          TimeSpan CancellationBefore,
          decimal RefundPercentage,
-         List<OrderedPricesResponseDTO> Prices
-
+         List<OrderedPricesResponseDTO> Prices,
+        string? TourImage = null
 
     );
 }

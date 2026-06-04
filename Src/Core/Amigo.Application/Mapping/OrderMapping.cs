@@ -8,8 +8,8 @@ using System.Text;
 namespace Amigo.Application.Mapping
 {
     public static class OrderMapping
-    {
-        public static List<OrderDetailsDTO> ToDTOs(this IEnumerable<Order> orders)
+    { 
+        public static List<OrderDetailsDTO> ToDTOs(this IEnumerable<Order> orders,Dictionary<Guid,string?>? tourImages)
         {
             return orders.Select(o => new OrderDetailsDTO(
                      OrderId: o.Id,
@@ -37,6 +37,9 @@ namespace Amigo.Application.Mapping
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
 
                             TourId: item.TourId,
+                            TourImage: tourImages is null || item.TourId is null ? null : ( tourImages.TryGetValue(item.TourId.Value, out var image)
+                                                ? image : null
+                                                ),
                             TourTitle: item.TourTitle,
                             DestinationName: item.DestinationName,
                             TourDate: item.TourDate,
@@ -65,7 +68,7 @@ namespace Amigo.Application.Mapping
 
 
 
-        public static OrderDetailsDTO ToDTO(this Order o)
+        public static OrderDetailsDTO ToDTO(this Order o, Dictionary<Guid, string?>? tourImages)
         {
             return new OrderDetailsDTO( 
 
@@ -93,6 +96,9 @@ namespace Amigo.Application.Mapping
                             BookingNumber: item.Booking is null ? "" : item.Booking.BookingNumber,
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
                             TourId: item.TourId,
+                             TourImage: tourImages is null || item.TourId is null ? null : (tourImages.TryGetValue(item.TourId.Value, out var image)
+                                                ? image : null
+                                                ),
                             TourTitle: item.TourTitle,
                             DestinationName: item.DestinationName,
                             TourDate: item.TourDate,

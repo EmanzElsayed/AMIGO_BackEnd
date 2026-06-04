@@ -23,12 +23,23 @@ namespace Amigo.Application.Services.BackGroundServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var workItem = await _queue.DequeueAsync(stoppingToken);
+                try
+                {
+                    var workItem =
+                        await _queue.DequeueAsync(stoppingToken);
 
-               
-                using var scope = _serviceProvider.CreateScope();
+                    using var scope =
+                        _serviceProvider.CreateScope();
 
-                await workItem(scope.ServiceProvider, stoppingToken);
+                    await workItem(
+                        scope.ServiceProvider,
+                        stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(
+                        $"Background job failed: {ex}");
+                }
             }
         }
     }

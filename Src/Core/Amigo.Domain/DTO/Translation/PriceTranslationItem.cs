@@ -8,5 +8,7 @@ namespace Amigo.Domain.DTO.Translation
     {
         public Guid PriceId { get; set; }
         public string Type { get; set; } = null!;
+
+        public string? ActivityType { get; set; } 
     }
 }

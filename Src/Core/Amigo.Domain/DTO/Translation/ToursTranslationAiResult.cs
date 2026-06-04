@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Amigo.Domain.DTO.Translation
 {
-    public class TourTranslationAiResult
+    public class ToursTranslationAiResult
     {
         public string Language { get; set; } = null!;
 
-        public TourTranslationItem Tour { get; set; }
+        public List<TourTranslationItem> Tours { get; set; }
             = new();
     }
 }
