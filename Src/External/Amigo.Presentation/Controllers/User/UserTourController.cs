@@ -6,15 +6,18 @@ using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Logging;
+
 using System.Security.Claims;
 
 namespace Amigo.Presentation.Controllers.User;
 
 [Route("api/v1/user/tour")]
 public class UserTourController(
-                   
+
                     IServiceManager _serviceManager,
-                    UserManager<ApplicationUser> _userManager)
+                    UserManager<ApplicationUser> _userManager,
+                    Microsoft.Extensions.Logging.ILogger<UserTourController> _logger)
                      : BaseController
 {
     [EnableRateLimiting("token")]
@@ -23,8 +26,10 @@ public class UserTourController(
     //[Cache(900)]
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
     {
+        _logger.LogInformation("GetTours called: DestinationId={DestinationId}, AvailabilityDate={AvailabilityDate}, Language={Language}, Page={PageNumber}, Size={PageSize}", query.DestinationId, query.AvailabilityDate, query.Language, query.PageNumber, query.PageSize);
         var userType = await ResolveEffectiveUserTypeAsync();
         query.UserType = userType;
+        _logger.LogInformation("GetTours forwarding to service with UserType={UserTypeEffective}", userType);
         return await _serviceManager.UserTourCatalogService.GetToursAsync(query);
     }
 

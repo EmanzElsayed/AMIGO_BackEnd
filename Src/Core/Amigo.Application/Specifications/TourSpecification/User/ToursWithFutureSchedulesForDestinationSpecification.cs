@@ -20,9 +20,6 @@ public class ToursWithFutureSchedulesForDestinationSpecification : BaseSpecifica
             && !t.IsDeleted
             && t.AvailableTimes.Any(ts =>
                 !ts.IsDeleted
-                && (ts.EndDate == null || ts.EndDate >= todayUtc)
-                && ts.AvailableSlots.Any(s =>
-                    !s.IsDeleted
-                    && s.AvailableTimeStatus == AvailableDateTimeStatus.Available));
+                && (ts.EndDate == null || ts.EndDate >= todayUtc));
     }
 }

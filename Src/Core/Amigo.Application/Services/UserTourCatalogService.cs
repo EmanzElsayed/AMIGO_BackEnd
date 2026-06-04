@@ -9,6 +9,7 @@ using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
+using System.Globalization;
 using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.DTOs.Tour;
@@ -16,6 +17,7 @@ using Amigo.SharedKernal.QueryParams;
 using System.Collections.Generic;
 using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Extensions.Logging;
 
 namespace Amigo.Application.Services;
 
@@ -24,7 +26,8 @@ public class UserTourCatalogService(
             IUnitOfWork _unitOfWork,
             IDestinationSlugResolver _slugResolver,
             ICurrencyRateService _currencyRateService,
-            ICurrentUserService _currentUserService) 
+            ICurrentUserService _currentUserService,
+            Microsoft.Extensions.Logging.ILogger<UserTourCatalogService> _logger) 
                 : IUserTourCatalogService
 {
     public async Task<Result<PaginatedResponse<UserTourListItemDto>>> GetToursAsync(GetUserToursQuery query)
@@ -32,6 +35,8 @@ public class UserTourCatalogService(
         var validationResult = await _validationService.ValidateAsync(query);
         if (!validationResult.IsSuccess)
             return validationResult;
+
+        _logger.LogInformation("GetToursAsync received raw AvailabilityDate='{AvailabilityDate}' for DestinationId={DestinationId}", query.AvailabilityDate, query.DestinationId);
 
         var listingLang = _currentUserService.Language;
 
@@ -57,10 +62,6 @@ public class UserTourCatalogService(
 
 
         DateOnly? availabilityDate = null;
-        if (!string.IsNullOrWhiteSpace(query.AvailabilityDate)
-            && DateOnly.TryParse(query.AvailabilityDate, out var ad))
-            availabilityDate = ad; // use mapping
-
         var destId = query.DestinationId;
 
         var countSpec = new UserTourCatalogFilterSpecification(
@@ -75,6 +76,7 @@ public class UserTourCatalogService(
 
         var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
         var totalItems = await tourRepo.GetCountSpecificationAsync(countSpec);
+        _logger.LogInformation("GetToursAsync CountSpecification returned {TotalItems} for DestinationId={DestinationId}, AvailabilityDate={AvailabilityDate}", totalItems, destId, availabilityDate.HasValue ? availabilityDate.Value.ToString("yyyy-MM-dd") : "null");
 
         var listSpec = new UserTourCatalogSpecification(
             query,
@@ -88,6 +90,7 @@ public class UserTourCatalogService(
             applyPaging: true);
 
         var tours = (await tourRepo.GetAllAsync(listSpec)).ToList();
+        _logger.LogInformation("GetToursAsync fetched {Count} tours for DestinationId={DestinationId}. TourIds={TourIds}", tours.Count, destId, tours.Select(t => t.Id).ToList());
 
         var tourIds = tours
                 .Select(x => x.Id)
@@ -256,8 +259,7 @@ public class UserTourCatalogService(
         var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
         var maxHours = await tourRepo.MaxAsync(spec, t => t.Duration.TotalHours);
 
-        const double fallbackHours = 24.0;
-        var hours = maxHours is > 0 ? maxHours.Value : fallbackHours;
+        var hours = maxHours is > 0 ? maxHours.Value : 0.0;
 
         return Result.Ok(new MaxDurationHoursResponseDto { MaxDurationHours = hours });
     }
