@@ -8,7 +8,7 @@ using System.Text;
 namespace Amigo.Application.Mapping
 {
     public static class OrderMapping
-    {
+    { 
         public static List<OrderDetailsDTO> ToDTOs(this IEnumerable<Order> orders,Dictionary<Guid,string?>? tourImages)
         {
             return orders.Select(o => new OrderDetailsDTO(

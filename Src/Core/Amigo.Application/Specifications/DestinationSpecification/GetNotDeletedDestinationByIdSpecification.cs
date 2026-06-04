@@ -9,6 +9,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification
         public GetNotDeletedDestinationByIdSpecification(Guid id)
             : base(d => d.Id == id && d.IsDeleted == false)
         {
+            AddInclude(d => d.Translations);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Amigo.Application.Helpers
 {
     public static class JsonSchemaHelper
     {
-        public static string GenerateTourTranslationSchema()
+        public static string GenerateToursTranslationSchema()
         {
             return """
             [
@@ -19,27 +19,28 @@ namespace Amigo.Application.Helpers
                     "title": "string",
                     "description": "string",
 
-                    "destinationTranslationItem": {
+                    "destination": {
                       "destinationId": "guid",
                       "name": "string"
                     },
 
-                    "cancellationTranslationItem": {
+                    "cancellation": {
                       "cancellationId": "guid",
                       "description": "string"
                     },
 
-                    "inclusionTranslationItem": [
+                    "inclusions": [
                       {
                         "inclusionId": "guid",
                         "text": "string"
                       }
                     ],
 
-                    "priceTranslationItem": [
+                    "prices": [
                       {
                         "priceId": "guid",
-                        "type": "string"
+                        "type": "string",
+                        "ActivityType": "string"
                       }
                     ]
                   }
@@ -48,6 +49,51 @@ namespace Amigo.Application.Helpers
             ]
             """;
         }
+
+
+        public static string GenerateTourTranslationSchema()
+        {
+            return """
+            [
+              {
+                "language": "string",
+                "tour": 
+                  {
+                    "tourId": "guid",
+                    "title": "string",
+                    "description": "string",
+
+                    "destination": {
+                      "destinationId": "guid",
+                      "name": "string"
+                    },
+
+                    "cancellation": {
+                      "cancellationId": "guid",
+                      "description": "string"
+                    },
+
+                    "inclusions": [
+                      {
+                        "inclusionId": "guid",
+                        "text": "string"
+                      }
+                    ],
+
+                    "prices": [
+                      {
+                        "priceId": "guid",
+                        "type": "string",
+                        "ActivityType": "string"
+                      }
+                    ]
+                  }
+                
+              }
+            ]
+            """;
+        }
+
 
         public static T DeserializeOrThrow<T>(string json)
         {
@@ -58,7 +104,7 @@ namespace Amigo.Application.Helpers
                     {
                         PropertyNameCaseInsensitive = true
                     })!;
-            }
+            }   
             catch (Exception ex)
             {
                 throw new Exception(

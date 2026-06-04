@@ -8,6 +8,7 @@ public interface IGenericRepo<TEntity,TKey> where TEntity : BaseEntity<TKey>
     //Task SaveChanges(CancellationToken cancellationToken);
     public Task<IEnumerable<TEntity>> GetAllAsync( CancellationToken cancellationToken = default);
 
+    public Task<IEnumerable<TEntity>> GetAllWithTrackingAsync(CancellationToken cancellationToken = default);
     public Task<TEntity?> GetByIdAsync(TKey id,CancellationToken cancellationToken = default);
     public Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 

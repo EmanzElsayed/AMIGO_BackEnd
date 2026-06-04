@@ -54,7 +54,7 @@ public sealed class BookingBackgroundService(
     private async Task RunJobs(CancellationToken token)
     {
         using var scope = scopeFactory.CreateScope();
-
+         
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var voucherService = scope.ServiceProvider.GetRequiredService<IVoucherService>();
         await ExpireReservations(unitOfWork);

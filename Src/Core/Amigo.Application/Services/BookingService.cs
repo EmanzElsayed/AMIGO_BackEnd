@@ -99,7 +99,7 @@ namespace Amigo.Application.Services
 
             foreach (var r in reservations)
                 r.Status = ReservationStatus.Confirmed;
-
+             
             // 5. Batch check bookings
             var orderItemIds = order.OrderItems.Select(x => x.Id).ToList();
 

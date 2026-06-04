@@ -17,6 +17,8 @@ public class GenericRepo<TEntity, TKey>(AmigoDbContext _dbContext)
     public async Task<IEnumerable<TEntity>> GetAllAsync( CancellationToken cancellationToken = default)
         => await _dbContext.Set<TEntity>().AsNoTracking().ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<TEntity>> GetAllWithTrackingAsync(CancellationToken cancellationToken = default)
+      => await _dbContext.Set<TEntity>().ToListAsync(cancellationToken);
 
 
 

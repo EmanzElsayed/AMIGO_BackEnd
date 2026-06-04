@@ -1,3 +1,4 @@
+using Amigo.Application.Abstraction.Services;
 using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
@@ -50,7 +51,7 @@ namespace Amigo.Application.Services.Admin
         private readonly ITranslationService _translationService;
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly ILogger<AdminTourService> _logger;
-
+        
         public AdminTourService(
             IValidationService validationService,
             IUnitOfWork unitOfWork,
@@ -62,7 +63,9 @@ namespace Amigo.Application.Services.Admin
             ImageCloudService imageCloud,
             ITranslationService translationService,
             IBackgroundTaskQueue backgroundTaskQueue,
-            ILogger<AdminTourService> logger)
+            ILogger<AdminTourService> logger
+           
+            )
         {
             _validationService = validationService;
             _unitOfWork = unitOfWork;
@@ -75,6 +78,7 @@ namespace Amigo.Application.Services.Admin
             _translationService = translationService;
             _backgroundTaskQueue = backgroundTaskQueue;
             _logger = logger;
+           
         }
 
         
@@ -158,22 +162,72 @@ namespace Amigo.Application.Services.Admin
                     await transaction.CommitAsync();
 
                     var sourceLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
-                    var sourceTranslation = tourTranslations.FirstOrDefault(t => t.Language == sourceLanguage);
 
-                    var capturedTourId = tour.Id;
-                    var capturedTitle = sourceTranslation?.Title ?? "";
-                    var capturedDescription = sourceTranslation?.Description ?? "";
-                    var capturedLanguage = sourceLanguage;
+                    var inputTranslate = new TourTranslationItem()
+                    {
+                        TourId = tour.Id,
+                        SourceLanguage = sourceLanguage,
+                        Title = requestDTO.Title,
+                        Description = requestDTO.Description,
+                        Cancellation = requestDTO.Cancellation is null ? null :
+                        new CancellationTranslationItem()
+                        {
+                            CancellationId = cancellation.Id,
+                            Description = requestDTO.Cancellation.Description ?? ""
+                        }
+                        ,
+                        Destination = new DestinationTranslationItem()
+                        {
+                            DestinationId = destination.Id,
+                            Name = destination.Translations
+                                        .Where(t => t.Language == sourceLanguage)
+                                        .Select(t => t.Name)
+                                        .FirstOrDefault() ?? ""
+                        },
+
+                        Inclusions = tourInclusion.Select(i => new InclusionTranslationItem()
+                        {
+                            InclusionId = i.Id,
+                            Text = i.Translations.Where(t => t.Language == sourceLanguage)
+                                        .Select(t => t.Text)
+                                        .FirstOrDefault() ?? ""
+                        }).ToList(),
+                        Prices = tourPrices.Select(p => new PriceTranslationItem()
+                        {
+                            PriceId = p.Id,
+                            Type = p.Translations.Where(t => t.Language == sourceLanguage)
+                                        .Select(t => t.Type)
+                                        .FirstOrDefault() ?? "",
+                            ActivityType = p.Translations.Where(t => t.Language == sourceLanguage)
+                                        .Select(t => t.ActivityType)
+                                        .FirstOrDefault() ?? ""
+
+                        }).ToList()
+                    };
+                    //var sourceTranslation = tourTranslations.FirstOrDefault(t => t.Language == sourceLanguage);
+
+                    //var capturedTourId = tour.Id;
+                    //var capturedTitle = sourceTranslation?.Title ?? "";
+                    //var capturedDescription = sourceTranslation?.Description ?? "";
+                    //var capturedLanguage = sourceLanguage;
 
                     _ = _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
                     {
-                        await TranslateTourAsync(
-                            capturedTourId,
-                            capturedTitle,
-                            capturedDescription,
-                            capturedLanguage,
-                            serviceProvider,
-                            cancellationToken);
+
+
+                        var autoTranslationService =
+                            serviceProvider.GetRequiredService<IAutoTranslationService>();
+
+                        await autoTranslationService.TranslateTour(
+                            sourceLanguage,
+                            inputTranslate);
+                        //await TranslateTourAsync(
+                        //    capturedTourId,
+                        //    capturedTitle,
+                        //    capturedDescription,
+                        //    capturedLanguage,
+                        //    serviceProvider,
+                        //    cancellationToken);
                     });
 
                     return Result.Ok(new CreateTourResponseDTO(tour.Id))
