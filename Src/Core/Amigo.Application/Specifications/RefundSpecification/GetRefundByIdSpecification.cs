@@ -10,7 +10,7 @@ namespace Amigo.Application.Specifications.RefundSpecification
         public GetRefundByIdSpecification(Guid refundId) 
             : base(r => !r.IsDeleted && r.Id == refundId)
         {
-            AddInclude(r => r.Include(b => b.Booking).ThenInclude(i => i.OrderItem));
+            AddInclude(r => r.Include(b => b.Booking).ThenInclude(i => i.OrderItem).ThenInclude(o => o.OrderedPrice));
             AddInclude(r => r.Payment);
         }
     }
