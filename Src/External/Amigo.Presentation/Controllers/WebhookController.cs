@@ -48,10 +48,11 @@ namespace Amigo.Presentation.Controllers
                 _logger.LogInformation("PayPal webhook received: {json}", json);
 
                 var provider = _serviceManager.PaymentProviderResolver.Resolve(PaymentProvider.Paypal);
+                _logger.LogInformation("STEP 1");
 
                 var isValid = await provider.VerifyWebhookAsync(Request, json);
 
-
+                _logger.LogInformation("STEP 2");
                 if (!isValid)
                     return Unauthorized();
                 //var root = "3333";
@@ -66,6 +67,7 @@ namespace Amigo.Presentation.Controllers
                 switch (eventType)
                 {
                     case "PAYMENT.CAPTURE.COMPLETED":
+                        _logger.LogInformation("STEP 3");
                         await _serviceManager.PaymentOrchestrator.HandleSuccessAsync(PaymentProvider.Paypal, json);
                         break;
 

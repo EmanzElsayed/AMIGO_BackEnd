@@ -632,7 +632,7 @@ namespace Amigo.Application.Services
                     await _unitOfWork.SaveChangesAsync();
 
                     await transaction.CommitAsync();
-
+                    // remove cart from data base
                     await _cacheService.RemoveAsync(
                                     BuildCartCacheKey(userId, cartToken));
                     return Result.Ok(

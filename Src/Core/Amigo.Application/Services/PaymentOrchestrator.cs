@@ -35,7 +35,12 @@ namespace Amigo.Application.Services
 
         public async Task HandleSuccessAsync(PaymentProvider provider, string payload)
         {
+            _logger.LogInformation("STEP 4");
             var (providerRefId,eventId ,rawData ) = ExtractProviderData(provider, payload);
+            _logger.LogInformation(
+            "STEP 5 EventId={EventId} ProviderRef={ProviderRef}",
+            eventId,
+            providerRefId);
             //var providerRefId = "5WK96583WG697635C";
             //var eventId = "4455";
             //var rawData = "emo";
@@ -70,10 +75,14 @@ namespace Amigo.Application.Services
                 });
 
                 //Update Payment
-
+                _logger.LogInformation(
+                "Searching PaymentProviderReferenceId={ProviderRefId}",
+                providerRefId);
                 var payment = await paymentRepo
                         .GetByIdAsync(new GetPaymentByProviderRefSpec(providerRefId));
-
+                _logger.LogInformation(
+                "Payment Found = {Found}",
+                payment != null);
                 if (payment is null || payment.Status == PaymentStatus.Succeeded)
                     return;
 
@@ -186,8 +195,11 @@ namespace Amigo.Application.Services
                     .GetProperty("data")
                     .GetProperty("object")
                     .GetProperty("id")
-                    .GetString(); 
-
+                    .GetString();
+                _logger.LogInformation(
+                "Webhook EventId={EventId}, ResourceId={ResourceId}",
+                eventId,
+                paymentId);
                 return (paymentId!, eventId!, payload);
 
 
@@ -203,8 +215,12 @@ namespace Amigo.Application.Services
                 var paymentId = root
                     .GetProperty("resource")
                     .GetProperty("id")
-                    .GetString(); 
+                    .GetString();
 
+                _logger.LogInformation(
+                "Webhook EventId={EventId}, ResourceId={ResourceId}",
+                eventId,
+                paymentId);
                 return (paymentId!, eventId!, payload);
             }
 
