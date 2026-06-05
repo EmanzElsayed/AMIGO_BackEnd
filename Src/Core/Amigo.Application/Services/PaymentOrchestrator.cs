@@ -259,7 +259,8 @@ namespace Amigo.Application.Services
 
                 var refund =
                     await refundRepo.GetByIdAsync(new GetRefundWithProviderRefundIdSpecification(providerRefundId));
-                            
+
+                _logger.LogInformation("refunded {refund}",refund);
 
                 if (refund == null)
                 {
@@ -287,6 +288,10 @@ namespace Amigo.Application.Services
                 var status =
                     resource.GetProperty("status")
                         .GetString();
+
+                _logger.LogInformation(
+                        "Refund status : {status}",
+                        status);
 
                 if (status != "COMPLETED")
                 {

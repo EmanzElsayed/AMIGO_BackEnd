@@ -76,6 +76,8 @@ namespace Amigo.Presentation.Controllers
                         break;
 
                     case "PAYMENT.CAPTURE.REFUNDED":
+                        _logger.LogInformation("refunded send");
+
                         await _serviceManager.PaymentOrchestrator.HandleRefundCompleted(root);
                         break;
                 }
