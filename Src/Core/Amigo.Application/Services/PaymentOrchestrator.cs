@@ -36,11 +36,11 @@ namespace Amigo.Application.Services
         public async Task HandleSuccessAsync(PaymentProvider provider, string payload)
         {
             _logger.LogInformation("STEP 4");
-            var (providerRefId,eventId ,rawData ) = ExtractProviderData(provider, payload);
+            var (CaptureId, eventId ,rawData ) = ExtractProviderData(provider, payload);
             _logger.LogInformation(
             "STEP 5 EventId={EventId} ProviderRef={ProviderRef}",
             eventId,
-            providerRefId);
+            CaptureId);
             //var providerRefId = "5WK96583WG697635C";
             //var eventId = "4455";
             //var rawData = "emo";
@@ -73,13 +73,14 @@ namespace Amigo.Application.Services
                     Payload = payload,
                     Processed = false
                 });
+                await _unitOfWork.SaveChangesAsync();
 
                 //Update Payment
                 _logger.LogInformation(
                 "Searching PaymentProviderReferenceId={ProviderRefId}",
-                providerRefId);
+                CaptureId);
                 var payment = await paymentRepo
-                        .GetByIdAsync(new GetPaymentByProviderRefSpec(providerRefId));
+                        .GetByIdAsync(new GetPaymentByProviderRefSpec(CaptureId));
                 _logger.LogInformation(
                 "Payment Found = {Found}",
                 payment != null);
@@ -178,7 +179,7 @@ namespace Amigo.Application.Services
 
 
 
-        private (string providerRefId, string eventId, string raw)
+        private (string CaptureId, string eventId, string raw)
             ExtractProviderData(PaymentProvider provider, string payload)
         {
             using var json = JsonDocument.Parse(payload);
@@ -191,7 +192,7 @@ namespace Amigo.Application.Services
                     .GetProperty("id")
                     .GetString(); 
 
-                var paymentId = root
+                var CaptureId = root
                     .GetProperty("data")
                     .GetProperty("object")
                     .GetProperty("id")
@@ -199,8 +200,8 @@ namespace Amigo.Application.Services
                 _logger.LogInformation(
                 "Webhook EventId={EventId}, ResourceId={ResourceId}",
                 eventId,
-                paymentId);
-                return (paymentId!, eventId!, payload);
+                CaptureId);
+                return (CaptureId!, eventId!, payload);
 
 
             }
@@ -212,7 +213,7 @@ namespace Amigo.Application.Services
                     .GetProperty("id")
                     .GetString(); 
 
-                var paymentId = root
+                var CaptureId = root
                     .GetProperty("resource")
                     .GetProperty("id")
                     .GetString();
@@ -220,8 +221,8 @@ namespace Amigo.Application.Services
                 _logger.LogInformation(
                 "Webhook EventId={EventId}, ResourceId={ResourceId}",
                 eventId,
-                paymentId);
-                return (paymentId!, eventId!, payload);
+                CaptureId);
+                return (CaptureId!, eventId!, payload);
             }
 
             throw new Exception("Unsupported provider");

@@ -7,8 +7,8 @@ namespace Amigo.Application.Specifications.PaymentSpecification
     public class GetPaymentByProviderRefSpec
         : BaseSpecification<Payment, Guid>
     {
-        public GetPaymentByProviderRefSpec(string providerRefId)
-            : base(p => p.PaymentProviderReferenceId == providerRefId && !p.IsDeleted)
+        public GetPaymentByProviderRefSpec(string CaptureId)
+            : base(p => p.ProviderCaptureId == CaptureId && !p.IsDeleted)
         {
         }
     }
