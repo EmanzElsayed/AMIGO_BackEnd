@@ -224,7 +224,10 @@ namespace Amigo.Application.Services
                 
                 // We check if the INCREASE exceeds the remaining capacity
                 // Slot is already attached to item
-                var slot = item.Slot; 
+                var slot = await _unitOfWork.GetRepository<AvailableSlots,Guid>().GetByIdAsync(item.SlotId);
+                if (slot is null )
+                    return Result.Fail(new NotFoundError("This Slot Not Found"));
+
                 var remaining = slot.MaxCapacity - slot.ReservedCount;
                 
                 if (requestedQty > currentItemQty && (requestedQty - currentItemQty) > remaining)
@@ -233,8 +236,9 @@ namespace Amigo.Application.Services
                 }
 
                 var priceRepo = _unitOfWork.GetRepository<CartPrice, Guid>();
-
-                item.Prices.Clear();
+                var cartPrices = await priceRepo.GetAllAsync(new GetCartPriceWithCartItemIdSpecification(itemId));
+                priceRepo.RemoveRange(cartPrices);
+                
 
                 var userType = await GetUserType(userId);
 
@@ -250,15 +254,17 @@ namespace Amigo.Application.Services
 
                 var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(item.TourId, userType));
 
+                List<CartPrice> newCartprices = new List<CartPrice>();
 
                 foreach (var p in dto.Prices)
                 {
                     var retailPrice = GetPriceFromTour(prices, p.Type, item.Language,activityType);
 
-                    item.Prices.Add(new CartPrice
+                    newCartprices.Add(new CartPrice
                     {
                         Id = Guid.NewGuid(),
                         CartItemId = item.Id,
+                        CartItem = item,
                         Type = p.Type,
                         Quantity = p.Quantity,
                         BaseRetailPrice = retailPrice,
@@ -266,6 +272,7 @@ namespace Amigo.Application.Services
                         ExchangeRate = rate.ValueOrDefault
                     });
                 }
+                await priceRepo.AddRangeAsync(newCartprices);
                 item.ActivityType = activityType;
             }
 

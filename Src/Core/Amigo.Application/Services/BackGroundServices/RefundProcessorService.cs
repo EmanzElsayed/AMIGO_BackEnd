@@ -79,7 +79,7 @@ namespace Amigo.Application.Services.BackGroundServices
                     {
                         message.Status =
                             OutboxStatus.Completed;
-
+                        await unitOfWork.SaveChangesAsync();
                         continue;
                     }
                     if (refund.Status == RefundStatus.Processing)
@@ -233,6 +233,8 @@ namespace Amigo.Application.Services.BackGroundServices
 
                     await unitOfWork.SaveChangesAsync();
                 }
+              
+
             }
         }
     }
