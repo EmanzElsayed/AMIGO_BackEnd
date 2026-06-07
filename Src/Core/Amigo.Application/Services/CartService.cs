@@ -804,6 +804,7 @@ namespace Amigo.Application.Services
 
             if (!cart.Items.Any())
             {
+                _unitOfWork.GetRepository<Cart, Guid>().Remove(cart);
                 await _cacheService.RemoveAsync(cacheKey);
             }
             else
@@ -823,11 +824,14 @@ namespace Amigo.Application.Services
             var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
 
             if (cart != null && cart.Items.Any())
+            { 
                 cart.Items.Clear();
+                 _unitOfWork.GetRepository<Cart, Guid>().Remove(cart);
+            }
 
-            cart.TotalAmount = 0;
-            cart.LastUpdatedAt = DateTime.UtcNow;
 
+
+            //cart.LastUpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync();
 
             var cacheKey =

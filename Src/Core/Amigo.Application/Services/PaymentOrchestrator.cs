@@ -41,6 +41,7 @@ namespace Amigo.Application.Services
             "STEP 5 EventId={EventId} ProviderRef={ProviderRef}",
             eventId,
             CaptureId);
+            //4KH1335590569020X
             //var providerRefId = "5WK96583WG697635C";
             //var eventId = "4455";
             //var rawData = "emo";
@@ -102,9 +103,23 @@ namespace Amigo.Application.Services
                     Status = OutboxStatus.Pending,
                     RetryCount = 0,
                 });
+                var cart = await _unitOfWork.GetRepository<Cart, Guid>().GetByIdAsync(new GetCartWithUserIdByCartItemSpecification(payment.Order.UserId));
+                 if (cart != null && cart.Items.Any())
+                {
+                    cart.Items.Clear();
+                    _unitOfWork.GetRepository<Cart, Guid>().Remove(cart);
+                }
 
-                await _unitOfWork.SaveChangesAsync();
-                await tx.CommitAsync();
+                try
+                {
+                    await _unitOfWork.SaveChangesAsync();
+                    await tx.CommitAsync();
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError("{ex}", ex);
+                }
+               
 
             });
 

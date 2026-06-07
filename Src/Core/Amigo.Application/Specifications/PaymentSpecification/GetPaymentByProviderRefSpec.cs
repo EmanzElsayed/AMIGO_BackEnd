@@ -10,6 +10,7 @@ namespace Amigo.Application.Specifications.PaymentSpecification
         public GetPaymentByProviderRefSpec(string CaptureId)
             : base(p => p.ProviderCaptureId == CaptureId && !p.IsDeleted)
         {
+            AddInclude(p => p.Order);
         }
     }
 }
