@@ -8,7 +8,7 @@ namespace Amigo.Application.Specifications.CartSpecification
     public class GetCartWithUserIdSpecification : BaseSpecification<Cart, Guid>
     {
         public GetCartWithUserIdSpecification(string userId) 
-            : base( c => c.UserId == userId )
+            : base( c => c.UserId == userId && !c.IsDeleted )
         {
 
             AddInclude(t => t

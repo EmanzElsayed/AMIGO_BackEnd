@@ -1,3 +1,4 @@
+using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.CartSpecification;
@@ -16,7 +17,7 @@ using System.Text;
 
 namespace Amigo.Application.Services
 {
-    public class BookingService(IUnitOfWork _unitOfWork, EncryptionService _encryptionService
+    public class BookingService(IUnitOfWork _unitOfWork, ICacheService _cacheService, EncryptionService _encryptionService
                     ) :IBookingService
     {
         
@@ -68,7 +69,15 @@ namespace Amigo.Application.Services
             return Result.Ok(dtos);
         }
 
+        private string BuildCartCacheKey(
+           string? userId,
+           string? cartToken)
+        {
+            if (!string.IsNullOrWhiteSpace(userId))
+                return $"cart:user:{userId}";
 
+            return $"cart:guest:{cartToken}";
+        }
         public async Task FinalizeBooking(Guid paymentId)
         {
             var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
@@ -150,9 +159,16 @@ namespace Amigo.Application.Services
             if (cart != null && cart.Items != null)
             {
                 await _unitOfWork.CartItemsRepo.BulkSoftDeleteByUserId(order.UserId);
-                
+                var cacheKey =
+                 BuildCartCacheKey(order.UserId, cart.CartToken);
+                await _cacheService.RemoveAsync(cacheKey);
             }
-
+            //var cart = await _unitOfWork.GetRepository<Cart, Guid>().GetByIdAsync(new GetCartWithUserIdByCartItemSpecification(payment.Order.UserId));
+            //if (cart != null && cart.Items.Any())
+            //{
+            //    cart.Items.Clear();
+            //    _unitOfWork.GetRepository<Cart, Guid>().Remove(cart);
+            //}
 
             await _unitOfWork.SaveChangesAsync();
         }

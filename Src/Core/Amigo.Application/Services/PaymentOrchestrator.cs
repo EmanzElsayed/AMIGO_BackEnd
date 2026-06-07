@@ -103,12 +103,7 @@ namespace Amigo.Application.Services
                     Status = OutboxStatus.Pending,
                     RetryCount = 0,
                 });
-                var cart = await _unitOfWork.GetRepository<Cart, Guid>().GetByIdAsync(new GetCartWithUserIdByCartItemSpecification(payment.Order.UserId));
-                 if (cart != null && cart.Items.Any())
-                {
-                    cart.Items.Clear();
-                    _unitOfWork.GetRepository<Cart, Guid>().Remove(cart);
-                }
+              
 
                 try
                 {

@@ -7,7 +7,7 @@ namespace Amigo.Application.Specifications.CartSpecification
     public class GetCartWithCartTokenSpecification : BaseSpecification<Cart, Guid>
     {
         public GetCartWithCartTokenSpecification(string cartToken)
-            : base(c => c.CartToken == cartToken)
+            : base(c => c.CartToken == cartToken && !c.IsDeleted)
         {
 
             AddInclude(t => t
