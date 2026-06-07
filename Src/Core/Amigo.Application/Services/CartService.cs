@@ -217,6 +217,7 @@ namespace Amigo.Application.Services
             if (item is null || item.CartId != cart.Id)
                 return Result.Fail(new NotFoundError("This Item Not Found"));
 
+
             if (dto.Prices != null && dto.Prices.Any())
             {
                 var requestedQty = dto.Prices.Sum(x => x.Quantity);
@@ -274,6 +275,9 @@ namespace Amigo.Application.Services
                 }
                 await priceRepo.AddRangeAsync(newCartprices);
                 item.ActivityType = activityType;
+                item.TotalAmount = newCartprices.Sum(x => x.FinalPrice);
+
+                RecalculateCart(cart);
             }
 
             List<TravelerDraft> travelers = new List<TravelerDraft>();
@@ -305,9 +309,7 @@ namespace Amigo.Application.Services
                     //item.Travelers.Add(newTraveler);
             }
            
-            item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
-
-            RecalculateCart(cart);
+         
 
             try
             {
@@ -700,6 +702,7 @@ namespace Amigo.Application.Services
 
         private void RecalculateCart(Cart cart)
         {
+
             cart.TotalAmount = cart.Items.Sum(x => x.TotalAmount);
             cart.LastUpdatedAt = DateTime.UtcNow;
         }
