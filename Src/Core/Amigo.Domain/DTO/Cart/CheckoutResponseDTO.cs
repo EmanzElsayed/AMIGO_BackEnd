@@ -10,6 +10,7 @@ namespace Amigo.Domain.DTO.Cart
          Guid PaymentId,
       
         List<CheckoutPriceResponseDTO>? ChangedPrices ,
+        string? CurrencyCode = null,
         bool? IsTourTitleChanged = false,
         bool? IsDestinationNameChanged = false
         

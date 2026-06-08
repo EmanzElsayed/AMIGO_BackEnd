@@ -10,6 +10,7 @@ namespace Amigo.Domain.DTO.Payment
         bool RequiresRedirect,
         string? ClientSecret,
         string? RedirectUrl,
+        string? CurrencyCode = null,
         Guid? paymentId = null
     );
 }

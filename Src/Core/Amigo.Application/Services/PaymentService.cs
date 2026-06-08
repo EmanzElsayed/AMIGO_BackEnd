@@ -63,6 +63,7 @@ namespace Amigo.Application.Services
                    RequiresRedirect: providerResult.RequiresRedirect,
                    ClientSecret: providerResult.ClientSecret,
                    RedirectUrl: providerResult.RedirectUrl,
+                   CurrencyCode: payment.Currency.ToString(),
                     paymentId: payment.Id
                 ));
             });

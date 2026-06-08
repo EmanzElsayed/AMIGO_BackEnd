@@ -647,7 +647,8 @@ namespace Amigo.Application.Services
                     return Result.Ok(
                         response with
                         {
-                            PaymentId = payment.Id
+                            PaymentId = payment.Id,
+                            CurrencyCode = payment.Currency.ToString()
                            
                         });
                 }
