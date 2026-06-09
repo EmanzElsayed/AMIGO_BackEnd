@@ -9,4 +9,6 @@ public class ReviewImage:BaseEntity<Guid>
     public Review Review { get; set; } = null!;
    
     public string Image { get; set; } = null!;
+
+    public string PublicId { get; set; } = null!;
 }

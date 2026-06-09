@@ -8,7 +8,7 @@ public class ReviewByIdWithDetailsSpecification : BaseSpecification<Review, Guid
     public ReviewByIdWithDetailsSpecification(Guid id)
         : base(r => r.Id == id && !r.IsDeleted)
     {
-        AddInclude(r => r.Translations);
+        
         AddInclude(r => r.Images);
     }
 }
