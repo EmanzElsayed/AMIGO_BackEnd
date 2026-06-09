@@ -2,6 +2,7 @@ using Amigo.Application.Helpers;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
 using Amigo.SharedKernal.QueryParams;
+using Stripe;
 using System.Linq.Expressions;
 
 namespace Amigo.Application.Validation.Common.Specifications;
@@ -16,7 +17,9 @@ public static class TourCatalogCriteria
         //CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
-        DateOnly? availabilityDate)
+        DateOnly? availabilityDate,
+        decimal? maxPrice,
+        decimal? minPrice)
     {
         return t =>
             t.DestinationId == destinationId
@@ -47,15 +50,15 @@ public static class TourCatalogCriteria
             && (!q.MaxDurationHours.HasValue
                 || t.Duration.TotalHours <= q.MaxDurationHours.Value)
 
-            && (!q.MinPrice.HasValue
+            && (!minPrice.HasValue
                 || t.Prices.Any(p =>
                     !p.IsDeleted
-                    && p.RetailPrice >= q.MinPrice!.Value)) // use retail price
+                    && p.Cost * (1 - p.Discount / 100m) >= minPrice!.Value)) 
 
-            && (!q.MaxPrice.HasValue
+            && (!maxPrice.HasValue
                 || t.Prices.Any(p =>
                     !p.IsDeleted
-                    && p.RetailPrice <= q.MaxPrice!.Value))//use retail price
+                    && p.Cost * (1 - p.Discount / 100m) <= maxPrice!.Value))
 
             && (!availabilityDate.HasValue
                 || t.AvailableTimes.Any(ts =>

@@ -16,7 +16,9 @@ public class UserTourCatalogFilterSpecification : BaseSpecification<Tour, Guid>
         //CurrencyCode? currencyFilter,
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
-        DateOnly? availabilityDate)
+        DateOnly? availabilityDate,
+        decimal? maxPrice,
+        decimal? minPrice)
         : base(TourCatalogCriteria.Build(
             destinationId,
             query,
@@ -25,7 +27,8 @@ public class UserTourCatalogFilterSpecification : BaseSpecification<Tour, Guid>
             //currencyFilter,
             destinationCountryFilter,
             userTypeFilter,
-            availabilityDate))
+            availabilityDate,
+            maxPrice,minPrice))
     {
     }
 }

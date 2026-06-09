@@ -55,8 +55,17 @@ public class UserTourCatalogService(
 
         CurrencyCode filteredCurrency = _currentUserService.Currency;
         var rate = await _currencyRateService.GetRateAsync(
-                    Constants.BaseCurrency,
-                    filteredCurrency, true);
+            Constants.BaseCurrency,
+            filteredCurrency
+                    , true);
+
+        var baseRate = await _currencyRateService.GetRateAsync(
+            
+            filteredCurrency,
+            Constants.BaseCurrency
+                    , true);
+        var minPrice = query.MinPrice is null ? null : query.MinPrice * baseRate.ValueOrDefault;
+        var maxPrice = query.MaxPrice is null ? null : query.MaxPrice * baseRate.ValueOrDefault;
 
         UserType? userType = ParseUserType(query.UserType);
 
@@ -77,7 +86,9 @@ public class UserTourCatalogService(
             //currencyFilter,
             country,
             userType,
-            availabilityDate);
+            availabilityDate,
+            maxPrice,
+            minPrice);
 
         var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
         var totalItems = await tourRepo.GetCountSpecificationAsync(countSpec);
@@ -92,7 +103,9 @@ public class UserTourCatalogService(
             country,
             userType,
             availabilityDate,
-            applyPaging: true);
+            applyPaging: true,
+            maxPrice,
+            minPrice);
 
         var tours = (await tourRepo.GetAllAsync(listSpec)).ToList();
         _logger.LogInformation("GetToursAsync fetched {Count} tours for DestinationId={DestinationId}. TourIds={TourIds}", tours.Count, destId, tours.Select(t => t.Id).ToList());
@@ -279,12 +292,17 @@ public class UserTourCatalogService(
         var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
         var tours = await tourRepo.GetAllAsync(spec);
 
+        CurrencyCode filteredCurrency = _currentUserService.Currency;
+        var rate = await _currencyRateService.GetRateAsync(
+                    Constants.BaseCurrency,
+                    filteredCurrency, true);
+
         var maxPrice = tours
             .SelectMany(t => t.Prices)
             .Where(p => !p.IsDeleted)
             .Max(p => (decimal?)p.RetailPrice) ?? 0m;
 
-        return Result.Ok(new MaxPriceResponseDto { MaxPrice = maxPrice });
+        return Result.Ok(new MaxPriceResponseDto { MaxPrice = maxPrice * rate.ValueOrDefault });
     }
 
     public async Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null)

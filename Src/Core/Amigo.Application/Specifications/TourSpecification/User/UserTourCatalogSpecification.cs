@@ -17,7 +17,9 @@ public class UserTourCatalogSpecification : BaseSpecification<Tour, Guid>
         CountryCode? destinationCountryFilter,
         UserType? userTypeFilter,
         DateOnly? availabilityDate,
-        bool applyPaging)
+        bool applyPaging,
+        decimal? maxPrice,
+        decimal? minPrice)
         : base(TourCatalogCriteria.Build(
             destinationId,
             query,
@@ -26,7 +28,9 @@ public class UserTourCatalogSpecification : BaseSpecification<Tour, Guid>
             //currencyFilter,
             destinationCountryFilter,
             userTypeFilter,
-            availabilityDate))
+            availabilityDate,
+            maxPrice,
+            minPrice))
     {
         AddInclude(t => t.Translations);
         AddInclude(t => t.Images);

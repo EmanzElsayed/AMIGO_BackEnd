@@ -124,7 +124,7 @@ namespace Amigo.Infrastructure.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Welcome To Amigo Tours.
+        ///   Looks up a localized string similar to Welcome To Amigo Tourism.
         /// </summary>
         internal static string GreetingToAmigo {
             get {

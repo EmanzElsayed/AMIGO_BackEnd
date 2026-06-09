@@ -461,19 +461,19 @@ public class AuthService(
 
         await _emailService.SendEmailAsync(
             request.Email,
-            "Verification Code for Amigo Checkout",
+            "Verification Code for Amigo Tourism Checkout",
             $@"
                 <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
                     <h2 style='color: #db2777;'>Verification Code</h2>
                     <p>Hello,</p>
-                    <p>You requested a verification code for your checkout process at Amigo Arabe Tours.</p>
+                    <p>You requested a verification code for your checkout process at Amigo Tourism.</p>
                     <div style='background: #fdf2f8; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;'>
                         <span style='font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #db2777;'>{code}</span>
                     </div>
                     <p>This code will expire in 10 minutes.</p>
                     <p>If you didn't request this, please ignore this email.</p>
                     <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
-                    <p style='font-size: 12px; color: #999;'>Amigo Arabe Tours Team</p>
+                    <p style='font-size: 12px; color: #999;'>Amigo Tourism Team</p>
                 </div>"
         );
 
@@ -582,10 +582,10 @@ public class AuthService(
 
         await _emailService.SendEmailAsync(
             user.Email,
-            "Account Created Successfully - Amigo Arabe Tours",
+            "Account Created Successfully - Amigo Tourism",
             $@"
                 <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
-                    <h2 style='color: #db2777;'>Welcome to Amigo Arabe Tours!</h2>
+                    <h2 style='color: #db2777;'>Welcome to Amigo Tourism!</h2>
                     <p>Hello <b>{user.FullName}</b>,</p>
                     <p>We have created an account for you to manage your bookings easily.</p>
                     <p>To secure your account, please click the link below to set your password:</p>
@@ -594,7 +594,7 @@ public class AuthService(
                     </div>
                     <p>After setting your password, you can log in and view all your tour vouchers in your dashboard.</p>
                     <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
-                    <p style='font-size: 12px; color: #999;'>Thank you for choosing Amigo Arabe Tours!</p>
+                    <p style='font-size: 12px; color: #999;'>Thank you for choosing Amigo Tourism!</p>
                 </div>"
         );
     }
