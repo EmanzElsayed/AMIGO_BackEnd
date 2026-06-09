@@ -19,7 +19,8 @@ namespace Amigo.Application.Specifications.OrderSpecification
             AddInclude(o => o.Include(i => i.OrderItems).ThenInclude(i => i.Booking ));
 
             AddInclude(o => o.Payments);
-            ApplyPagination(query.PageSize, query.PageNumber);    
+            AddOrderBYDescending(o => o.CreatedDate);
+            //ApplyPagination(query.PageSize, query.PageNumber);    
         }
     }
 }

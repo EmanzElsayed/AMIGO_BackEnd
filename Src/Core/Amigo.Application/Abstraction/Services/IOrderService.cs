@@ -11,7 +11,7 @@ namespace Amigo.Application.Abstraction.Services
             string orderId,
             string userId);
 
-        Task<Result<PaginatedResponse<OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query);
+        Task<Result<List<OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query);
 
     }
 }

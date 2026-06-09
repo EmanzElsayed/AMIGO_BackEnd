@@ -18,7 +18,7 @@ namespace Amigo.Application.Services
 {
     public class OrderService(IUnitOfWork _unitOfWork, IValidationService _validationService) : IOrderService
     {
-        public async Task<Result<PaginatedResponse<OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query)
+        public async Task<Result<List< OrderDetailsDTO>>> GetAllOrders(string userId, GetAllOrdersQuery query)
         {
             var validationResult = await _validationService.ValidateAsync(query);
             if (!validationResult.IsSuccess)
@@ -30,7 +30,7 @@ namespace Amigo.Application.Services
             var orderSpec = new GetAllOrdersSpecification(userId, query);
             var orders = await orderRepo.GetAllAsync(orderSpec);
             
-            var totalItems = await orderRepo.GetCountSpecificationAsync(new GetCountOfOrdersSpecification(userId, query));
+            //var totalItems = await orderRepo.GetCountSpecificationAsync(new GetCountOfOrdersSpecification(userId, query));
 
             var tourIds = orders
                 .SelectMany(o => o.OrderItems)
@@ -45,19 +45,19 @@ namespace Amigo.Application.Services
 
             var mappedOrders = orders.ToDTOs(imageDict);
 
-            var totalPages = query.PageSize <= 0
-                ? 0
-                : (int)Math.Ceiling(totalItems / (double)query.PageSize);
+            //var totalPages = query.PageSize <= 0
+            //    ? 0
+            //    : (int)Math.Ceiling(totalItems / (double)query.PageSize);
 
-            var response = new PaginatedResponse<OrderDetailsDTO>
-            {
-                Data = mappedOrders,
-                PageNumber = query.PageNumber,
-                PageSize = query.PageSize,
-                TotalItems = totalItems,
-                TotalPages = totalPages,
-            };
-            return Result.Ok(response);
+            //var response = new PaginatedResponse<OrderDetailsDTO>
+            //{
+            //    Data = mappedOrders,
+            //    PageNumber = query.PageNumber,
+            //    PageSize = query.PageSize,
+            //    TotalItems = totalItems,
+            //    TotalPages = totalPages,
+            //};
+            return Result.Ok(mappedOrders);
 
         }
 
