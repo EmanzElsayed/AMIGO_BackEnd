@@ -376,6 +376,7 @@ namespace Amigo.Application.Services
                     );
 
                     decimal total = 0;
+                    decimal totalWithUsd = 0;
 
                     var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
 
@@ -569,7 +570,7 @@ namespace Amigo.Application.Services
                         };
 
                         decimal itemTotal = 0;
-                       
+                        decimal itemTotalWithUsd = 0;
 
 
                         foreach (var cartPrice in prices)
@@ -608,15 +609,16 @@ namespace Amigo.Application.Services
                             });
 
                             itemTotal += exchangeRate * currentRetailPrice * cartPrice.Quantity;
+                            itemTotalWithUsd += currentRetailPrice * cartPrice.Quantity;
                         }
 
                         total += itemTotal;
-
+                        totalWithUsd += itemTotalWithUsd;
                         order.OrderItems.Add(orderItem);
                     }
 
                     order.TotalAmount = total;
-
+                    order.TotalAmountWithUsd = totalWithUsd;
                     // Save Order
                     await _unitOfWork
                         .GetRepository<Order, Guid>()
@@ -633,6 +635,7 @@ namespace Amigo.Application.Services
                         Id = Guid.NewGuid(),
                         OrderId = order.Id,
                         TotalAmount = total,
+                        TotalAmountWithUsd = totalWithUsd,
                         Status = PaymentStatus.Pending,
                         Currency = cart.CurrencyCode.GetValueOrDefault()
                     };

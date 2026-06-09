@@ -18,6 +18,7 @@ public class OrderedPrice :BaseEntity<Guid>
     public decimal ExchangeRate { get; set; }
     public int Quantity { get; set; }
 
+    public decimal PriceWithUsd => Quantity * BaseRetailPrice;
     public decimal FinalPrice => ConvertedRetailPrice * Quantity;
 }
 

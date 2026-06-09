@@ -69,8 +69,10 @@ public class PaypalPaymentProvider : IPaymentProvider
                 ReferenceId = order.Id.ToString(),
                 AmountWithBreakdown = new AmountWithBreakdown
                 {
-                    CurrencyCode = order.Currency.ToString(),
-                    Value = order.TotalAmount.ToString("F2")
+                    //CurrencyCode = order.Currency.ToString(),
+                    //Value = order.TotalAmount.ToString("F2")
+                     CurrencyCode = order.BaseCurrency.ToString(),
+                    Value = order.TotalAmountWithUsd.Value.ToString("F2")
                 }
             }
         }
