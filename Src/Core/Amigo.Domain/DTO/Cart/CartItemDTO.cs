@@ -14,7 +14,7 @@ namespace Amigo.Domain.DTO.Cart
      SupportedLanguage Language            ,
      DateOnly TourDate            ,
      TimeOnly StartTime           ,
-                                   
+     string? ImageUrl,                              
      string TourName              ,
      string DestinationName       ,
                                    

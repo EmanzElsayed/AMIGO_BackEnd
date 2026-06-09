@@ -8,6 +8,17 @@ namespace Amigo.Application.Mapping;
 
 public static class UserTourCatalogMapper
 {
+    public static Dictionary<SupportedLanguage, string> GetLanguageName = new Dictionary<SupportedLanguage, string>() {
+
+            { SupportedLanguage.en , "English" },
+            { SupportedLanguage.it , "Italiano" },
+            { SupportedLanguage.fr , "Français" },
+            { SupportedLanguage.br , "Português (BR)" },
+            { SupportedLanguage.pt , "Português (PT)" },
+            { SupportedLanguage.es , "Español" },
+
+
+        };
     public static UserTourDetailDto ToDetail(
         Tour tour,
         SupportedLanguage listingLanguage,
@@ -15,7 +26,7 @@ public static class UserTourCatalogMapper
         UserType? effectiveUserType,
         IReadOnlyList<TourSchedule> schedules,
         IReadOnlyList<Review> reviews,
-        IReadOnlyList<ReviewTranslation> reviewTranslations,
+      
         DateOnly todayUtc,  
         decimal rate,
         CurrencyCode filteredcurrency,
@@ -31,7 +42,7 @@ public static class UserTourCatalogMapper
         var tiers = MapPriceTiers(pricesWithTranslations, listingLanguage, effectiveUserType,rate);
         var activityTypes = MapActivityTypes(pricesWithTranslations, listingLanguage, effectiveUserType);
         var days = MapScheduleDays(schedules, todayUtc);
-        var recent = MapRecentReviews(reviews, reviewTranslations, currentUserId);
+        var recent = MapRecentReviews(reviews, currentUserId);
         var travelerPhotos = MapTravelerPhotos(reviews);
         var imageUrls = tour.Images
             .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.ImageUrl))
@@ -238,7 +249,7 @@ public static class UserTourCatalogMapper
 
     private static IReadOnlyList<UserTourReviewItemDto> MapRecentReviews(
         IReadOnlyList<Review> reviews,
-        IReadOnlyList<ReviewTranslation> translations,
+      
         string? currentUserId)
     {
         return reviews
@@ -246,8 +257,7 @@ public static class UserTourCatalogMapper
             .Take(24)
             .Select(r =>
             {
-                var tr = translations.FirstOrDefault(t => t.ReviewId == r.Id);
-                var comment = tr?.Comment;
+                
                 var author = r.User?.UserName ?? r.User?.Email;
                 var imageUrls = r.Images
                     .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.Image))
@@ -262,7 +272,7 @@ public static class UserTourCatalogMapper
                 return new UserTourReviewItemDto(
                     ReviewId: r.Id,
                     Rating: r.Rate,
-                    Comment: comment,
+                    Comment: r.Comment,
                     AuthorLabel: string.IsNullOrWhiteSpace(author) ? null : author,
                     Date: r.Date.ToString("yyyy-MM-dd"),
                     HelpfulCount: r.HelpfulCount,
@@ -301,6 +311,14 @@ public static class UserTourCatalogMapper
     public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, CurrencyCode filteredCurrency, decimal rate, IReadOnlyList<Price> prices, IReadOnlyList<Review>? reviews, Cancellation? cancellation)
         => ToListItem(tour, listingLanguage, null,filteredCurrency,rate,prices,reviews,cancellation);
 
+
+    public static string GetFlagDescriptions(SupportedLanguage languages)
+    {
+        return string.Join(", ",
+            Enum.GetValues<SupportedLanguage>()
+                .Where(l => l != SupportedLanguage.None && languages.HasFlag(l))
+                .Select(l => GetLanguageName[l]));
+    }
     public static UserTourListItemDto ToListItem(Tour tour, SupportedLanguage listingLanguage, UserType? effectiveUserType, CurrencyCode filteredCurrency,decimal rate,IReadOnlyList<Price> prices , IReadOnlyList<Review>? reviews , Cancellation? cancellation)
     {
         var tr = tour.Translations
@@ -361,7 +379,7 @@ public static class UserTourCatalogMapper
                 ? $"{(int)dur.TotalHours}h {dur.Minutes}m"
                 : $"{dur.Minutes}m";
 
-        var guide = tour.GuideLanguage?.ToString();
+        var guide = tour.GuideLanguage is not null ? GetFlagDescriptions(tour.GuideLanguage.Value) : null ;
 
         return new UserTourListItemDto(
             TourId: tour.Id,

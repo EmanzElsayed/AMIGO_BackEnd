@@ -1,3 +1,5 @@
+using Amigo.SharedKernal.DTOs.Images;
+
 namespace Amigo.SharedKernal.DTOs.Tour;
 
 public record TourReviewEligibilityDto(
@@ -10,10 +12,10 @@ public record CreateUserTourReviewRequestDto(
     string Comment,
     string? Language,
     string? TravelWith,
-    List<string>? ImageUrls);
+    List<ImageUrlsForReviewRequestDTO>? ImageUrls);
 
 public record UpdateUserTourReviewRequestDto(
-    decimal Rating,
-    string Comment,
+    decimal? Rating,
+    string? Comment,
     string? TravelWith,
-    List<string>? ImageUrls);
+    List<ImageUrlsForReviewRequestDTO>? ImageUrls);

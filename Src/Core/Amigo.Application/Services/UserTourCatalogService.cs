@@ -355,18 +355,18 @@ public class UserTourCatalogService(
 
         var scheduleRepo = _unitOfWork.GetRepository<TourSchedule, Guid>();
         var reviewRepo = _unitOfWork.GetRepository<Review, Guid>();
-        var reviewTrRepo = _unitOfWork.GetRepository<ReviewTranslation, Guid>();
+        //var reviewTrRepo = _unitOfWork.GetRepository<ReviewTranslation, Guid>();
         //var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
 
         var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id, effectiveUserType))).ToList();
         var schedules = (await scheduleRepo.GetAllAsync(new TourSchedulesForTourSpecification(match.Id))).ToList();
         var reviews = (await reviewRepo.GetAllAsync(new ReviewsForTourSpecification(match.Id))).ToList();
-        var reviewTranslations = Array.Empty<ReviewTranslation>();
+        //var reviewTranslations = Array.Empty<ReviewTranslation>();
         if (reviews.Count > 0)
         {
             var ids = reviews.Select(r => r.Id).ToList();
-            reviewTranslations = (await reviewTrRepo.GetAllAsync(
-                new ReviewTranslationsForReviewsSpecification(ids, listingLang))).ToArray();
+            //reviewTranslations = (await reviewTrRepo.GetAllAsync(
+            //    new ReviewTranslationsForReviewsSpecification(ids, listingLang))).ToArray();
         }
 
         var ctRepo = _unitOfWork.GetRepository<Cancellation, Guid>();
@@ -394,7 +394,7 @@ public class UserTourCatalogService(
             effectiveUserType,
             schedules,
             reviews,
-            reviewTranslations,
+            
             todayUtc,
             rate.ValueOrDefault,
             filteredCurrency,

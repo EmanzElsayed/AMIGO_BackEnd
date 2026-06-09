@@ -1,10 +1,15 @@
+using System.ComponentModel;
+
 namespace Amigo.Domain.Enum;
 
 [Flags]
 public enum SupportedLanguage
 {
     None = 0,
+
     en = 1,
+
+   
 
     es = 2,         
 

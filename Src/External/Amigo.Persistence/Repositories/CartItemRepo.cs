@@ -14,6 +14,10 @@ namespace Amigo.Persistence.Repositories
                     .Where(x => x.Cart.UserId == userId)
                     .ExecuteUpdateAsync(s =>
                         s.SetProperty(x => x.IsDeleted, true));
+
+            await _dbContext.Carts.Where(c => c.UserId == userId)
+                .ExecuteUpdateAsync(s =>
+                        s.SetProperty(x => x.IsDeleted, true));
         }
     }
 }

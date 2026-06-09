@@ -1,5 +1,6 @@
 using Amigo.Application.Abstraction;
 using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Helpers;
 using Amigo.Application.Mapping;
 using Amigo.Application.Specifications.TourSpecification.User;
 using Amigo.Domain.Entities;
@@ -13,6 +14,7 @@ namespace Amigo.Application.Services;
 public class UserTourReviewService(
     IValidationService validationService,
     IUnitOfWork unitOfWork,
+    ImageCloudService _imageCloudService,
     ITourReviewEligibilityReader eligibilityReader) : IUserTourReviewService
 {
     public async Task<Result<TourReviewEligibilityDto>> GetEligibilityAsync(string? userId, Guid tourId)
@@ -45,7 +47,7 @@ public class UserTourReviewService(
 
   
         var listingLang = string.IsNullOrWhiteSpace(request.Language)
-            ? SupportedLanguage.en
+            ? Constants.BaseLanguage
             : EnumsMapping.ToLanguageEnum(request.Language!);
 
         var reviewId = Guid.NewGuid();
@@ -57,31 +59,31 @@ public class UserTourReviewService(
             Rate = request.Rating,
             Date = DateOnly.FromDateTime(DateTime.UtcNow),
             TravelWith = request.TravelWith,
+            Comment = request.Comment,
+           
         };
 
-        var translation = new ReviewTranslation
-        {
-            Id = Guid.NewGuid(),
-            ReviewId = reviewId,
-            Comment = request.Comment.Trim(),
-            Language = listingLang,
-        };
+      
 
         await unitOfWork.GetRepository<Review, Guid>().AddAsync(review);
-        await unitOfWork.GetRepository<ReviewTranslation, Guid>().AddAsync(translation);
+        //await unitOfWork.GetRepository<ReviewTranslation, Guid>().AddAsync(translation);
 
         if (request.ImageUrls is { Count: > 0 })
         {
             var imgs = request.ImageUrls
-                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Where(url => !string.IsNullOrWhiteSpace(url.ImageUrl) && !string.IsNullOrWhiteSpace(url.PublicId))
                 .Select(url => new ReviewImage
                 {
                     Id = Guid.NewGuid(),
                     ReviewId = reviewId,
-                    Image = url.Trim()
+                    Review = review,
+                    Image = url.ImageUrl.Trim(),
+                    PublicId = url.PublicId.Trim()
+
                 })
                 .ToList();
             if (imgs.Count > 0)
+                
                 await unitOfWork.GetRepository<ReviewImage, Guid>().AddRangeAsync(imgs);
         }
 
@@ -149,26 +151,34 @@ public class UserTourReviewService(
 
         if (review.UserId != userId)
             return Result.Fail(new ForbiddenError("You can only edit your own reviews."));
+        if(request.Rating is not null)
+            review.Rate = request.Rating.Value ;
+        if(!string.IsNullOrWhiteSpace(request.TravelWith))
+             review.TravelWith = request.TravelWith;
 
-        review.Rate = request.Rating;
-        review.TravelWith = request.TravelWith;
-
-        var translation = review.Translations.FirstOrDefault();
-        if (translation != null)
+        if (!string.IsNullOrWhiteSpace(request.Comment))
         {
-            translation.Comment = request.Comment.Trim();
+            review.Comment = request.Comment;
+        }
+
+        foreach (var img in review.Images)
+        {
+            _imageCloudService.DeleteImage(img.PublicId);
         }
 
         review.Images.Clear();
+
         if (request.ImageUrls is { Count: > 0 })
         {
-            foreach (var url in request.ImageUrls.Where(u => !string.IsNullOrWhiteSpace(u)))
+            foreach (var url in request.ImageUrls.Where(u => !string.IsNullOrWhiteSpace(u.ImageUrl) && !string.IsNullOrWhiteSpace(u.PublicId)))
             {
                 review.Images.Add(new ReviewImage
                 {
-                    Id = Guid.NewGuid(),
+                    //Id = Guid.NewGuid(),
                     ReviewId = reviewId,
-                    Image = url.Trim()
+                    Review = review,
+                    PublicId = url.PublicId.Trim(),
+                    Image = url.ImageUrl.Trim()
                 });
             }
         }

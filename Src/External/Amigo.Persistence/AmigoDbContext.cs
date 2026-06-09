@@ -8,7 +8,7 @@ namespace Amigo.Persistence
         public DbSet<WebhookEventLog> WebhookEventLogs { get; set; }
         public DbSet<OutboxMessage> OutboxMessages { get; set; }
 
-        public DbSet<ReviewTranslation> ReviewTranslations { get; set; }
+        //public DbSet<ReviewTranslation> ReviewTranslations { get; set; }
         public DbSet<CancellationTranslation> CancelationTranslations { get; set; }
         public DbSet<TourTranslation> TourTranslations { get; set; }
         public DbSet<InclusionTranslation> InclusionTranslations { get; set; }

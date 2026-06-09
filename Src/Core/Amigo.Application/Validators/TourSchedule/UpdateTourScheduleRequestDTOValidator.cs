@@ -10,10 +10,10 @@ namespace Amigo.Application.Validators.TourSchedule
     {
         public UpdateTourScheduleRequestDTOValidator()
         {
-            RuleFor(x => x.StartDate)
-                  .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
-                  .When(x => x.StartDate is not null)
-                  .WithMessage("StartDate must be today or in the future");
+            //RuleFor(x => x.StartDate)
+            //      .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow))
+            //      .When(x => x.StartDate is not null)
+            //      .WithMessage("StartDate must be today or in the future");
 
             RuleFor(x => x.EndDate)
                   .GreaterThanOrEqualTo(x => x.StartDate)

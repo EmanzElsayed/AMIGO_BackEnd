@@ -3,6 +3,7 @@ using System;
 using Amigo.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    partial class AmigoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609033358_addPublicIdInReviewImage")]
+    partial class addPublicIdInReviewImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1539,9 +1542,6 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<string>("Comment")
-                        .HasColumnType("text");
-
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer")
                         .HasColumnOrder(2);
@@ -2367,9 +2367,14 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("ReviewId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ReviewId1")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Language");
+
+                    b.HasIndex("ReviewId1");
 
                     b.HasIndex("ReviewId", "Language")
                         .IsUnique();
@@ -3212,6 +3217,10 @@ namespace Amigo.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Amigo.Domain.Entities.Review", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("ReviewId1");
+
                     b.Navigation("Review");
                 });
 
@@ -3377,6 +3386,8 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.Review", b =>
                 {
                     b.Navigation("Images");
+
+                    b.Navigation("Translations");
 
                     b.Navigation("Votes");
                 });

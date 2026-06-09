@@ -237,7 +237,7 @@ public sealed class BookingBackgroundService(
             try
             {
                 var voucherToken = GenerateToken();
-                var validationUrl = $"{_config["FrontendAPIs:ValidateVoucher"]}/voucher?token={voucherToken}";
+                var validationUrl = $"{_config["FrontendAPIs:Url"]}/voucher?token={voucherToken}";
 
 
                 booking.QRCodeBase64 = GenerateQrCode(validationUrl);

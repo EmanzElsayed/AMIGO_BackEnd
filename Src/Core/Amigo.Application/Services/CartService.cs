@@ -21,46 +21,49 @@ namespace Amigo.Application.Services
         ) 
         : ICartService
     {
-        public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
-        {
-            var cacheKey =
-            BuildCartCacheKey(userId, cartToken);
-
-            // 1. Try Cache
-            var cached =
-                await _cacheService
-                    .GetAsync<CartDTO>(cacheKey);
-
-            if (cached != null)
-                return Result.Ok(cached);
-
-            // 2. DB
-            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
-
-            if (cart == null || !cart.Items.Any())
+            public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
             {
-                return Result.Ok(new CartDTO(
-                    Guid.Empty,
-                    userId,
-                    cartToken,
-                    null,
-                    0,
-                    0,
-                    DateTime.UtcNow,
-                    DateTime.UtcNow.AddDays(15),
-                    new List<CartItemDTO>()
-                ));
+                var cacheKey =
+                BuildCartCacheKey(userId, cartToken);
+
+                // 1. Try Cache
+                var cached =
+                    await _cacheService
+                        .GetAsync<CartDTO>(cacheKey);
+              
+                if (cached is not null && cached.Items.Any())
+                    return Result.Ok(cached);
+
+                // 2. DB
+                var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+
+                if (cart == null || !cart.Items.Any())
+                {
+                    return Result.Ok(new CartDTO(
+                        Guid.Empty,
+                        userId,
+                        cartToken,
+                        null,
+                        0,
+                        0,
+                        DateTime.UtcNow,
+                        DateTime.UtcNow.AddDays(15),
+                        new List<CartItemDTO>()
+                    ));
+                }
+
+                var tourIds = cart.Items.Select(i => i.TourId);
+                var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
+            
+                var MappedCart = cart.ToDto(imageDic,_encryptionService);
+                // 3. Save Cache
+                await _cacheService.SetAsync(
+                    cacheKey,
+                    MappedCart,
+                    TimeSpan.FromMinutes(25));
+
+                return Result.Ok(MappedCart);
             }
-
-            var MappedCart = cart.ToDto();
-            // 3. Save Cache
-            await _cacheService.SetAsync(
-                cacheKey,
-                MappedCart,
-                TimeSpan.FromMinutes(25));
-
-            return Result.Ok(MappedCart);
-        }
 
         public async Task<Result<CartDTO>> AddItemAsync(
                 string? userId,
@@ -170,7 +173,10 @@ namespace Amigo.Application.Services
 
             await _unitOfWork.SaveChangesAsync();
 
-            var dto = cart.ToDto();
+            var tourIds = cart.Items.Select(i => i.TourId);
+            var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
+
+            var dto = cart.ToDto(imageDic, _encryptionService);
             await _cacheService.SetAsync(
             BuildCartCacheKey(userId, cartToken),
             dto,
@@ -320,8 +326,10 @@ namespace Amigo.Application.Services
                 return Result.Fail(new Error($"DB Error: {ex.Message} Inner: {ex.InnerException?.Message}"));
             }
 
+            var tourIds = cart.Items.Select(i => i.TourId);
+            var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
 
-            var mappedCart = cart.ToDto();
+            var mappedCart = cart.ToDto(imageDic, _encryptionService);
             await _cacheService.SetAsync(
             BuildCartCacheKey(userId, cartToken),
             dto,
@@ -809,9 +817,13 @@ namespace Amigo.Application.Services
             }
             else
             {
+                var tourIds = cart.Items.Select(i => i.TourId);
+                var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
+
+                
                 await _cacheService.SetAsync(
                     cacheKey,
-                    cart.ToDto(),
+                    cart.ToDto(imageDic, _encryptionService),
                     TimeSpan.FromMinutes(25));
             }
 

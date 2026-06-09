@@ -45,7 +45,7 @@ public class UserTourReviewController( IServiceManager _serviceManager )
     }
     [EnableRateLimiting("token")]
 
-    [HttpPut("reviews/{reviewId:guid}")]
+    [HttpPatch("reviews/{reviewId:guid}")]
     [Authorize]
     public async Task<IResultBase> UpdateReview([FromRoute] Guid reviewId, [FromBody] UpdateUserTourReviewRequestDto body)
     {
