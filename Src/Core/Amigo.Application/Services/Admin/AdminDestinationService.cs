@@ -410,15 +410,15 @@ namespace Amigo.Application.Services.Admin
 
             Guid destinationId = guid;
 
+            SupportedLanguage? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? _currentUserService.Language : EnumsMapping.ToLanguageEnum(requestQuery.Language);
             var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
-            var destinationSpecification = new AdminGetDestinationByIdSpecification(destinationId, requestQuery);
+            var destinationSpecification = new AdminGetDestinationByIdSpecification(destinationId, requestQuery, language);
 
             var destinationData = await destinationRepo.GetByIdAsync(destinationSpecification);
             if (destinationData is null)
             {
                 return Result.Fail(new NotFoundError($"This Destination Not Found"));
             }
-            SupportedLanguage? language = string.IsNullOrWhiteSpace(requestQuery.Language) ? null : EnumsMapping.ToLanguageEnum(requestQuery.Language);
 
             var mappedDestinationData = DestinationMapping.EntityToAdminDestination(destinationData, language);
             return Result.Ok(mappedDestinationData);

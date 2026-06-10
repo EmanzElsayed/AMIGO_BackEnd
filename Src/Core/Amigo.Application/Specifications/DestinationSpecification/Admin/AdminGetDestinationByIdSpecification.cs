@@ -7,7 +7,7 @@ namespace Amigo.Application.Specifications.DestinationSpecification.Admin
 {
     internal class AdminGetDestinationByIdSpecification : BaseSpecification<Destination, Guid>
     {
-        public AdminGetDestinationByIdSpecification(Guid destinationId, GetLanuageQuery requestQuery)
+        public AdminGetDestinationByIdSpecification(Guid destinationId, GetLanuageQuery requestQuery, SupportedLanguage? language)
             : base(
                   d => 
                     d.Id == destinationId && !d.IsDeleted
@@ -15,14 +15,13 @@ namespace Amigo.Application.Specifications.DestinationSpecification.Admin
         {
             AddInclude(d => d.Include(c => c.CountryInfo).ThenInclude(c => c.Translations));
 
-            if (requestQuery.Language is null)
+            if (language == null)
             {
                 AddInclude(d => d.Translations.Take(1));
 
             }
             else
             {
-                var language = EnumsMapping.ToLanguageEnum(requestQuery.Language);
 
                 AddInclude(d => d.Translations
                     .Where(x => x.Language == language)
