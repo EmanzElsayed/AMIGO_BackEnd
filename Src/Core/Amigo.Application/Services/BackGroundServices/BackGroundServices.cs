@@ -6,6 +6,7 @@ using Amigo.Application.Specifications.TourScheduleSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -302,7 +303,9 @@ public sealed class BookingBackgroundService(
     }
 
     private string GenerateToken()
-    { 
-        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+    {
+        //return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        return WebEncoders.Base64UrlEncode(
+        RandomNumberGenerator.GetBytes(32));
     }
 }
