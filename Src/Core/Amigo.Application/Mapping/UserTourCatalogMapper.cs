@@ -379,7 +379,7 @@ public static class UserTourCatalogMapper
                 ? $"{(int)dur.TotalHours}h {dur.Minutes}m"
                 : $"{dur.Minutes}m";
 
-        var guide = tour.GuideLanguage is not null ? GetFlagDescriptions(tour.GuideLanguage.Value) : null ;
+        var guide = tour.GuideLanguage is not null ? tour.GuideLanguage.ToString() : null ;
 
         return new UserTourListItemDto(
             TourId: tour.Id,

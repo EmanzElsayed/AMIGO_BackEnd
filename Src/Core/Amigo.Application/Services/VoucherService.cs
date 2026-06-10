@@ -37,7 +37,7 @@ namespace Amigo.Application.Services
             
             await emailService.SendEmailAsync(
                 booking.CustomerEmail,
-                "Your Voucher - Amigo Tours",
+                "Your Voucher - Amigo Tourism",
                 html,qrBytes);
         }
 
