@@ -165,13 +165,15 @@ public class UserTourCatalogService(
             reviewMap.TryGetValue(t.Id, out var review);
             string? originalDisplay = null;
             int? discountPct = null;
+            CultureInfo culture = CultureInfo.InvariantCulture;
+
             if (price is not null && price.MaxRetailPrice is not null && price.MaxCostPrice is not null && price.MaxCostPrice > price.MaxRetailPrice + 0.0001m)
             {
                 var inferredPct = (int)Math.Round((1 - price.MaxRetailPrice.Value / price.MaxCostPrice.Value) * 100m);
                 if (inferredPct > 0)
                 {
                     discountPct = inferredPct;
-                    originalDisplay = $"{filteredCurrency} {Math.Round(price.MaxCostPrice.Value * rate.ValueOrDefault, 2):0.##}";
+                    originalDisplay = $"{filteredCurrency} {(price.MaxCostPrice.Value * rate.ValueOrDefault).ToString("0.##",culture)}";
                 }
             }
             var dur = t.Duration;
@@ -190,7 +192,7 @@ public class UserTourCatalogService(
                         IsPitsAllowed: t.IsPitsAllowed,
                         OriginalPrice: originalDisplay,
                         FromPrice: price is null || price.MaxRetailPrice is null ? null :
-                        $"{filteredCurrency} {Math.Round(price.MaxRetailPrice.Value * rate.ValueOrDefault, 2):0.##}",
+                        $"{filteredCurrency} {(price.MaxRetailPrice.Value * rate.ValueOrDefault).ToString("0.##",culture)}",
                         DiscountPercent: discountPct,
                         DurationDisplay: dur.TotalHours >= 24
                             ? $"{(int)dur.TotalDays}d {dur.Hours}h"
@@ -501,6 +503,7 @@ public class UserTourCatalogService(
             .ToDictionary(
                 g => g.Key,
                 g => g.Any(x => x.IsFree));
+        CultureInfo culture = CultureInfo.InvariantCulture;
 
         var mapped = rows
             .Select(t =>
@@ -517,13 +520,14 @@ public class UserTourCatalogService(
                 reviewMap.TryGetValue(t.Id, out var review);
                 string? originalDisplay = null;
                 int? discountPct = null;
+
                 if (price is not null && price.MaxRetailPrice is not null && price.MaxCostPrice is not null && price.MaxCostPrice > price.MaxRetailPrice + 0.0001m)
                 {
                     var inferredPct = (int)Math.Round((1 - price.MaxRetailPrice.Value / price.MaxCostPrice.Value) * 100m);
                     if (inferredPct > 0)
                     {
                         discountPct = inferredPct;
-                        originalDisplay = $"{filteredCurrency} {Math.Round(price.MaxCostPrice.Value * rate.ValueOrDefault, 2):0.##}";
+                        originalDisplay = $"{filteredCurrency} {(price.MaxCostPrice.Value * rate.ValueOrDefault).ToString("0.##",culture)}";
                     }
                 }
                 var dur = t.Duration;
@@ -542,7 +546,7 @@ public class UserTourCatalogService(
                             IsPitsAllowed: t.IsPitsAllowed,
                             OriginalPrice: originalDisplay,
                             FromPrice: price is null || price.MaxRetailPrice is null ? null :
-                            $"{filteredCurrency} {Math.Round(price.MaxRetailPrice.Value * rate.ValueOrDefault, 2):0.##}",
+                            $"{filteredCurrency} {(price.MaxRetailPrice.Value * rate.ValueOrDefault).ToString("0.##",culture)}",
                             DiscountPercent: discountPct,
                             DurationDisplay: dur.TotalHours >= 24
                                 ? $"{(int)dur.TotalDays}d {dur.Hours}h"
