@@ -25,5 +25,12 @@ namespace Amigo.Persistence.Repositories
                     x => x.ImageUrl);
         }
 
+        public async Task<List<Guid>> GetTourIdsWithDestinationId(Guid destinationId)
+        { 
+            return await _dbContext.Tours
+                                   .Where(t => t.DestinationId == destinationId)
+                                   .Select(t => t.Id).ToListAsync();
+        }
+
     }
 }

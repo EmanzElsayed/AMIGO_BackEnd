@@ -1,4 +1,6 @@
 using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Helpers;
+using Amigo.Application.Specifications.BookingSpecification;
 
 namespace Amigo.Application.Services
 {
@@ -42,7 +44,7 @@ namespace Amigo.Application.Services
             return Result.Ok(paginatedResult);
         }
 
-        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id, CancellationToken cancellationToken)
+        public async Task<Result<GetDestinationByIdResponseDTO>> GetDestinationByIdAsync(string Id, CancellationToken cancellationToken)
         {
            
             if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
@@ -60,8 +62,22 @@ namespace Amigo.Application.Services
             {
                 return Result.Fail(new NotFoundError(_localizationService.Get("NotFoundDestination")));
             }
+            var toursIds = await _unitOfWork.TourRepo.GetTourIdsWithDestinationId(destinationId);
 
-            var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language);
+            var reviews = await _unitOfWork.ReviewRepo.GetTourReviewSummariesAsync(toursIds);
+            var averageRating = Math.Max(
+                reviews != null && reviews.Any()
+                    ? reviews.Average(r => r.Rate)
+                    : 0,
+                Constants.AverageReviewRating);
+            var reviewsCount = (reviews != null && reviews.Any() ? reviews.Count() : 0 ) + Constants.ReviewCount;
+
+            var bookings = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetBookingsByTourIdsSpecification(toursIds));
+           
+            var traveleresCount = Constants.TravelersCount + bookings?.Sum(b => b.Travelers?.Count()) ?? 0;
+            var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language,averageRating,traveleresCount,reviewsCount);
+           
+
             return Result.Ok(mappedDestinationData);
         }
 

@@ -9,5 +9,7 @@ namespace Amigo.Domain.Abstraction.Repositories
 
         Task<Dictionary<Guid, string?>> GetFirstTourImagesAsync(
          IEnumerable<Guid> tourIds);
+        Task<List<Guid>> GetTourIdsWithDestinationId(Guid destinationId);
+
     }
 }

@@ -90,11 +90,11 @@ namespace Amigo.Application.Mapping
         }
 
 
-        public static GetDestinationResponseDTO EntityToDestination(Destination destination, SupportedLanguage language)
+        public static GetDestinationByIdResponseDTO EntityToDestination(Destination destination, SupportedLanguage language,decimal averageRating, int travelersCount,int reviewsCount)
         {
 
 
-            return new GetDestinationResponseDTO(
+            return new GetDestinationByIdResponseDTO(
                  DestinationId: destination.Id,
                   Country: destination.CountryInfo is null ? null: new GetCountryInfoResponseDTO(
                         destination.CountryInfo.Id,
@@ -107,7 +107,10 @@ namespace Amigo.Application.Mapping
                   ImageUrl: destination.ImageUrl,
 
                   Name: destination.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
-                  Language: language.ToString()
+                  Language: language.ToString(),
+                  ReviewsCount : reviewsCount,
+                  TravelersCount: travelersCount,
+                  AverageReviewRating : averageRating
             );
 
 

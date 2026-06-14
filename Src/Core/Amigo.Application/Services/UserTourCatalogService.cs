@@ -184,8 +184,9 @@ public class UserTourCatalogService(
                         Title: title,
                         Description: tr?.Description,
                         HeroImageUrl: hero?.ImageUrl,
-                        AverageRating: review?.AverageRating,
-                        ReviewCount: review?.ReviewCount ?? 0,
+                        AverageRating: Math.Max(review?.AverageRating ?? 0,Constants.AverageReviewRating ) ,
+                        ReviewCount: review?.ReviewCount ?? 0 + Constants.ReviewCount,
+
                           FreeCancellation: cancellationMap.GetValueOrDefault(t.Id),
 
                         IsWheelchairAvailable: t.IsWheelchairAvailable,
@@ -443,7 +444,7 @@ public class UserTourCatalogService(
     }
 
     public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 6)
-    {
+    {   
         var listingLang = _currentUserService.Language;
         var filteredCurrency = _currentUserService.Currency;
         var rate = await _currencyRateService.GetRateAsync(
@@ -538,8 +539,8 @@ public class UserTourCatalogService(
                             Title: title,
                             Description: tr?.Description,
                             HeroImageUrl: hero?.ImageUrl,
-                            AverageRating: review?.AverageRating,
-                            ReviewCount: review?.ReviewCount ?? 0,
+                            AverageRating: Math.Max(review?.AverageRating ?? 0,Constants.AverageReviewRating),
+                            ReviewCount:  review?.ReviewCount ?? 0 +  Constants.ReviewCount,
                             FreeCancellation: cancellationMap.GetValueOrDefault(t.Id),
 
                             IsWheelchairAvailable: t.IsWheelchairAvailable,
