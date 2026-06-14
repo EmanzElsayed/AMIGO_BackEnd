@@ -28,10 +28,10 @@ namespace Amigo.Persistence.EntityConfiguration.Translation
 
             builder.HasIndex(x => x.Language);
 
-            builder.HasOne(x => x.Cancellation)
-                   .WithMany(c => c.Translations)
-                   .HasForeignKey(x => x.CancellationId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            //builder.HasOne(x => x.Cancellation)
+            //       .WithMany(c => c.Translations)
+            //       .HasForeignKey(x => x.CancellationId)
+            //       .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

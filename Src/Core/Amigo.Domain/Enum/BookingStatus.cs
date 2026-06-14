@@ -6,5 +6,5 @@ public enum BookingStatus
     Cancelled = 3,
     NoShow = 4,
     Refunded = 5,
-    PendingCancellation = 6
+    PendingCancellation = 6 
 }

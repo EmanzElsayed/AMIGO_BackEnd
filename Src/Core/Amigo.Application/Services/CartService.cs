@@ -65,125 +65,125 @@ namespace Amigo.Application.Services
                 return Result.Ok(MappedCart);
             }
 
-        public async Task<Result<CartDTO>> AddItemAsync(
-                string? userId,
-                string? cartToken,
-                AddCartItemRequestDTO requestDTO)
-        {
-            var cart = await GetOrCreateCart(userId, cartToken);
+        //public async Task<Result<CartDTO>> AddItemAsync(
+        //        string? userId,
+        //        string? cartToken,
+        //        AddCartItemRequestDTO requestDTO)
+        //{
+        //    var cart = await GetOrCreateCart(userId, cartToken);
 
-            CurrencyCode requestedCurrency = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.RequestedCurrencyCode, false);
+        //    CurrencyCode requestedCurrency = EnumsMapping.ToEnum<CurrencyCode>(requestDTO.RequestedCurrencyCode, false);
 
-            if (!cart.Items.Any())
-            {
-                cart.CurrencyCode = requestedCurrency;
-
-
-            }
+        //    if (!cart.Items.Any())
+        //    {
+        //        cart.CurrencyCode = requestedCurrency;
 
 
-            var tour = await _unitOfWork.GetRepository<Tour,Guid>().GetByIdAsync(new GetTourByIdSpecification(requestDTO.TourId));
-            if (tour is null)
-            {
-                return Result.Fail(new NotFoundError("This Tour Not Found"));
+        //    }
 
-            }
 
-            var slot = await _unitOfWork.GetRepository<AvailableSlots, Guid>().GetByIdAsync(new GetAvaialableSlotsByIdSpecification(requestDTO.SlotId));
-            if (slot is null)
-            {
-                return Result.Fail(new NotFoundError("This Slot Not Found"));
+        //    var tour = await _unitOfWork.GetRepository<Tour,Guid>().GetByIdAsync(new GetTourByIdSpecification(requestDTO.TourId));
+        //    if (tour is null)
+        //    {
+        //        return Result.Fail(new NotFoundError("This Tour Not Found"));
 
-            }
-            if (slot.AvailableTimeStatus != AvailableDateTimeStatus.Available)
-            {
-                return Result.Fail("This Slot Not Available Now");
+        //    }
 
-            }
+        //    var slot = await _unitOfWork.GetRepository<AvailableSlots, Guid>().GetByIdAsync(new GetAvaialableSlotsByIdSpecification(requestDTO.SlotId));
+        //    if (slot is null)
+        //    {
+        //        return Result.Fail(new NotFoundError("This Slot Not Found"));
 
-            var requestedQty = requestDTO.Prices.Sum(x => x.Quantity);
-            var remaining = slot.MaxCapacity - slot.ReservedCount;
-            if (requestedQty > remaining)
-            {
-                return Result.Fail($"Sorry, only {remaining} spots are available for this time slot.");
-            }
-            var translatedTitle = tour.Translations
-                   .FirstOrDefault(x => x.Language == requestDTO.Language)?.Title
-                   ?? tour.Translations.FirstOrDefault()?.Title
-                   ?? "Tour";
-                var destinationName = tour.Destination?.Translations?
-                .FirstOrDefault(t => t.Language == requestDTO.Language)?.Name
-                ?? tour.Destination?.Translations?.FirstOrDefault()?.Name
-                ?? string.Empty;
-            string? activityType =  requestDTO.Prices
-                                    .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ActivityType))?.ActivityType ?? null;
+        //    }
+        //    if (slot.AvailableTimeStatus != AvailableDateTimeStatus.Available)
+        //    {
+        //        return Result.Fail("This Slot Not Available Now");
 
-            var item = new CartItem
-            {
+        //    }
+
+        //    var requestedQty = requestDTO.Prices.Sum(x => x.Quantity);
+        //    var remaining = slot.MaxCapacity - slot.ReservedCount;
+        //    if (requestedQty > remaining)
+        //    {
+        //        return Result.Fail($"Sorry, only {remaining} spots are available for this time slot.");
+        //    }
+        //    var translatedTitle = tour.Translations
+        //           .FirstOrDefault(x => x.Language == requestDTO.Language)?.Title
+        //           ?? tour.Translations.FirstOrDefault()?.Title
+        //           ?? "Tour";
+        //        var destinationName = tour.Destination?.Translations?
+        //        .FirstOrDefault(t => t.Language == requestDTO.Language)?.Name
+        //        ?? tour.Destination?.Translations?.FirstOrDefault()?.Name
+        //        ?? string.Empty;
+        //    string? activityType =  requestDTO.Prices
+        //                            .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ActivityType))?.ActivityType ?? null;
+
+        //    var item = new CartItem
+        //    {
                 
-                Cart = cart,
-                CartId = cart.Id,
-                TourId = requestDTO.TourId,
-                Tour = tour,
-                SlotId = requestDTO.SlotId,
-                Slot = slot,
-                Language = requestDTO.Language,
-                TourDate = requestDTO.TourDate,
-                StartTime = requestDTO.StartTime,
-                TourTitle = translatedTitle,
+        //        Cart = cart,
+        //        CartId = cart.Id,
+        //        TourId = requestDTO.TourId,
+        //        Tour = tour,
+        //        SlotId = requestDTO.SlotId,
+        //        Slot = slot,
+        //        Language = requestDTO.Language,
+        //        TourDate = requestDTO.TourDate,
+        //        StartTime = requestDTO.StartTime,
+        //        TourTitle = translatedTitle,
     
-                DestinationName = destinationName,
-                ActivityType = activityType
-            };
+        //        DestinationName = destinationName,
+        //        ActivityType = activityType
+        //    };
 
-            var userType = await GetUserType(userId);
+        //    var userType = await GetUserType(userId);
 
-            var rate = await _currencyRateService.GetRateAsync(
-                    Constants.BaseCurrency,
-                    cart.CurrencyCode.Value,false);
+        //    var rate = await _currencyRateService.GetRateAsync(
+        //            Constants.BaseCurrency,
+        //            cart.CurrencyCode.Value,false);
 
-            if (!rate.IsSuccess)
-                return Result.Fail(rate.Errors);
+        //    if (!rate.IsSuccess)
+        //        return Result.Fail(rate.Errors);
 
 
-            var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(tour.Id, userType));
+        //    var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(tour.Id, userType));
             
-            foreach (var p in requestDTO.Prices)
-            {
+        //    foreach (var p in requestDTO.Prices)
+        //    {
                 
-                var retailPrice = GetPriceFromTour(prices, p.Type,requestDTO.Language, activityType);
+        //        var retailPrice = GetPriceFromTour(prices, p.Type,requestDTO.Language, activityType);
 
-                item.Prices.Add(new CartPrice
-                {
+        //        item.Prices.Add(new CartPrice
+        //        {
                     
-                    Type = p.Type,
-                    Quantity = p.Quantity,
-                    BaseRetailPrice = retailPrice,
-                    ConvertedRetailPrice = retailPrice * rate.ValueOrDefault,
-                    ExchangeRate = rate.ValueOrDefault
+        //            Type = p.Type,
+        //            Quantity = p.Quantity,
+        //            BaseRetailPrice = retailPrice,
+        //            ConvertedRetailPrice = retailPrice * rate.ValueOrDefault,
+        //            ExchangeRate = rate.ValueOrDefault
 
-                });
-            }
-            item.ActivityType = activityType;
-            item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
+        //        });
+        //    }
+        //    item.ActivityType = activityType;
+        //    item.TotalAmount = item.Prices.Sum(x => x.FinalPrice);
 
-            cart.Items.Add(item);
+        //    cart.Items.Add(item);
 
-            RecalculateCart(cart);
+        //    RecalculateCart(cart);
 
-            await _unitOfWork.SaveChangesAsync();
+        //    await _unitOfWork.SaveChangesAsync();
 
-            var tourIds = cart.Items.Select(i => i.TourId);
-            var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
+        //    var tourIds = cart.Items.Select(i => i.TourId);
+        //    var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
 
-            var dto = cart.ToDto(imageDic, _encryptionService);
-            await _cacheService.SetAsync(
-            BuildCartCacheKey(userId, cartToken),
-            dto,
-            TimeSpan.FromMinutes(25));
+        //    var dto = cart.ToDto(imageDic, _encryptionService);
+        //    await _cacheService.SetAsync(
+        //    BuildCartCacheKey(userId, cartToken),
+        //    dto,
+        //    TimeSpan.FromMinutes(25));
 
-            return dto;
-        }
+        //    return dto;
+        //}
 
 
 
@@ -207,471 +207,471 @@ namespace Amigo.Application.Services
         }
 
 
-        public async Task<Result<CartDTO>> UpdateItemAsync(
-                Guid itemId,
-                string? userId,
-                string? cartToken,
-                UpdateCartItemRequestDTO dto)
-        {
-            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
-            if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
+        //public async Task<Result<CartDTO>> UpdateItemAsync(
+        //        Guid itemId,
+        //        string? userId,
+        //        string? cartToken,
+        //        UpdateCartItemRequestDTO dto)
+        //{
+        //    var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+        //    if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
 
-            //var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
-            //var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
-            var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
+        //    //var itemRepo = _unitOfWork.GetRepository<CartItem, Guid>();
+        //    //var item = await itemRepo.GetByIdAsync(new GetCartItemWithIdSpecification(itemId));
+        //    var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
 
-            if (item is null || item.CartId != cart.Id)
-                return Result.Fail(new NotFoundError("This Item Not Found"));
+        //    if (item is null || item.CartId != cart.Id)
+        //        return Result.Fail(new NotFoundError("This Item Not Found"));
 
 
-            if (dto.Prices != null && dto.Prices.Any())
-            {
-                var requestedQty = dto.Prices.Sum(x => x.Quantity);
-                var currentItemQty = item.Prices.Sum(x => x.Quantity);
+        //    if (dto.Prices != null && dto.Prices.Any())
+        //    {
+        //        var requestedQty = dto.Prices.Sum(x => x.Quantity);
+        //        var currentItemQty = item.Prices.Sum(x => x.Quantity);
                 
-                // We check if the INCREASE exceeds the remaining capacity
-                // Slot is already attached to item
-                var slot = await _unitOfWork.GetRepository<AvailableSlots,Guid>().GetByIdAsync(item.SlotId);
-                if (slot is null )
-                    return Result.Fail(new NotFoundError("This Slot Not Found"));
+        //        // We check if the INCREASE exceeds the remaining capacity
+        //        // Slot is already attached to item
+        //        var slot = await _unitOfWork.GetRepository<AvailableSlots,Guid>().GetByIdAsync(item.SlotId);
+        //        if (slot is null )
+        //            return Result.Fail(new NotFoundError("This Slot Not Found"));
 
-                var remaining = slot.MaxCapacity - slot.ReservedCount;
+        //        var remaining = slot.MaxCapacity - slot.ReservedCount;
                 
-                if (requestedQty > currentItemQty && (requestedQty - currentItemQty) > remaining)
-                {
-                    return Result.Fail($"Sorry, only {remaining + currentItemQty} total spots are available.");
-                }
+        //        if (requestedQty > currentItemQty && (requestedQty - currentItemQty) > remaining)
+        //        {
+        //            return Result.Fail($"Sorry, only {remaining + currentItemQty} total spots are available.");
+        //        }
 
-                var priceRepo = _unitOfWork.GetRepository<CartPrice, Guid>();
-                var cartPrices = await priceRepo.GetAllAsync(new GetCartPriceWithCartItemIdSpecification(itemId));
-                priceRepo.RemoveRange(cartPrices);
+        //        var priceRepo = _unitOfWork.GetRepository<CartPrice, Guid>();
+        //        var cartPrices = await priceRepo.GetAllAsync(new GetCartPriceWithCartItemIdSpecification(itemId));
+        //        priceRepo.RemoveRange(cartPrices);
                 
 
-                var userType = await GetUserType(userId);
+        //        var userType = await GetUserType(userId);
 
-                var rate = await _currencyRateService.GetRateAsync(
-                Constants.BaseCurrency,
-                cart.CurrencyCode.Value,false);
+        //        var rate = await _currencyRateService.GetRateAsync(
+        //        Constants.BaseCurrency,
+        //        cart.CurrencyCode.Value,false);
 
-                if (!rate.IsSuccess)
-                    return Result.Fail(rate.Errors);
+        //        if (!rate.IsSuccess)
+        //            return Result.Fail(rate.Errors);
 
-                string? activityType = dto.Prices
-                                                  .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ActivityType))?.ActivityType ?? null;
+        //        string? activityType = dto.Prices
+        //                                          .FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.ActivityType))?.ActivityType ?? null;
 
-                var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(item.TourId, userType));
+        //        var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(item.TourId, userType));
 
-                List<CartPrice> newCartprices = new List<CartPrice>();
+        //        List<CartPrice> newCartprices = new List<CartPrice>();
 
-                foreach (var p in dto.Prices)
-                {
-                    var retailPrice = GetPriceFromTour(prices, p.Type, item.Language,activityType);
+        //        foreach (var p in dto.Prices)
+        //        {
+        //            var retailPrice = GetPriceFromTour(prices, p.Type, item.Language,activityType);
 
-                    newCartprices.Add(new CartPrice
-                    {
-                        Id = Guid.NewGuid(),
-                        CartItemId = item.Id,
-                        CartItem = item,
-                        Type = p.Type,
-                        Quantity = p.Quantity,
-                        BaseRetailPrice = retailPrice,
-                        ConvertedRetailPrice = retailPrice * rate.ValueOrDefault,
-                        ExchangeRate = rate.ValueOrDefault
-                    });
-                }
-                await priceRepo.AddRangeAsync(newCartprices);
-                item.ActivityType = activityType;
-                item.TotalAmount = newCartprices.Sum(x => x.FinalPrice);
+        //            newCartprices.Add(new CartPrice
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                CartItemId = item.Id,
+        //                CartItem = item,
+        //                Type = p.Type,
+        //                Quantity = p.Quantity,
+        //                BaseRetailPrice = retailPrice,
+        //                ConvertedRetailPrice = retailPrice * rate.ValueOrDefault,
+        //                ExchangeRate = rate.ValueOrDefault
+        //            });
+        //        }
+        //        await priceRepo.AddRangeAsync(newCartprices);
+        //        item.ActivityType = activityType;
+        //        item.TotalAmount = newCartprices.Sum(x => x.FinalPrice);
 
-                RecalculateCart(cart);
-            }
+        //        RecalculateCart(cart);
+        //    }
 
-            List<TravelerDraft> travelers = new List<TravelerDraft>();
-            if (dto.Travelers != null)
-            {
-                var travelerRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
-                item.Travelers.Clear();
-                foreach (var t in dto.Travelers)
-                {
-                    var rawPassport = string.IsNullOrWhiteSpace(t.PassportNumber) ? null : t.PassportNumber.Trim();
-                    if (rawPassport != null && rawPassport.Length > 60)
-                    {
-                        rawPassport = rawPassport.Substring(0, 60);
-                    }
+        //    List<TravelerDraft> travelers = new List<TravelerDraft>();
+        //    if (dto.Travelers != null)
+        //    {
+        //        var travelerRepo = _unitOfWork.GetRepository<TravelerDraft, Guid>();
+        //        item.Travelers.Clear();
+        //        foreach (var t in dto.Travelers)
+        //        {
+        //            var rawPassport = string.IsNullOrWhiteSpace(t.PassportNumber) ? null : t.PassportNumber.Trim();
+        //            if (rawPassport != null && rawPassport.Length > 60)
+        //            {
+        //                rawPassport = rawPassport.Substring(0, 60);
+        //            }
 
-                    var newTraveler = new TravelerDraft
-                    {
-                        Id = Guid.NewGuid(),
-                        CartItemId = item.Id,
-                        FullName = $"{t.FirstName} {t.LastName}",
-                        Nationality = t.Nationality,
-                        Type = t.Type,
-                        BirthDate = t.BirthDate,
-                        PassportNumber = rawPassport == null ? null : _encryptionService.Encrypt(rawPassport)
-                    };
-                    travelers.Add(newTraveler);
-                }
-                    await travelerRepo.AddRangeAsync(travelers);
-                    //item.Travelers.Add(newTraveler);
-            }
+        //            var newTraveler = new TravelerDraft
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                CartItemId = item.Id,
+        //                FullName = $"{t.FirstName} {t.LastName}",
+        //                Nationality = t.Nationality,
+        //                Type = t.Type,
+        //                BirthDate = t.BirthDate,
+        //                PassportNumber = rawPassport == null ? null : _encryptionService.Encrypt(rawPassport)
+        //            };
+        //            travelers.Add(newTraveler);
+        //        }
+        //            await travelerRepo.AddRangeAsync(travelers);
+        //            //item.Travelers.Add(newTraveler);
+        //    }
            
          
 
-            try
-            {
-                await _unitOfWork.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                return Result.Fail(new Error($"DB Error: {ex.Message} Inner: {ex.InnerException?.Message}"));
-            }
+        //    try
+        //    {
+        //        await _unitOfWork.SaveChangesAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Result.Fail(new Error($"DB Error: {ex.Message} Inner: {ex.InnerException?.Message}"));
+        //    }
 
-            var tourIds = cart.Items.Select(i => i.TourId);
-            var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
+        //    var tourIds = cart.Items.Select(i => i.TourId);
+        //    var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
 
-            var mappedCart = cart.ToDto(imageDic, _encryptionService);
-            await _cacheService.SetAsync(
-            BuildCartCacheKey(userId, cartToken),
-            dto,
-            TimeSpan.FromMinutes(25));
+        //    var mappedCart = cart.ToDto(imageDic, _encryptionService);
+        //    await _cacheService.SetAsync(
+        //    BuildCartCacheKey(userId, cartToken),
+        //    dto,
+        //    TimeSpan.FromMinutes(25));
 
-            return mappedCart;
-        }
-
-
-
-
-        public async Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO,string userId, string? cartToken)
-        {
-            var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
-            if (cart == null) return Result.Fail("Cart not found");
-
-            if (!cart.Items.Any())
-                return Result.Fail("Cart don't have Items");
-
-            var strategy = _unitOfWork.CreateExecutionStrategy();
-
-            return await strategy.ExecuteAsync(async () =>
-            {
-                await using var transaction = await _unitOfWork.BeginTransactionAsync();
-
-                try
-                {
-                    var order = new Order
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        Currency = cart.CurrencyCode.GetValueOrDefault(),
-                        Status = OrderStatus.PendingPayment,
-                        OrderDate = DateTime.UtcNow,
-                        TotalAmount = 0,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(20),
-                        OrderItems = new List<OrderItem>(cart.Items.Count)
-                    };
-
-                    var response = new CheckoutResponseDTO(
-                        OrderId: order.Id,
-                        ChangedPrices: new List<CheckoutPriceResponseDTO>(),
-                         PaymentId: Guid.Empty
-                    );
-
-                    decimal total = 0;
-                    decimal totalWithUsd = 0;
-
-                    var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
-
-                    var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
-
-                    var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
-
-
-                    // GEt Ids
-
-                    var tourIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.TourId).ToHashSet();
-                    var slotIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.SlotId).Distinct().OrderBy(x => x).ToList();
-                    var orderId = order.Id;
-
-                    //create tour dictionary
-
-                    var tours =  await tourRepo.GetAllAsync(
-                                     new GetToursByIdsSpecification(tourIds));
+        //    return mappedCart;
+        //}
 
 
 
-                    var slots = await slotRepo.GetAllAsync(
-                             new GetSlotsByIdsSpecification(slotIds));
+
+        //public async Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO,string userId, string? cartToken)
+        //{
+        //    var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+        //    if (cart == null) return Result.Fail("Cart not found");
+
+        //    if (!cart.Items.Any())
+        //        return Result.Fail("Cart don't have Items");
+
+        //    var strategy = _unitOfWork.CreateExecutionStrategy();
+
+        //    return await strategy.ExecuteAsync(async () =>
+        //    {
+        //        await using var transaction = await _unitOfWork.BeginTransactionAsync();
+
+        //        try
+        //        {
+        //            var order = new Order
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                UserId = userId,
+        //                Currency = cart.CurrencyCode.GetValueOrDefault(),
+        //                Status = OrderStatus.PendingPayment,
+        //                OrderDate = DateTime.UtcNow,
+        //                TotalAmount = 0,
+        //                ExpiresAt = DateTime.UtcNow.AddMinutes(20),
+        //                OrderItems = new List<OrderItem>(cart.Items.Count)
+        //            };
+
+        //            var response = new CheckoutResponseDTO(
+        //                OrderId: order.Id,
+        //                ChangedPrices: new List<CheckoutPriceResponseDTO>(),
+        //                 PaymentId: Guid.Empty
+        //            );
+
+        //            decimal total = 0;
+        //            decimal totalWithUsd = 0;
+
+        //            var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
+
+        //            var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+
+        //            var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+
+
+        //            // GEt Ids
+
+        //            var tourIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.TourId).ToHashSet();
+        //            var slotIds = cart.Items.Where(i => !i.IsDeleted).Select(x => x.SlotId).Distinct().OrderBy(x => x).ToList();
+        //            var orderId = order.Id;
+
+        //            //create tour dictionary
+
+        //            var tours =  await tourRepo.GetAllAsync(
+        //                             new GetToursByIdsSpecification(tourIds));
 
 
 
-                    if (slots is null || !slots.Any() ) return Result.Fail("Slots Not Avaialble");
-
-                    //var reservations = await reservationRepo.GetAllAsync(
-                    //    new GetReservationsBySlotIdsSpecification(slotIds));
-
-
-                    var tourDict = tours.ToDictionary(x => x.Id);
-                    var userType = await GetUserType(userId);
-
-                    var priceDict = tours
-                        .SelectMany(t => t.Prices
-                            .Where(p => p.UserType == userType)
-                            .SelectMany(p => p.Translations
-                                .Select(tr => new
-                                {
-                                    Key = (
-                                        t.Id,
-                                        tr.Type.ToLower().Trim(),
-                                        tr.ActivityType?.ToLower().Trim(),
-                                        tr.Language
-                                    ),
-                                    Price = p
-                                })))
-                        .ToDictionary(
-                            x => x.Key,
-                            x => x.Price);
-
-                    //create slots dictionary
+        //            var slots = await slotRepo.GetAllAsync(
+        //                     new GetSlotsByIdsSpecification(slotIds));
 
 
 
-                    var slotDict = slots.ToDictionary(x => x.Id);
+        //            if (slots is null || !slots.Any() ) return Result.Fail("Slots Not Avaialble");
 
-                    //create reservations dictionary
+        //            //var reservations = await reservationRepo.GetAllAsync(
+        //            //    new GetReservationsBySlotIdsSpecification(slotIds));
+
+
+        //            var tourDict = tours.ToDictionary(x => x.Id);
+        //            var userType = await GetUserType(userId);
+
+        //            var priceDict = tours
+        //                .SelectMany(t => t.Prices
+        //                    .Where(p => p.UserType == userType)
+        //                    .SelectMany(p => p.Translations
+        //                        .Select(tr => new
+        //                        {
+        //                            Key = (
+        //                                t.Id,
+        //                                tr.Type.ToLower().Trim(),
+        //                                tr.ActivityType?.ToLower().Trim(),
+        //                                tr.Language
+        //                            ),
+        //                            Price = p
+        //                        })))
+        //                .ToDictionary(
+        //                    x => x.Key,
+        //                    x => x.Price);
+
+        //            //create slots dictionary
+
+
+
+        //            var slotDict = slots.ToDictionary(x => x.Id);
+
+        //            //create reservations dictionary
 
 
 
                    
 
-                    var newReservations = new List<SlotReservation>(cart.Items.Count);
+        //            var newReservations = new List<SlotReservation>(cart.Items.Count);
 
-                    // handle Travelers
+        //            // handle Travelers
 
-                    var requestItemMap = requestDTO.Items
-                            .ToDictionary(x => x.CartItemId);
+        //            var requestItemMap = requestDTO.Items
+        //                    .ToDictionary(x => x.CartItemId);
 
-                    var slotRequests = cart.Items
-                        .GroupBy(x => x.SlotId)
-                        .Select(g => new SlotReservationRequest(
-                            g.Key,
-                            g.Sum(item =>
-                                item.Prices.Sum(p => p.Quantity))))
-                        .ToList();
+        //            var slotRequests = cart.Items
+        //                .GroupBy(x => x.SlotId)
+        //                .Select(g => new SlotReservationRequest(
+        //                    g.Key,
+        //                    g.Sum(item =>
+        //                        item.Prices.Sum(p => p.Quantity))))
+        //                .ToList();
 
-                    var reservedIds = await _slotsRepo.ReserveBulkAsync(slotRequests);
+        //            var reservedIds = await _slotsRepo.ReserveBulkAsync(slotRequests);
 
-                    if (reservedIds.Count != slotRequests.Count)
-                    {
-                        await transaction.RollbackAsync();
+        //            if (reservedIds.Count != slotRequests.Count)
+        //            {
+        //                await transaction.RollbackAsync();
 
-                        return Result.Fail(
-                            "One or more slots are full.");
-                    }
+        //                return Result.Fail(
+        //                    "One or more slots are full.");
+        //            }
 
-                    var rate = await _currencyRateService.GetRateAsync(
-                       Constants.BaseCurrency,
-                       cart.CurrencyCode.Value, false);
+        //            var rate = await _currencyRateService.GetRateAsync(
+        //               Constants.BaseCurrency,
+        //               cart.CurrencyCode.Value, false);
 
-                    if (!rate.IsSuccess)
-                        return Result.Fail(rate.Errors);
-                    var exchangeRate = rate.ValueOrDefault;
+        //            if (!rate.IsSuccess)
+        //                return Result.Fail(rate.Errors);
+        //            var exchangeRate = rate.ValueOrDefault;
 
-                    foreach (var item in cart.Items.Where(i => !i.IsDeleted))
-                    {
-                        if (!tourDict.TryGetValue(item.TourId, out var tour))
-                            return Result.Fail($"Tour {item.TourId} not found");
+        //            foreach (var item in cart.Items.Where(i => !i.IsDeleted))
+        //            {
+        //                if (!tourDict.TryGetValue(item.TourId, out var tour))
+        //                    return Result.Fail($"Tour {item.TourId} not found");
 
-                        if (!slotDict.TryGetValue(item.SlotId, out var orderedSlot))
-                            return Result.Fail("Slot not found");
+        //                if (!slotDict.TryGetValue(item.SlotId, out var orderedSlot))
+        //                    return Result.Fail("Slot not found");
                         
 
-                        if (!requestItemMap.TryGetValue(item.Id, out var itemRequest))
-                            return Result.Fail("Missing item Travelers request");
+        //                if (!requestItemMap.TryGetValue(item.Id, out var itemRequest))
+        //                    return Result.Fail("Missing item Travelers request");
 
 
                         
 
 
-                        var prices = item.Prices;
-                        var totalPeople = prices.Sum(x => x.Quantity);
+        //                var prices = item.Prices;
+        //                var totalPeople = prices.Sum(x => x.Quantity);
 
-                        if (itemRequest.Travelers.Count != totalPeople)
-                        {
-                            return Result.Fail($"You Should Enter {totalPeople} Passanger Details");
+        //                if (itemRequest.Travelers.Count != totalPeople)
+        //                {
+        //                    return Result.Fail($"You Should Enter {totalPeople} Passanger Details");
 
-                        }
-
-
-
-                        // reserved  slot 
-                        var reservation = new SlotReservation
-                        {
-                            Id = Guid.NewGuid(),
-                            SlotId = orderedSlot.Id,
-                            OrderId = order.Id,
-                            Quantity = totalPeople,
-                            CreatedAt = DateTime.UtcNow,
-                            ExpiresAt = DateTime.UtcNow.AddMinutes(20),
-                            Status = ReservationStatus.Pending
-                        };
-                        newReservations.Add(reservation);
+        //                }
 
 
-                        string tourTitle =
-                            tour.Translations
-                                .FirstOrDefault(t => t.Language == item.Language)
-                                ?.Title ?? "Tour";
 
-                        string destinationName =
-                            tour.Destination.Translations
-                                .FirstOrDefault(t => t.Language == item.Language)
-                                ?.Name ?? "";
+        //                // reserved  slot 
+        //                var reservation = new SlotReservation
+        //                {
+        //                    Id = Guid.NewGuid(),
+        //                    SlotId = orderedSlot.Id,
+        //                    OrderId = order.Id,
+        //                    Quantity = totalPeople,
+        //                    CreatedAt = DateTime.UtcNow,
+        //                    ExpiresAt = DateTime.UtcNow.AddMinutes(20),
+        //                    Status = ReservationStatus.Pending
+        //                };
+        //                newReservations.Add(reservation);
 
-                        if (!string.IsNullOrWhiteSpace(tourTitle) && SlugHelper.MatchesName(tourTitle, item.TourTitle) == false)
+
+        //                string tourTitle =
+        //                    tour.Translations
+        //                        .FirstOrDefault(t => t.Language == item.Language)
+        //                        ?.Title ?? "Tour";
+
+        //                string destinationName =
+        //                    tour.Destination.Translations
+        //                        .FirstOrDefault(t => t.Language == item.Language)
+        //                        ?.Name ?? "";
+
+        //                if (!string.IsNullOrWhiteSpace(tourTitle) && SlugHelper.MatchesName(tourTitle, item.TourTitle) == false)
                                         
-                        {
-                            response = response with
-                            {
-                                IsTourTitleChanged = true
-                            };
-                        }
+        //                {
+        //                    response = response with
+        //                    {
+        //                        IsTourTitleChanged = true
+        //                    };
+        //                }
 
-                        if (!string.IsNullOrWhiteSpace(destinationName) &&
-                            !destinationName.Trim().ToLower()
-                                .Contains(item.DestinationName.ToLower()))
-                        {
-                            response = response with
-                            {
-                                IsDestinationNameChanged = true
-                            };
-                        }
+        //                if (!string.IsNullOrWhiteSpace(destinationName) &&
+        //                    !destinationName.Trim().ToLower()
+        //                        .Contains(item.DestinationName.ToLower()))
+        //                {
+        //                    response = response with
+        //                    {
+        //                        IsDestinationNameChanged = true
+        //                    };
+        //                }
 
-                        var orderItem = new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            OrderId = order.Id,
-                            TourId = tour.Id,
-                            SlotId = item.SlotId,
-                            TourDate = item.TourDate,
-                            StartTime = item.StartTime,
-                            ActivityType = item.ActivityType,
-                            //CurrencyCode = cart.CurrencyCode,
-                            Language = item.Language,
-                            MeetingPoint = tour.MeetingPoint,
-                            Duration = tour.Duration,
-                            TourTitle = tourTitle,
-                            DestinationName = destinationName,
-                            CancelationPolicyType =
-                                tour.Cancellation.CancelationPolicyType,
-                            CancellationBefore =
-                                tour.Cancellation.CancellationBefore,
-                            RefundPercentage =
-                                tour.Cancellation.RefundPercentage,
-                            TravelersDraft = BuildTravelers(itemRequest)
-                        };
+        //                var orderItem = new OrderItem
+        //                {
+        //                    Id = Guid.NewGuid(),
+        //                    OrderId = order.Id,
+        //                    TourId = tour.Id,
+        //                    SlotId = item.SlotId,
+        //                    TourDate = item.TourDate,
+        //                    StartTime = item.StartTime,
+        //                    ActivityType = item.ActivityType,
+        //                    //CurrencyCode = cart.CurrencyCode,
+        //                    Language = item.Language,
+        //                    MeetingPoint = tour.MeetingPoint,
+        //                    Duration = tour.Duration,
+        //                    TourTitle = tourTitle,
+        //                    DestinationName = destinationName,
+        //                  /*  CancelationPolicyType =
+        //                        tour.Cancellation.CancelationPolicyType,
+        //                    CancellationBefore =
+        //                        tour.Cancellation.CancellationBefore,
+        //                    RefundPercentage =
+        //                        tour.Cancellation.RefundPercentage,*/
+        //                    TravelersDraft = BuildTravelers(itemRequest)
+        //                };
 
-                        decimal itemTotal = 0;
-                        decimal itemTotalWithUsd = 0;
+        //                decimal itemTotal = 0;
+        //                decimal itemTotalWithUsd = 0;
 
 
-                        foreach (var cartPrice in prices)
-                        {
-                            var key = (
-                                        tour.Id,
-                                        cartPrice.Type.ToLower().Trim(),
-                                        item.ActivityType?.ToLower().Trim(),
-                                        item.Language
-                                    );
+        //                foreach (var cartPrice in prices)
+        //                {
+        //                    var key = (
+        //                                tour.Id,
+        //                                cartPrice.Type.ToLower().Trim(),
+        //                                item.ActivityType?.ToLower().Trim(),
+        //                                item.Language
+        //                            );
 
-                            var found = priceDict.TryGetValue(key, out var priceEntity);
+        //                    var found = priceDict.TryGetValue(key, out var priceEntity);
 
-                            if (priceEntity is null)
-                                return Result.Fail(
-                                    $"Price type {cartPrice.Type} not found for tour {tour.Id}");
+        //                    if (priceEntity is null)
+        //                        return Result.Fail(
+        //                            $"Price type {cartPrice.Type} not found for tour {tour.Id}");
 
-                            var currentRetailPrice = priceEntity.RetailPrice;
+        //                    var currentRetailPrice = priceEntity.RetailPrice;
 
-                            if (cartPrice.BaseRetailPrice != currentRetailPrice)
-                            {
-                                response.ChangedPrices.Add(
-                                    new CheckoutPriceResponseDTO(
-                                        cartPrice.Type,
-                                        currentRetailPrice));
-                            }
+        //                    if (cartPrice.BaseRetailPrice != currentRetailPrice)
+        //                    {
+        //                        response.ChangedPrices.Add(
+        //                            new CheckoutPriceResponseDTO(
+        //                                cartPrice.Type,
+        //                                currentRetailPrice));
+        //                    }
 
-                            orderItem.OrderedPrice.Add(new OrderedPrice
-                            {
-                                Id = Guid.NewGuid(),
-                                Type = cartPrice.Type,
-                                Quantity = cartPrice.Quantity,
-                                BaseRetailPrice = currentRetailPrice,
-                                ExchangeRate = exchangeRate,
-                                ConvertedRetailPrice = exchangeRate * currentRetailPrice,
-                            });
+        //                    orderItem.OrderedPrice.Add(new OrderedPrice
+        //                    {
+        //                        Id = Guid.NewGuid(),
+        //                        Type = cartPrice.Type,
+        //                        Quantity = cartPrice.Quantity,
+        //                        BaseRetailPrice = currentRetailPrice,
+        //                        ExchangeRate = exchangeRate,
+        //                        ConvertedRetailPrice = exchangeRate * currentRetailPrice,
+        //                    });
 
-                            itemTotal += exchangeRate * currentRetailPrice * cartPrice.Quantity;
-                            itemTotalWithUsd += currentRetailPrice * cartPrice.Quantity;
-                        }
+        //                    itemTotal += exchangeRate * currentRetailPrice * cartPrice.Quantity;
+        //                    itemTotalWithUsd += currentRetailPrice * cartPrice.Quantity;
+        //                }
 
-                        total += itemTotal;
-                        totalWithUsd += itemTotalWithUsd;
-                        order.OrderItems.Add(orderItem);
-                    }
+        //                total += itemTotal;
+        //                totalWithUsd += itemTotalWithUsd;
+        //                order.OrderItems.Add(orderItem);
+        //            }
 
-                    order.TotalAmount = total;
-                    order.TotalAmountWithUsd = totalWithUsd;
-                    // Save Order
-                    await _unitOfWork
-                        .GetRepository<Order, Guid>()
-                        .AddAsync(order);
+        //            order.TotalAmount = total;
+        //            order.TotalAmountWithUsd = totalWithUsd;
+        //            // Save Order
+        //            await _unitOfWork
+        //                .GetRepository<Order, Guid>()
+        //                .AddAsync(order);
 
-                    // Save new Reservation 
-                    await reservationRepo.AddRangeAsync(newReservations);
+        //            // Save new Reservation 
+        //            await reservationRepo.AddRangeAsync(newReservations);
 
-                    // -------------------------------
-                    // Create Payment Record
-                    // -------------------------------
-                    var payment = new Payment
-                    {
-                        Id = Guid.NewGuid(),
-                        OrderId = order.Id,
-                        TotalAmount = total,
-                        TotalAmountWithUsd = totalWithUsd,
-                        Status = PaymentStatus.Pending,
-                        Currency = cart.CurrencyCode.GetValueOrDefault()
-                    };
+        //            // -------------------------------
+        //            // Create Payment Record
+        //            // -------------------------------
+        //            var payment = new Payment
+        //            {
+        //                Id = Guid.NewGuid(),
+        //                OrderId = order.Id,
+        //                TotalAmount = total,
+        //                TotalAmountWithUsd = totalWithUsd,
+        //                Status = PaymentStatus.Pending,
+        //                Currency = cart.CurrencyCode.GetValueOrDefault()
+        //            };
 
-                    await _unitOfWork
-                        .GetRepository<Payment, Guid>()
-                        .AddAsync(payment);
+        //            await _unitOfWork
+        //                .GetRepository<Payment, Guid>()
+        //                .AddAsync(payment);
 
 
                    
 
                  
 
-                    await _unitOfWork.SaveChangesAsync();
+        //            await _unitOfWork.SaveChangesAsync();
 
-                    await transaction.CommitAsync();
-                    // remove cart from data base
-                    await _cacheService.RemoveAsync(
-                                    BuildCartCacheKey(userId, cartToken));
-                    return Result.Ok(
-                        response with
-                        {
-                            PaymentId = payment.Id,
-                            CurrencyCode = payment.Currency.ToString()
+        //            await transaction.CommitAsync();
+        //            // remove cart from data base
+        //            await _cacheService.RemoveAsync(
+        //                            BuildCartCacheKey(userId, cartToken));
+        //            return Result.Ok(
+        //                response with
+        //                {
+        //                    PaymentId = payment.Id,
+        //                    CurrencyCode = payment.Currency.ToString()
                            
-                        });
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    Console.WriteLine($"Checkout Failed: {ex.Message}");
-                    return FluentValidationExtension
-                        .FromException(details: ex.Message);
-                }
-            });
-        }
+        //                });
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            await transaction.RollbackAsync();
+        //            Console.WriteLine($"Checkout Failed: {ex.Message}");
+        //            return FluentValidationExtension
+        //                .FromException(details: ex.Message);
+        //        }
+        //    });
+        //}
 
         private List<TravelerDraft> BuildTravelers(
             CheckoutItemRequestDTO requestItem)
@@ -866,6 +866,21 @@ namespace Amigo.Application.Services
                 return $"cart:user:{userId}";
 
             return $"cart:guest:{cartToken}";
+        }
+
+        public Task<Result<CartDTO>> AddItemAsync(string? userId, string? cartToken, AddCartItemRequestDTO requestDTO)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<CartDTO>> UpdateItemAsync(Guid itemId, string? userId, string? cartToken, UpdateCartItemRequestDTO dto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Result<CheckoutResponseDTO>> CheckoutAsync(CheckoutRequestDTO requestDTO, string userId, string? cartToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

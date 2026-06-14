@@ -54,9 +54,23 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
                    .HasForeignKey(t => t.DestinationId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(t => t.Cancellation)
-                   .WithOne(c => c.Tour)
-                   .HasForeignKey<Cancellation>(c => c.TourId);
+            //builder.HasOne(t => t.Cancellation)
+            //       .WithOne(c => c.Tour)
+            //       .HasForeignKey<Cancellation>(c => c.TourId);
+
+
+
+            builder.HasMany(t => t.BlackoutDates)
+                 .WithOne(ts => ts.Tour)
+                 .HasForeignKey(ts => ts.TourId);
+
+            builder.HasMany(t => t.BlackoutWeekDays)
+               .WithOne(ts => ts.Tour)
+               .HasForeignKey(ts => ts.TourId);
+
+            builder.HasMany(t => t.Cancellations)
+             .WithOne(ts => ts.Tour)
+             .HasForeignKey(ts => ts.TourId);
 
             builder.HasMany(t => t.AvailableTimes)
                    .WithOne(ts => ts.Tour)

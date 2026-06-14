@@ -60,7 +60,7 @@ public sealed class BookingBackgroundService(
         var voucherService = scope.ServiceProvider.GetRequiredService<IVoucherService>();
         await ExpireReservations(unitOfWork);
         await ExpireOrders(unitOfWork);
-        await SoldOutSlots(unitOfWork);
+        //await SoldOutSlots(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
         await SendTourReminderEmails(voucherService, unitOfWork);
 
@@ -128,52 +128,52 @@ public sealed class BookingBackgroundService(
     // =====================================================
     // 3) SoldOutSlots 
     // =====================================================
-    private async Task SoldOutSlots(IUnitOfWork _unitOfWork)
-    {
+    //private async Task SoldOutSlots(IUnitOfWork _unitOfWork)
+    //{
         
 
-        var repo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+    //    var repo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
 
-        var availableSlots = await repo.GetAllAsync(
-            new GetAllAvailableSlots());
+    //    var availableSlots = await repo.GetAllAsync(
+    //        new GetAllAvailableSlots());
 
-        if (!availableSlots.Any())
-            return;
+    //    if (!availableSlots.Any())
+    //        return;
 
-        var avialableSlotsIds = availableSlots.Select(availableSlots => availableSlots.Id).ToList();
+    //    var avialableSlotsIds = availableSlots.Select(availableSlots => availableSlots.Id).ToList();
 
-        var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+    //    var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
 
-        var reservationsCount = await reservationRepo.GetGroupedCountAsync(
-            x => avialableSlotsIds.Contains(x.SlotId) && x.Status == ReservationStatus.Confirmed,
-            x => x.SlotId
-        );
+    //    var reservationsCount = await reservationRepo.GetGroupedCountAsync(
+    //        x => avialableSlotsIds.Contains(x.SlotId) && x.Status == ReservationStatus.Confirmed,
+    //        x => x.SlotId
+    //    );
 
-        foreach (var slot in availableSlots)
-        {
-            if (slot.TourSchedule.StartDate.ToDateTime(slot.StartTime) <= DateTime.UtcNow)
-            {
-                slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
+    //    //foreach (var slot in availableSlots)
+    //    //{
+    //    //    if (slot.TourSchedule.StartDate.ToDateTime(slot.StartTime) <= DateTime.UtcNow)
+    //    //    {
+    //    //        slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
                 
-            }
-            else
+    //    //    }
+    //    //    else
 
-            {
-                var count = reservationsCount.ContainsKey(slot.Id)
-                      ? reservationsCount[slot.Id]
-                      : 0;
-                slot.ReservedCount = count;
-                if (count >= slot.MaxCapacity)
-                {
-                    slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
-                    slot.SetModifiedDate(DateTime.UtcNow);
-                }
-            }
+    //    //    {
+    //    //        var count = reservationsCount.ContainsKey(slot.Id)
+    //    //              ? reservationsCount[slot.Id]
+    //    //              : 0;
+    //    //        slot.ReservedCount = count;
+    //    //        if (count >= slot.MaxCapacity)
+    //    //        {
+    //    //            slot.AvailableTimeStatus = AvailableDateTimeStatus.SoldOut;
+    //    //            slot.SetModifiedDate(DateTime.UtcNow);
+    //    //        }
+    //    //    }
               
-        }
+    //    //}
 
-        await _unitOfWork.SaveChangesAsync();
-    }
+    //    await _unitOfWork.SaveChangesAsync();
+    //}
 
 
     private async Task SoldOutTourSchedule(IUnitOfWork _unitOfWork)

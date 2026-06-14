@@ -8,6 +8,9 @@ public class Price : BaseEntity<Guid>
     public Tour Tour { get; set; } = null!;
 
 
+    //special date 
+    public DateOnly? SpecialDate { get; set; }
+
     //main activity type if exist
     public bool? IsMainActivityType { get; set; } 
 

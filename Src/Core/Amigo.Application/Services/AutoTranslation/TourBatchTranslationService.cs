@@ -96,7 +96,7 @@ namespace Amigo.Application.Services.AutoTranslation
                 // 4. Map back to DB
                 var tourTranslations = new List<TourTranslation>();
                
-                var cancellationTranslation = new List<CancellationTranslation>();
+                //var cancellationTranslation = new List<CancellationTranslation>();
                 var inclustionsTranslation = new List<InclusionTranslation>();
                 var pricesTranslation = new List<PriceTranslation>();
 
@@ -109,12 +109,12 @@ namespace Amigo.Application.Services.AutoTranslation
 
 
 
-                var existingCancellation = await _unitOfWork
-                 .GetRepository<CancellationTranslation, Guid>()
-                 .GetAllWithTrackingAsync();
+                //var existingCancellation = await _unitOfWork
+                // .GetRepository<CancellationTranslation, Guid>()
+                // .GetAllWithTrackingAsync();
 
-                var cancellationMap = existingCancellation
-                 .ToDictionary(x => (x.CancellationId, x.Language));
+                //var cancellationMap = existingCancellation
+                // .ToDictionary(x => (x.CancellationId, x.Language));
 
                 var existingPrice = await _unitOfWork
                .GetRepository<PriceTranslation, Guid>()
@@ -161,25 +161,25 @@ namespace Amigo.Application.Services.AutoTranslation
 
 
                         //// Cancellation
-                        if (lang.Tour.Cancellation != null)
-                        {
-                            if (cancellationMap.TryGetValue((lang.Tour.Cancellation.CancellationId, language), out var exisingCancellation))
-                            {
-                                exisingCancellation.Description = !string.IsNullOrWhiteSpace(lang.Tour.Cancellation.Description) ? lang.Tour.Cancellation.Description : exisingCancellation.Description;
-                            }
-                            else
-                            {
-                                cancellationTranslation.Add(
-                                      new CancellationTranslation
-                                      {
-                                          CancellationId = lang.Tour.Cancellation.CancellationId,
-                                          Language = language,
-                                          Description = lang.Tour.Cancellation.Description
-                                      });
-                            }
+                        //if (lang.Tour.Cancellation != null)
+                        //{
+                        //    if (cancellationMap.TryGetValue((lang.Tour.Cancellation.CancellationId, language), out var exisingCancellation))
+                        //    {
+                        //        exisingCancellation.Description = !string.IsNullOrWhiteSpace(lang.Tour.Cancellation.Description) ? lang.Tour.Cancellation.Description : exisingCancellation.Description;
+                        //    }
+                        //    else
+                        //    {
+                        //        cancellationTranslation.Add(
+                        //              new CancellationTranslation
+                        //              {
+                        //                  CancellationId = lang.Tour.Cancellation.CancellationId,
+                        //                  Language = language,
+                        //                  Description = lang.Tour.Cancellation.Description
+                        //              });
+                        //    }
 
 
-                        }
+                        //}
 
                     // Inclusions
                     if (lang.Tour.Inclusions is not null)
@@ -236,9 +236,9 @@ namespace Amigo.Application.Services.AutoTranslation
                 // 5. Bulk save
                 if (tourTranslations.Any())
                     await _unitOfWork.GetRepository<TourTranslation, Guid>().AddRangeAsync(tourTranslations);
-                if (cancellationTranslation.Any())
+                //if (cancellationTranslation.Any())
 
-                    await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
+                //    await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
                 if (pricesTranslation.Any())
 
                     await _unitOfWork.GetRepository<PriceTranslation, Guid>().AddRangeAsync(pricesTranslation);
@@ -356,26 +356,26 @@ namespace Amigo.Application.Services.AutoTranslation
 
                         
                        
-                        // Cancellation
-                        if (tour.Cancellation != null)
-                        {
-                            if (cancellationMap.TryGetValue((tour.Cancellation.CancellationId, language), out var exisingCancellation))
-                            {
-                                exisingCancellation.Description = tour.Cancellation.Description;
-                            }
-                            else
-                            {
-                                cancellationTranslation.Add(
-                                      new CancellationTranslation
-                                      {
-                                          CancellationId = tour.Cancellation.CancellationId,
-                                          Language = language,
-                                          Description = tour.Cancellation.Description
-                                      });
-                            }
+                        //// Cancellation
+                        //if (tour.Cancellation != null)
+                        //{
+                        //    if (cancellationMap.TryGetValue((tour.Cancellation.CancellationId, language), out var exisingCancellation))
+                        //    {
+                        //        exisingCancellation.Description = tour.Cancellation.Description;
+                        //    }
+                        //    else
+                        //    {
+                        //        cancellationTranslation.Add(
+                        //              new CancellationTranslation
+                        //              {
+                        //                  CancellationId = tour.Cancellation.CancellationId,
+                        //                  Language = language,
+                        //                  Description = tour.Cancellation.Description
+                        //              });
+                        //    }
 
                               
-                        }
+                        //}
 
                         // Inclusions
                         foreach (var inc in tour.Inclusions)
@@ -424,9 +424,9 @@ namespace Amigo.Application.Services.AutoTranslation
                 // 5. Bulk save
                 if(tourTranslations.Any())
                      await _unitOfWork.GetRepository<TourTranslation, Guid>().AddRangeAsync(tourTranslations);
-                if(cancellationTranslation.Any())
+                //if(cancellationTranslation.Any())
 
-                    await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
+                //    await _unitOfWork.GetRepository<CancellationTranslation, Guid>().AddRangeAsync(cancellationTranslation);
                 if (pricesTranslation.Any())
 
                     await _unitOfWork.GetRepository<PriceTranslation, Guid>().AddRangeAsync(pricesTranslation);

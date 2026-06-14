@@ -10,7 +10,6 @@ namespace Amigo.Application.Specifications.TourSpecification
         public GetCancellationWithTourIdSpecification(Guid tourId) 
             : base(c => !c.IsDeleted && c.TourId == tourId)
         {
-            AddInclude(c => c.Translations);
         }
     }
 }

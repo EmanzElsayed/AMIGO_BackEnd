@@ -12,9 +12,9 @@ namespace Amigo.Application.Validators.AvailableSlots
 
            
 
-            RuleFor(x => x.StartTime)
+            RuleFor(x => x.Time)
                 .NotEmpty()
-                .WithMessage("StartTime is required")
+                .WithMessage("Time is required")
                  .Must(t => t != default)
                 .WithMessage("StartTime must be a valid time in HH:mm format");
 
@@ -26,18 +26,18 @@ namespace Amigo.Application.Validators.AvailableSlots
             //    .GreaterThan(x => x.StartTime)
             //    .WithMessage("EndTime must be after StartTime");
 
-            RuleFor(x => x.MaxCapacity)
-                .GreaterThan(0)
-                .WithMessage("MaxCapacity must be greater than 0")
-                .LessThanOrEqualTo(1000)
-                .WithMessage("MaxCapacity is too large");
+            //RuleFor(x => x.MaxCapacity)
+            //    .GreaterThan(0)
+            //    .WithMessage("MaxCapacity must be greater than 0")
+            //    .LessThanOrEqualTo(1000)
+            //    .WithMessage("MaxCapacity is too large");
 
           
 
-            RuleFor(x => x.AvailableTimeStatus)
-              .Must(BusinessRules.BeAValidDateStatus)
-              .When(x => !string.IsNullOrEmpty(x.AvailableTimeStatus))
-              .WithMessage("Invalid Guide AvailableTimeStatus Code (Available, SoldOut, Closed)");
+            //RuleFor(x => x.AvailableTimeStatus)
+            //  .Must(BusinessRules.BeAValidDateStatus)
+            //  .When(x => !string.IsNullOrEmpty(x.AvailableTimeStatus))
+            //  .WithMessage("Invalid Guide AvailableTimeStatus Code (Available, SoldOut, Closed)");
         }
     }
 }

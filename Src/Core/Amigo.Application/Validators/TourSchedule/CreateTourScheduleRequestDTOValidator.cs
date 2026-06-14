@@ -28,9 +28,7 @@
                   .WithMessage("Invalid Guide AvailableTimeStatus Code (Available, SoldOut, Closed)");
 
 
-                RuleForEach(x => x.availableSlots)
-               .SetValidator(new CreateAvailableSlotsRequestDTOValidator())
-               .When(x => x.availableSlots != null);
+              
 
             }
         }

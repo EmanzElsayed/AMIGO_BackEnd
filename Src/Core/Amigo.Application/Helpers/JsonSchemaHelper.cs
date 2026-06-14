@@ -24,11 +24,6 @@ namespace Amigo.Application.Helpers
                       "name": "string"
                     },
 
-                    "cancellation": {
-                      "cancellationId": "guid",
-                      "description": "string"
-                    },
-
                     "inclusions": [
                       {
                         "inclusionId": "guid",
@@ -75,11 +70,6 @@ namespace Amigo.Application.Helpers
                     "tourId": "guid",
                     "title": "string",
                     "description": "string",
-
-                    "cancellation": {
-                      "cancellationId": "guid",
-                      "description": "string"
-                    },
 
                     "inclusions": [
                       {

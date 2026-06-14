@@ -8,11 +8,10 @@ namespace Amigo.Domain.DTO.AvailableSlots
     (
         
         Guid Id,
-        TimeOnly StartTime,
-        string AvailableTimeStatus,
-        int MaxCapacity,
-
-      int ReservedCount
+        TimeOnly Time,
+        string AvailableTimeStatus
+      
+      
     );    
     
 }

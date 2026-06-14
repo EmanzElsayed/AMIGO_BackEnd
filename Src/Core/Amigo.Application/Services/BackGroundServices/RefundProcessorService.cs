@@ -121,7 +121,7 @@ namespace Amigo.Application.Services.BackGroundServices
 
                         refund.Booking.Status =
                             BookingStatus.Cancelled;
-
+                        refund.Booking.ConfirmedAt = DateTime.UtcNow;
                         // CANCELLATION REQUEST
 
                         refund.CancellationRequest.Status =

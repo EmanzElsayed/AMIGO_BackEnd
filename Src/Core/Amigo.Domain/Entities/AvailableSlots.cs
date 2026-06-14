@@ -5,16 +5,16 @@
 public class AvailableSlots:BaseEntity<Guid>
 {
 
-    public Guid TourScheduleId { get; set; }
+    public Guid TourId { get; set; }
    
-    public TourSchedule TourSchedule { get; set; } = null!;
+    public Tour Tour { get; set; } = null!;
 
     public TimeOnly StartTime { get; set; }
     public TimeOnly? EndTime { get; set; }
 
-    public AvailableDateTimeStatus AvailableTimeStatus { get; set; }
+    public AvailableDateTimeStatus AvailableTimeStatus { get; set; } = AvailableDateTimeStatus.Available;
 
-    public int MaxCapacity { get; set; }
+    //public int MaxCapacity { get; set; }
 
     public int ReservedCount { get; set; }   
 

@@ -9,7 +9,7 @@ public class CancellationsByTourIdSpec : BaseSpecification<Cancellation, Guid>
     public CancellationsByTourIdSpec(Guid tourId)
         : base(BuildCriteria(tourId))
     {
-        AddInclude(c => c.Translations);
+        //AddInclude(c => c.Translations);
     }
 
     private static Expression<Func<Cancellation, bool>> BuildCriteria(Guid tourId)

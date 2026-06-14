@@ -5,12 +5,11 @@ using System.Text;
 
 namespace Amigo.Application.Specifications.AvailableSlotsSpecification
 {
-    public class GetAvailableTimesWithTourIdSpecification : BaseSpecification<TourSchedule, Guid>
+    public class GetAvailableTimesWithTourIdSpecification : BaseSpecification<AvailableSlots, Guid>
     {
         public GetAvailableTimesWithTourIdSpecification(Guid tourId)
             : base(s => !s.IsDeleted && s.TourId == tourId)
         {
-            AddInclude(s => s.AvailableSlots);
         }
     }
 }

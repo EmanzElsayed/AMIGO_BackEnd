@@ -21,7 +21,7 @@ public class GetToursByIdsSpecification : BaseSpecification<Tour, Guid>
 
 
 
-        AddInclude(t => t.Cancellation);
+        //AddInclude(t => t.Cancellation);
               
               
 

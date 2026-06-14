@@ -1,5 +1,7 @@
-﻿using Amigo.Domain.DTO.Tour;
-using Amigo.Application.Helpers;
+﻿using Amigo.Application.Helpers;
+using Amigo.Domain.DTO.BlackoutDate;
+using Amigo.Domain.DTO.BlackoutWeekDays;
+using Amigo.Domain.DTO.Tour;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +10,28 @@ namespace Amigo.Application.Mapping
 {
     public static class TourMapping 
     {
+
+        public static List<BlackoutDate> BlackoutDatesToEntity(List<CreateBlackoutDateRequestDTO> requestDTO, Tour tour)
+        {
+            return requestDTO.Select(d => new BlackoutDate
+            {
+                Id = Guid.NewGuid(),
+                Tour = tour,
+                TourId = tour.Id,
+                Date = d.Date
+            }).ToList();
+        }
+
+        public static List<BlackoutWeekDay> BlackoutWeekDaysToEntity(List<CreateBlackoutWeekDaysRequestDTO> requestDTO, Tour tour)
+        {
+            return requestDTO.Select(d => new BlackoutWeekDay
+            {
+                Id = Guid.NewGuid(),
+                Tour = tour,
+                TourId = tour.Id,
+                DayOfWeek = d.DayOfWeek,
+            }).ToList();
+        }
         public static Tour TourToEntity(CreateTourRequestDTO requestDTO , Destination destination,UserType userType)
         {
 
@@ -28,7 +52,8 @@ namespace Amigo.Application.Mapping
                 DestinationId = destination.Id,
                 Destination = destination,
                 UserType = userType,
-                CurrencyCode = currency
+                CurrencyCode = currency,
+                IsFullTime = requestDTO.IsFullTime ?? false,
 
             };
         }

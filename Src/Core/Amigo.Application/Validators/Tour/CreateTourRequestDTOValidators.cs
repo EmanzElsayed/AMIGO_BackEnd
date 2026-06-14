@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Validators.Cancellation;
+﻿using Amigo.Application.Validators.AvailableSlots;
+using Amigo.Application.Validators.Cancellation;
 using Amigo.Application.Validators.Images;
 using Amigo.Application.Validators.Price;
 using Amigo.Application.Validators.TourSchedule;
@@ -76,44 +77,42 @@ namespace Amigo.Application.Validators.Tour
 
 
             RuleForEach(x => x.Schedule)
-              .SetValidator(new CreateTourScheduleRequestDTOValidator())
-              .When(x => x.Schedule != null);
+             .SetValidator(new CreateAvailableSlotsRequestDTOValidator())
+             .When(x => x.Schedule != null);
 
-            //RuleFor(x => x)
-            //    .Must(HaveScheduleMatchingDuration)
-            //    .WithMessage("Schedule date range must match the activity duration.");
+            
 
             RuleForEach(x => x.Prices)
            .SetValidator(new CreatePriceRequestDTOValidator())
            .When(x => x.Prices != null);
 
 
-            RuleFor(x => x.Cancellation)
+            RuleForEach(x => x.Cancellation)
           .SetValidator(new CreateCancellationRequestDTOValidator())
           .When(x => x.Cancellation != null);
         }
 
-        private static bool HaveScheduleMatchingDuration(CreateTourRequestDTO request)
-        {
-            if (request.Schedule is null || request.Schedule.Count == 0)
-                return true;
+        //private static bool HaveScheduleMatchingDuration(CreateTourRequestDTO request)
+        //{
+        //    if (request.Schedule is null || request.Schedule.Count == 0)
+        //        return true;
 
-            var totalMinutes = request.Duration.TotalMinutes;
-            if (totalMinutes <= 0)
-                return false;
+        //    var totalMinutes = request.Duration.TotalMinutes;
+        //    if (totalMinutes <= 0)
+        //        return false;
 
-            var requiredDaySpan = (int)Math.Floor(request.Duration.TotalDays);
-            var uniqueDates = request.Schedule
-                .Select(x => x.StartDate)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
+        //    var requiredDaySpan = (int)Math.Floor(request.Duration.TotalDays);
+        //    var uniqueDates = request.Schedule
+        //        .Select(x => x.StartDate)
+        //        .Distinct()
+        //        .OrderBy(x => x)
+        //        .ToList();
 
-            if (uniqueDates.Count == 0)
-                return false;
+        //    if (uniqueDates.Count == 0)
+        //        return false;
 
-            var actualDaySpan = uniqueDates[^1].DayNumber - uniqueDates[0].DayNumber;
-            return actualDaySpan == requiredDaySpan;
-        }
+        //    var actualDaySpan = uniqueDates[^1].DayNumber - uniqueDates[0].DayNumber;
+        //    return actualDaySpan == requiredDaySpan;
+        //}
     }
 }

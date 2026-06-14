@@ -14,9 +14,9 @@ namespace Amigo.Domain.DTO.Tour
         public string? EntryAmountVIPLabel { get; set; }
         public decimal? EntryAmountPublic { get; set; }
         public string? EntryAmountPublicLabel { get; set; }
-        public int TotalCapacity { get; set; }
+        //public int TotalCapacity { get; set; }
         public int BookedSeats { get; set; }
-        public double BookedPercentage { get; set; }
+        //public double BookedPercentage { get; set; }
         public string Status { get; set; } = "Active";
     }
 

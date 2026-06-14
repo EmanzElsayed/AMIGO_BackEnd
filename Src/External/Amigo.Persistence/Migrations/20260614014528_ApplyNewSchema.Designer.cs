@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    [Migration("20260609033358_addPublicIdInReviewImage")]
-    partial class addPublicIdInReviewImage
+    [Migration("20260614014528_ApplyNewSchema")]
+    partial class ApplyNewSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,9 +55,6 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
-                    b.Property<int>("MaxCapacity")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("ModifiedBy")
                         .HasColumnType("integer")
                         .HasColumnOrder(4);
@@ -74,16 +71,110 @@ namespace Amigo.Persistence.Migrations
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
-                    b.Property<Guid>("TourScheduleId")
+                    b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TourScheduleId");
+                    b.HasIndex("StartTime");
 
-                    b.HasIndex("StartTime", "EndTime");
+                    b.HasIndex("TourId");
 
                     b.ToTable("AvailableSlots", "tour");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.BlackoutDate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnOrder(1)
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(2);
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(3)
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnOrder(6);
+
+                    b.Property<int?>("ModifiedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(4);
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(5)
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TourId");
+
+                    b.ToTable("BlackoutDates");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.BlackoutWeekDay", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnOrder(1)
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(2);
+
+                    b.Property<DateTime>("CreatedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(3)
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnOrder(6);
+
+                    b.Property<int?>("ModifiedBy")
+                        .HasColumnType("integer")
+                        .HasColumnOrder(4);
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnOrder(5)
+                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TourId");
+
+                    b.ToTable("BlackoutWeekDays");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Booking", b =>
@@ -234,8 +325,7 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TourId")
-                        .IsUnique();
+                    b.HasIndex("TourId");
 
                     b.ToTable("Cancellation", "tour");
                 });
@@ -1010,6 +1100,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal?>("TotalAmountWithUsd")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(450)
@@ -1324,6 +1417,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal?>("TotalAmountWithUsd")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
@@ -1440,6 +1536,9 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(5)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
+                    b.Property<DateOnly?>("SpecialDate")
+                        .HasColumnType("date");
+
                     b.Property<Guid>("TourId")
                         .HasColumnType("uuid");
 
@@ -1541,6 +1640,9 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
 
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer")
@@ -1797,6 +1899,9 @@ namespace Amigo.Persistence.Migrations
                         .HasDefaultValue(false)
                         .HasColumnOrder(6);
 
+                    b.Property<bool>("IsFullTime")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPitsAllowed")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1932,61 +2037,6 @@ namespace Amigo.Persistence.Migrations
                     b.HasIndex("TourId");
 
                     b.ToTable("TourInclusion", "tour");
-                });
-
-            modelBuilder.Entity("Amigo.Domain.Entities.TourSchedule", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnOrder(1)
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<int>("AvailableDateStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(2);
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnOrder(3)
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<DateOnly?>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnOrder(6);
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("integer")
-                        .HasColumnOrder(4);
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnOrder(5)
-                        .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("TourId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TourId");
-
-                    b.HasIndex("StartDate", "EndDate");
-
-                    b.ToTable("TourSchedule", "tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CancellationTranslation", b =>
@@ -2367,14 +2417,9 @@ namespace Amigo.Persistence.Migrations
                     b.Property<Guid>("ReviewId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ReviewId1")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Language");
-
-                    b.HasIndex("ReviewId1");
 
                     b.HasIndex("ReviewId", "Language")
                         .IsUnique();
@@ -2775,13 +2820,35 @@ namespace Amigo.Persistence.Migrations
 
             modelBuilder.Entity("Amigo.Domain.Entities.AvailableSlots", b =>
                 {
-                    b.HasOne("Amigo.Domain.Entities.TourSchedule", "TourSchedule")
-                        .WithMany("AvailableSlots")
-                        .HasForeignKey("TourScheduleId")
+                    b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
+                        .WithMany("AvailableTimes")
+                        .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("TourSchedule");
+                    b.Navigation("Tour");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.BlackoutDate", b =>
+                {
+                    b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
+                        .WithMany("BlackoutDates")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
+                });
+
+            modelBuilder.Entity("Amigo.Domain.Entities.BlackoutWeekDay", b =>
+                {
+                    b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
+                        .WithMany("BlackoutWeekDays")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
                 });
 
             modelBuilder.Entity("Amigo.Domain.Entities.Booking", b =>
@@ -2814,8 +2881,8 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.Cancellation", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
-                        .WithOne("Cancellation")
-                        .HasForeignKey("Amigo.Domain.Entities.Cancellation", "TourId")
+                        .WithMany("Cancellations")
+                        .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -3132,21 +3199,10 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("Tour");
                 });
 
-            modelBuilder.Entity("Amigo.Domain.Entities.TourSchedule", b =>
-                {
-                    b.HasOne("Amigo.Domain.Entities.Tour", "Tour")
-                        .WithMany("AvailableTimes")
-                        .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tour");
-                });
-
             modelBuilder.Entity("Amigo.Domain.Entities.TranslationEntities.CancellationTranslation", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Cancellation", "Cancellation")
-                        .WithMany("Translations")
+                        .WithMany()
                         .HasForeignKey("CancellationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3216,10 +3272,6 @@ namespace Amigo.Persistence.Migrations
                         .HasForeignKey("ReviewId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Amigo.Domain.Entities.Review", null)
-                        .WithMany("Translations")
-                        .HasForeignKey("ReviewId1");
 
                     b.Navigation("Review");
                 });
@@ -3321,11 +3373,6 @@ namespace Amigo.Persistence.Migrations
                     b.Navigation("Travelers");
                 });
 
-            modelBuilder.Entity("Amigo.Domain.Entities.Cancellation", b =>
-                {
-                    b.Navigation("Translations");
-                });
-
             modelBuilder.Entity("Amigo.Domain.Entities.Cart", b =>
                 {
                     b.Navigation("Items");
@@ -3387,8 +3434,6 @@ namespace Amigo.Persistence.Migrations
                 {
                     b.Navigation("Images");
 
-                    b.Navigation("Translations");
-
                     b.Navigation("Votes");
                 });
 
@@ -3396,8 +3441,11 @@ namespace Amigo.Persistence.Migrations
                 {
                     b.Navigation("AvailableTimes");
 
-                    b.Navigation("Cancellation")
-                        .IsRequired();
+                    b.Navigation("BlackoutDates");
+
+                    b.Navigation("BlackoutWeekDays");
+
+                    b.Navigation("Cancellations");
 
                     b.Navigation("Images");
 
@@ -3413,11 +3461,6 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.TourInclusion", b =>
                 {
                     b.Navigation("Translations");
-                });
-
-            modelBuilder.Entity("Amigo.Domain.Entities.TourSchedule", b =>
-                {
-                    b.Navigation("AvailableSlots");
                 });
 #pragma warning restore 612, 618
         }

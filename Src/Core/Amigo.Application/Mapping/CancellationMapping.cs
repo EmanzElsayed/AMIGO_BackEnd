@@ -9,25 +9,42 @@ namespace Amigo.Application.Mapping
 {
     public static class CancellationMapping 
     {
-        public static Cancellation CancellationToEntity(CreateCancellationRequestDTO requestDTO, Tour tour ,string language)
-        {
-            SupportedLanguage mappedlanguage = EnumsMapping.ToLanguageEnum(language);
 
-            var cancellationType = EnumsMapping.ToEnum<CancelationPolicyType>(requestDTO.CancelationPolicyType, true);
-            return new Cancellation
-            {
+        public static List<Cancellation> CancellationToEntity(List<CreateCancellationRequestDTO> requestDTO, Tour tour, string language)
+        {
+
+            return requestDTO.Select(c => new Cancellation {
+
                 Id = Guid.NewGuid(),
                 Tour = tour,
                 TourId = tour.Id,
-                CancellationBefore = requestDTO.CancellationBefore,
-                RefundPercentage = requestDTO.RefundPercentage,
-                CancelationPolicyType = cancellationType,
-                Translations = string.IsNullOrWhiteSpace(requestDTO.Description) 
-                                ? new List<CancellationTranslation>()
-                                : CreateCancellationTranslationsForAllLanguages(requestDTO.Description.Trim(), mappedlanguage)
+                CancellationBefore = c.CancellationBefore,
+                RefundPercentage = c.RefundPercentage,
+                CancelationPolicyType = EnumsMapping.ToEnum<CancelationPolicyType>(c.CancelationPolicyType, true)
 
-            };
+            }).ToList();  
+           
         }
+
+        //public static Cancellation CancellationToEntity(CreateCancellationRequestDTO requestDTO, Tour tour ,string language)
+        //{
+        //    SupportedLanguage mappedlanguage = EnumsMapping.ToLanguageEnum(language);
+
+        //    var cancellationType = EnumsMapping.ToEnum<CancelationPolicyType>(requestDTO.CancelationPolicyType, true);
+        //    return new Cancellation
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        Tour = tour,
+        //        TourId = tour.Id,
+        //        CancellationBefore = requestDTO.CancellationBefore,
+        //        RefundPercentage = requestDTO.RefundPercentage,
+        //        CancelationPolicyType = cancellationType,
+        //        Translations = string.IsNullOrWhiteSpace(requestDTO.Description) 
+        //                        ? new List<CancellationTranslation>()
+        //                        : CreateCancellationTranslationsForAllLanguages(requestDTO.Description.Trim(), mappedlanguage)
+
+        //    };
+        //}
 
         private static List<CancellationTranslation> CreateCancellationTranslationsForAllLanguages(string description, SupportedLanguage sourceLanguage)
         {

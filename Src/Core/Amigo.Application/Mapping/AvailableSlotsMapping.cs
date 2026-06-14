@@ -7,23 +7,23 @@ namespace Amigo.Application.Mapping
 {
     public static class AvailableSlotsMapping 
     {
-        public static AvailableSlots AvailableSlotsDTOToEntity(CreateAvailableSlotsRequestDTO requestDTO, TourSchedule tourSchedule)
-        {
-            var avialableSlots = new AvailableSlots()
-            {
-                Id = Guid.NewGuid(),
-                StartTime = requestDTO.StartTime,
-                MaxCapacity = requestDTO.MaxCapacity,
-                TourSchedule = tourSchedule,
-                TourScheduleId = tourSchedule.Id,
+        //public static AvailableSlots AvailableSlotsDTOToEntity(CreateAvailableSlotsRequestDTO requestDTO, TourSchedule tourSchedule)
+        //{
+        //    var avialableSlots = new AvailableSlots()
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        StartTime = requestDTO.StartTime,
+        //        MaxCapacity = requestDTO.MaxCapacity,
+        //        TourSchedule = tourSchedule,
+        //        TourScheduleId = tourSchedule.Id,
 
 
-            };
-            if (requestDTO.AvailableTimeStatus is not null)
-            {
-                avialableSlots.AvailableTimeStatus = EnumsMapping.ToAvailableSheduleStatus(requestDTO.AvailableTimeStatus);
-            }
-            return avialableSlots;
-        }
+        //    };
+        //    if (requestDTO.AvailableTimeStatus is not null)
+        //    {
+        //        avialableSlots.AvailableTimeStatus = EnumsMapping.ToAvailableSheduleStatus(requestDTO.AvailableTimeStatus);
+        //    }
+        //    return avialableSlots;
+        //}
     }
 }

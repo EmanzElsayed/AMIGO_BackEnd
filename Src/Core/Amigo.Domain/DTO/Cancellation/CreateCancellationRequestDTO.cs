@@ -8,7 +8,7 @@ namespace Amigo.Domain.DTO.Cancellation
     (
         string CancelationPolicyType,
         TimeSpan CancellationBefore,
-        decimal RefundPercentage,
-        string? Description
+        decimal RefundPercentage
+       
      );
 }

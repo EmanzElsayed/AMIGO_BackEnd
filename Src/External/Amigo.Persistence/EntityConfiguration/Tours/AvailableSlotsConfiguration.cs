@@ -26,16 +26,15 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
             builder.Property(a => a.AvailableTimeStatus)
                    .HasConversion<int>();
 
-            builder.Property(a => a.MaxCapacity)
-                   .IsRequired();
+         
 
-            builder.HasIndex(a => a.TourScheduleId);
+           
 
-            builder.HasIndex(a => new { a.StartTime, a.EndTime });
+            builder.HasIndex(a =>  a.StartTime);
 
-            builder.HasOne(a => a.TourSchedule)
-                .WithMany(t => t.AvailableSlots)
-                .HasForeignKey(a => a.TourScheduleId);
+            builder.HasOne(a => a.Tour)
+                .WithMany(t => t.AvailableTimes)
+                .HasForeignKey(a => a.TourId);
 
         }
     }

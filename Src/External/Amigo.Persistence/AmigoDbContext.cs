@@ -27,7 +27,13 @@ namespace Amigo.Persistence
         public DbSet<AvailableSlots> AvailableSlots { get; set; }
         public DbSet<SlotReservation> SlotReservations { get; set; }
 
-        public DbSet<TourSchedule> TourSchedules { get; set; }
+   
+
+        public DbSet<BlackoutWeekDay> BlackoutWeekDays { get; set; }
+        public DbSet<BlackoutDate> BlackoutDates { get; set; }
+
+        
+
         public DbSet<Cancellation> Cancelations { get; set; }
         public DbSet<Price> Prices { get; set; }
 

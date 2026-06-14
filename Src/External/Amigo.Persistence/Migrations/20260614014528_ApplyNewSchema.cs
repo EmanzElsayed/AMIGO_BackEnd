@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class BuildAllDataBase : Migration
+    public partial class ApplyNewSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -93,6 +93,27 @@ namespace Amigo.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CurrencyRate", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OTP",
+                schema: "auth",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    ExpireAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    purpose = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OTP", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -445,6 +466,7 @@ namespace Amigo.Persistence.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     TotalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    TotalAmountWithUsd = table.Column<decimal>(type: "numeric", nullable: true),
                     ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -544,6 +566,7 @@ namespace Amigo.Persistence.Migrations
                     ModifiedBy = table.Column<int>(type: "integer", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    IsFullTime = table.Column<bool>(type: "boolean", nullable: false),
                     CurrencyCode = table.Column<int>(type: "integer", nullable: false),
                     Duration = table.Column<TimeSpan>(type: "interval", nullable: false),
                     Discount = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
@@ -617,6 +640,7 @@ namespace Amigo.Persistence.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     OrderId = table.Column<Guid>(type: "uuid", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    TotalAmountWithUsd = table.Column<decimal>(type: "numeric", nullable: true),
                     PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Note = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
@@ -640,6 +664,85 @@ namespace Amigo.Persistence.Migrations
                         principalTable: "Order",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AvailableSlots",
+                schema: "tour",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    TourId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StartTime = table.Column<TimeOnly>(type: "time", nullable: false),
+                    EndTime = table.Column<TimeOnly>(type: "time", nullable: true),
+                    AvailableTimeStatus = table.Column<int>(type: "integer", nullable: false),
+                    ReservedCount = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AvailableSlots", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AvailableSlots_Tour_TourId",
+                        column: x => x.TourId,
+                        principalSchema: "tour",
+                        principalTable: "Tour",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BlackoutDates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    TourId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BlackoutDates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BlackoutDates_Tour_TourId",
+                        column: x => x.TourId,
+                        principalSchema: "tour",
+                        principalTable: "Tour",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BlackoutWeekDays",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    TourId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DayOfWeek = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BlackoutWeekDays", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BlackoutWeekDays_Tour_TourId",
+                        column: x => x.TourId,
+                        principalSchema: "tour",
+                        principalTable: "Tour",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -713,6 +816,7 @@ namespace Amigo.Persistence.Migrations
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SpecialDate = table.Column<DateOnly>(type: "date", nullable: true),
                     IsMainActivityType = table.Column<bool>(type: "boolean", nullable: true),
                     Cost = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     UserType = table.Column<int>(type: "integer", nullable: false),
@@ -744,6 +848,7 @@ namespace Amigo.Persistence.Migrations
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: false),
                     Rate = table.Column<decimal>(type: "numeric(4,2)", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: true),
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     TravelWith = table.Column<string>(type: "text", nullable: true),
                     HelpfulCount = table.Column<int>(type: "integer", nullable: false)
@@ -820,34 +925,6 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TourSchedule",
-                schema: "tour",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    TourId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    EndDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    AvailableDateStatus = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TourSchedule", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TourSchedule_Tour_TourId",
-                        column: x => x.TourId,
-                        principalSchema: "tour",
-                        principalTable: "Tour",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "TourTranslation",
                 schema: "translation",
                 columns: table => new
@@ -871,6 +948,36 @@ namespace Amigo.Persistence.Migrations
                         column: x => x.TourId,
                         principalSchema: "tour",
                         principalTable: "Tour",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrderedPrice",
+                schema: "booking",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    OrderItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    BaseRetailPrice = table.Column<decimal>(type: "numeric(18,4)", nullable: false),
+                    ConvertedRetailPrice = table.Column<decimal>(type: "numeric(18,4)", nullable: false),
+                    ExchangeRate = table.Column<decimal>(type: "numeric(18,4)", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderedPrice", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderedPrice_OrderItem_OrderItemId",
+                        column: x => x.OrderItemId,
+                        principalSchema: "booking",
+                        principalTable: "OrderItem",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -912,308 +1019,18 @@ namespace Amigo.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Booking_Payment_PaymentId",
+                        column: x => x.PaymentId,
+                        principalSchema: "payment",
+                        principalTable: "Payment",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Booking_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OrderedPrice",
-                schema: "booking",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    OrderItemId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    BaseRetailPrice = table.Column<decimal>(type: "numeric(18,4)", nullable: false),
-                    ConvertedRetailPrice = table.Column<decimal>(type: "numeric(18,4)", nullable: false),
-                    ExchangeRate = table.Column<decimal>(type: "numeric(18,4)", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderedPrice", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_OrderedPrice_OrderItem_OrderItemId",
-                        column: x => x.OrderItemId,
-                        principalSchema: "booking",
-                        principalTable: "OrderItem",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CancellationTranslation",
-                schema: "translation",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CancellationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
-                    Language = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CancellationTranslation", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CancellationTranslation_Cancellation_CancellationId",
-                        column: x => x.CancellationId,
-                        principalSchema: "tour",
-                        principalTable: "Cancellation",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PriceTranslation",
-                schema: "translation",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    PriceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Type = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: false),
-                    ActivityType = table.Column<string>(type: "text", nullable: true),
-                    Language = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PriceTranslation", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PriceTranslation_Price_PriceId",
-                        column: x => x.PriceId,
-                        principalSchema: "tour",
-                        principalTable: "Price",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReviewImage",
-                schema: "review",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    ReviewId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Image = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReviewImage", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ReviewImage_Review_ReviewId",
-                        column: x => x.ReviewId,
-                        principalSchema: "review",
-                        principalTable: "Review",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReviewTranslation",
-                schema: "translation",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    ReviewId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Comment = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
-                    Language = table.Column<int>(type: "integer", nullable: false),
-                    ReviewId1 = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReviewTranslation", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ReviewTranslation_Review_ReviewId",
-                        column: x => x.ReviewId,
-                        principalSchema: "review",
-                        principalTable: "Review",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ReviewTranslation_Review_ReviewId1",
-                        column: x => x.ReviewId1,
-                        principalSchema: "review",
-                        principalTable: "Review",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReviewVote",
-                schema: "review",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    ReviewId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: true),
-                    IpAddress = table.Column<string>(type: "text", nullable: true),
-                    VotedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReviewVote", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ReviewVote_Review_ReviewId",
-                        column: x => x.ReviewId,
-                        principalSchema: "review",
-                        principalTable: "Review",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ReviewVote_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InclusionTranslation",
-                schema: "translation",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    TourInclusionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Text = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: false),
-                    Language = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InclusionTranslation", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_InclusionTranslation_TourInclusion_TourInclusionId",
-                        column: x => x.TourInclusionId,
-                        principalSchema: "tour",
-                        principalTable: "TourInclusion",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AvailableSlots",
-                schema: "tour",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    TourScheduleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StartTime = table.Column<TimeOnly>(type: "time", nullable: false),
-                    EndTime = table.Column<TimeOnly>(type: "time", nullable: true),
-                    AvailableTimeStatus = table.Column<int>(type: "integer", nullable: false),
-                    MaxCapacity = table.Column<int>(type: "integer", nullable: false),
-                    ReservedCount = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AvailableSlots", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AvailableSlots_TourSchedule_TourScheduleId",
-                        column: x => x.TourScheduleId,
-                        principalSchema: "tour",
-                        principalTable: "TourSchedule",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "CancellationRequest",
-                schema: "booking",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Reason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    RefundAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    AdminNotes = table.Column<string>(type: "text", nullable: true),
-                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CancellationRequest", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_CancellationRequest_Booking_BookingId",
-                        column: x => x.BookingId,
-                        principalSchema: "booking",
-                        principalTable: "Booking",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Traveler",
-                schema: "booking",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
-                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FullName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
-                    Nationality = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    PassportNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    PhoneNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Traveler", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Traveler_Booking_BookingId",
-                        column: x => x.BookingId,
-                        principalSchema: "booking",
-                        principalTable: "Booking",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1302,7 +1119,176 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Refund",
+                name: "CancellationTranslation",
+                schema: "translation",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CancellationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Language = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CancellationTranslation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CancellationTranslation_Cancellation_CancellationId",
+                        column: x => x.CancellationId,
+                        principalSchema: "tour",
+                        principalTable: "Cancellation",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PriceTranslation",
+                schema: "translation",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    PriceId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: false),
+                    ActivityType = table.Column<string>(type: "text", nullable: true),
+                    Language = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PriceTranslation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PriceTranslation_Price_PriceId",
+                        column: x => x.PriceId,
+                        principalSchema: "tour",
+                        principalTable: "Price",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReviewImage",
+                schema: "review",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    ReviewId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Image = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    PublicId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReviewImage", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReviewImage_Review_ReviewId",
+                        column: x => x.ReviewId,
+                        principalSchema: "review",
+                        principalTable: "Review",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReviewTranslation",
+                schema: "translation",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    ReviewId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Comment = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Language = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReviewTranslation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReviewTranslation_Review_ReviewId",
+                        column: x => x.ReviewId,
+                        principalSchema: "review",
+                        principalTable: "Review",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReviewVote",
+                schema: "review",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ReviewId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true),
+                    IpAddress = table.Column<string>(type: "text", nullable: true),
+                    VotedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReviewVote", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReviewVote_Review_ReviewId",
+                        column: x => x.ReviewId,
+                        principalSchema: "review",
+                        principalTable: "Review",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReviewVote_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InclusionTranslation",
+                schema: "translation",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    TourInclusionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Text = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: false),
+                    Language = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InclusionTranslation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InclusionTranslation_TourInclusion_TourInclusionId",
+                        column: x => x.TourInclusionId,
+                        principalSchema: "tour",
+                        principalTable: "TourInclusion",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CancellationRequest",
                 schema: "booking",
                 columns: table => new
                 {
@@ -1313,41 +1299,54 @@ namespace Amigo.Persistence.Migrations
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     BookingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PaymentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CancellationRequestId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Reason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    ProviderRefundId = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    RefundAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ProviderResponseJson = table.Column<string>(type: "text", nullable: true),
-                    FailureReason = table.Column<string>(type: "text", nullable: true),
-                    IdempotencyKey = table.Column<string>(type: "text", nullable: true),
-                    RefundedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    AdminNotes = table.Column<string>(type: "text", nullable: true),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Refund", x => x.Id);
+                    table.PrimaryKey("PK_CancellationRequest", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Refund_Booking_BookingId",
+                        name: "FK_CancellationRequest_Booking_BookingId",
+                        column: x => x.BookingId,
+                        principalSchema: "booking",
+                        principalTable: "Booking",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Traveler",
+                schema: "booking",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FullName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    Nationality = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    BirthDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    PassportNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Traveler", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Traveler_Booking_BookingId",
                         column: x => x.BookingId,
                         principalSchema: "booking",
                         principalTable: "Booking",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Refund_CancellationRequest_CancellationRequestId",
-                        column: x => x.CancellationRequestId,
-                        principalSchema: "booking",
-                        principalTable: "CancellationRequest",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Refund_Payment_PaymentId",
-                        column: x => x.PaymentId,
-                        principalSchema: "payment",
-                        principalTable: "Payment",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1417,6 +1416,55 @@ namespace Amigo.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Refund",
+                schema: "booking",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    BookingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CancellationRequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ProviderRefundId = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ProviderResponseJson = table.Column<string>(type: "text", nullable: true),
+                    FailureReason = table.Column<string>(type: "text", nullable: true),
+                    IdempotencyKey = table.Column<string>(type: "text", nullable: true),
+                    RefundedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Refund", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Refund_Booking_BookingId",
+                        column: x => x.BookingId,
+                        principalSchema: "booking",
+                        principalTable: "Booking",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Refund_CancellationRequest_CancellationRequestId",
+                        column: x => x.CancellationRequestId,
+                        principalSchema: "booking",
+                        principalTable: "CancellationRequest",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Refund_Payment_PaymentId",
+                        column: x => x.PaymentId,
+                        principalSchema: "payment",
+                        principalTable: "Payment",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -1433,16 +1481,26 @@ namespace Amigo.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AvailableSlots_StartTime_EndTime",
+                name: "IX_AvailableSlots_StartTime",
                 schema: "tour",
                 table: "AvailableSlots",
-                columns: new[] { "StartTime", "EndTime" });
+                column: "StartTime");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AvailableSlots_TourScheduleId",
+                name: "IX_AvailableSlots_TourId",
                 schema: "tour",
                 table: "AvailableSlots",
-                column: "TourScheduleId");
+                column: "TourId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlackoutDates_TourId",
+                table: "BlackoutDates",
+                column: "TourId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BlackoutWeekDays_TourId",
+                table: "BlackoutWeekDays",
+                column: "TourId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Booking_BookingNumber",
@@ -1458,6 +1516,12 @@ namespace Amigo.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Booking_PaymentId",
+                schema: "booking",
+                table: "Booking",
+                column: "PaymentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Booking_UserId",
                 schema: "booking",
                 table: "Booking",
@@ -1467,8 +1531,7 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_Cancellation_TourId",
                 schema: "tour",
                 table: "Cancellation",
-                column: "TourId",
-                unique: true);
+                column: "TourId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CancellationRequest_BookingId",
@@ -1761,12 +1824,6 @@ namespace Amigo.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReviewTranslation_ReviewId1",
-                schema: "translation",
-                table: "ReviewTranslation",
-                column: "ReviewId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ReviewVote_ReviewId",
                 schema: "review",
                 table: "ReviewVote",
@@ -1812,18 +1869,6 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_TourInclusion_TourId",
                 schema: "tour",
                 table: "TourInclusion",
-                column: "TourId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TourSchedule_StartDate_EndDate",
-                schema: "tour",
-                table: "TourSchedule",
-                columns: new[] { "StartDate", "EndDate" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TourSchedule_TourId",
-                schema: "tour",
-                table: "TourSchedule",
                 column: "TourId");
 
             migrationBuilder.CreateIndex(
@@ -1911,6 +1956,12 @@ namespace Amigo.Persistence.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "BlackoutDates");
+
+            migrationBuilder.DropTable(
+                name: "BlackoutWeekDays");
+
+            migrationBuilder.DropTable(
                 name: "CancellationTranslation",
                 schema: "translation");
 
@@ -1945,6 +1996,10 @@ namespace Amigo.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "OrderedPrice",
                 schema: "booking");
+
+            migrationBuilder.DropTable(
+                name: "OTP",
+                schema: "auth");
 
             migrationBuilder.DropTable(
                 name: "OutboxMessage",
@@ -2024,10 +2079,6 @@ namespace Amigo.Persistence.Migrations
                 schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "Payment",
-                schema: "payment");
-
-            migrationBuilder.DropTable(
                 name: "Review",
                 schema: "review");
 
@@ -2055,7 +2106,11 @@ namespace Amigo.Persistence.Migrations
                 schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "TourSchedule",
+                name: "Payment",
+                schema: "payment");
+
+            migrationBuilder.DropTable(
+                name: "Tour",
                 schema: "tour");
 
             migrationBuilder.DropTable(
@@ -2063,15 +2118,11 @@ namespace Amigo.Persistence.Migrations
                 schema: "booking");
 
             migrationBuilder.DropTable(
-                name: "Tour",
-                schema: "tour");
+                name: "Destination",
+                schema: "public");
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Destination",
-                schema: "public");
 
             migrationBuilder.DropTable(
                 name: "CountryInfo",

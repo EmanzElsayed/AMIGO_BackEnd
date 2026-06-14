@@ -4,7 +4,8 @@
 
 public class Tour: BaseEntity<Guid>
 {
-    
+
+    public bool IsFullTime { get; set; } = false;
     public CurrencyCode CurrencyCode { get; set; } = CurrencyCode.USD;
     public TimeSpan Duration { get; set; }
 
@@ -37,12 +38,31 @@ public class Tour: BaseEntity<Guid>
     public ICollection<Price> Prices { get; set; } = new List<Price>();
 
 
+    // blacout week days
+    public ICollection<BlackoutWeekDay>? BlackoutWeekDays { get; set; } = new List<BlackoutWeekDay>();
+
+
+    // blackout Date 
+
+    public ICollection<BlackoutDate>? BlackoutDates { get; set; } = new List<BlackoutDate>();
+
+
+
+
     //Available Time 
-    public ICollection<TourSchedule> AvailableTimes { get; set; } = new List<TourSchedule>();
+    public ICollection<AvailableSlots>? AvailableTimes { get; set; } = new List<AvailableSlots>();
+
+    //new version
+
 
 
     // cancelation one to one relation
-    public Cancellation Cancellation { get; set; } = null!;
+    //public Cancellation? Cancellation { get; set; }
+
+
+    // cancelation one to many relation
+    public ICollection<Cancellation>? Cancellations { get; set; } = new List<Cancellation>();
+
 
     //Price 
     //people booking

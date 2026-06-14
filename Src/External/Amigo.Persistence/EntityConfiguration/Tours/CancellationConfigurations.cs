@@ -39,13 +39,16 @@ namespace Amigo.Persistence.EntityConfiguration.Tours
             //relations
 
             builder.HasOne(x => x.Tour)
-                   .WithOne(t => t.Cancellation)
-                   .HasForeignKey<Cancellation>(x => x.TourId)
+                   .WithMany(t => t.Cancellations)
+                   .HasForeignKey(x => x.TourId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Prevent multiple policies for one tour
-            builder.HasIndex(x => x.TourId)
-                   .IsUnique();
+
+
+
+
+            builder.HasIndex(x => x.TourId);
+                   
         }
     }
 }

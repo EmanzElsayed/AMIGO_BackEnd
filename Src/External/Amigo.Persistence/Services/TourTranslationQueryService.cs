@@ -38,14 +38,14 @@ namespace Amigo.Persistence.Services
 
                    
 
-                    Cancellation = new CancellationTranslationItem
-                    {
-                        CancellationId = t.Cancellation.Id,
-                        Description = t.Cancellation.Translations
-                            .Where(x => x.Language == baseLanguage)
-                            .Select(x => x.Description)
-                            .FirstOrDefault() ?? ""
-                    },
+                    //Cancellation = new CancellationTranslationItem
+                    //{
+                    //    CancellationId = t.Cancellation.Id,
+                    //    Description = t.Cancellation.Translations
+                    //        .Where(x => x.Language == baseLanguage)
+                    //        .Select(x => x.Description)
+                    //        .FirstOrDefault() ?? ""
+                    //},
 
                     Inclusions = t.TourInclusions
                         .Select(i => new InclusionTranslationItem

@@ -60,7 +60,7 @@ public static class TourCatalogCriteria
                     !p.IsDeleted
                     && p.Cost * (1 - p.Discount / 100m) <= maxPrice!.Value))
 
-            && (!availabilityDate.HasValue
+            /*&& (!availabilityDate.HasValue
                 || t.AvailableTimes.Any(ts =>
                     !ts.IsDeleted
                     && ts.StartDate <= availabilityDate.Value
@@ -68,7 +68,7 @@ public static class TourCatalogCriteria
                     && ts.AvailableSlots.Any(s =>
                         !s.IsDeleted
                         && s.AvailableTimeStatus == AvailableDateTimeStatus.Available)))
-
+*/
 
             && (!effectiveGuideLanguage.HasValue
                 || (t.GuideLanguage.HasValue && ((t.GuideLanguage.Value & effectiveGuideLanguage.Value) == effectiveGuideLanguage.Value)))
@@ -88,11 +88,11 @@ public static class TourCatalogCriteria
                         )
                     )
 
-            && (q.FreeCancellation != true
+         /*   && (q.FreeCancellation != true
                 || (t.Cancellation != null
                     && !t.Cancellation.IsDeleted
                     && t.Cancellation.CancelationPolicyType == CancelationPolicyType.Free)
-            )
+            )*/
 
             && (q.HotelPickup != true
                 || t.TourInclusions.Any(i =>
@@ -103,7 +103,7 @@ public static class TourCatalogCriteria
                 )
             )
 
-            && (q.RequireAvailableSlots != true
+           /* && (q.RequireAvailableSlots != true
                 || t.AvailableTimes.Any(ts =>
                     !ts.IsDeleted
                     && ts.AvailableSlots.Any(s =>
@@ -111,7 +111,7 @@ public static class TourCatalogCriteria
                         && s.AvailableTimeStatus == AvailableDateTimeStatus.Available
                     )
                 )
-            )
+            )*/
 
             && (q.OnlyInUserLanguage != true
                 || t.Translations.Any(tr =>
@@ -171,9 +171,9 @@ public static class TourCatalogCriteria
              )
              &&
             t.Prices.Any(p => p.Translations.Any(t => t.Language == translationLanguage))
-            &&
+           /* &&
             (!filterActiveOnly || t.AvailableTimes.Any(at => (at.EndDate ?? at.StartDate) >= DateOnly.FromDateTime(DateTime.UtcNow)))
-            ;
+*/            ;
 
 
 

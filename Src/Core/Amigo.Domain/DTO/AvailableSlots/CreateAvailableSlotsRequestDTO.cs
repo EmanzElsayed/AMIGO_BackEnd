@@ -6,9 +6,8 @@ namespace Amigo.Domain.DTO.AvailableSlots
 {
     public record CreateAvailableSlotsRequestDTO
     (
-        TimeOnly StartTime,
-        TimeOnly? EndTime,
-        int MaxCapacity,
-        string? AvailableTimeStatus
+        TimeOnly Time
+       
+        
      );
 }

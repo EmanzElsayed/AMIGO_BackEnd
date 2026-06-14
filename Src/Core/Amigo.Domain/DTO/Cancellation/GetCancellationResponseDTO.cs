@@ -9,7 +9,6 @@ namespace Amigo.Domain.DTO.Cancellation
        Guid Id,
        string CancelationPolicyType,
        TimeSpan CancellationBefore,
-       decimal RefundPercentage,
-       string Description
+       decimal RefundPercentage
    );
 }

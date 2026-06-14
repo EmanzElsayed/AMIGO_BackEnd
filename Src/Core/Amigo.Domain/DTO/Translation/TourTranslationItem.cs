@@ -11,7 +11,7 @@ namespace Amigo.Domain.DTO.Translation
 
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
-        public CancellationTranslationItem? Cancellation { get; set; }
+        //public CancellationTranslationItem? Cancellation { get; set; }
      
         public List<InclusionTranslationItem>? Inclusions { get; set; } = new();
 

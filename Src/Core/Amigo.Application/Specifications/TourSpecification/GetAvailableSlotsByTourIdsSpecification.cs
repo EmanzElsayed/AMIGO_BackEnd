@@ -10,9 +10,9 @@ namespace Amigo.Application.Specifications.TourSpecification
     {
         public GetAvailableSlotsByTourIdsSpecification(List<Guid> tourIds)
             : base(s => tourIds.Contains(
-                s.TourSchedule.TourId))
+                s.TourId))
         {
-            AddInclude(s => s.TourSchedule);
+          
         }
     }
 }

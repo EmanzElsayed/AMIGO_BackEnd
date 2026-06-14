@@ -329,7 +329,7 @@ namespace Amigo.Application.Services
                 refund.Booking.Status =
                     BookingStatus.Cancelled;
 
-
+                refund.Booking.ConfirmedAt = DateTime.UtcNow;
 
                 // CANCELLATION REQUEST
 

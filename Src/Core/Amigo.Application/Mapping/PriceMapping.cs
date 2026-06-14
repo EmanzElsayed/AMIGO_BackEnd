@@ -25,6 +25,7 @@ namespace Amigo.Application.Mapping
                     Cost = priceDTO.Cost,
                     Discount = priceDTO.Discount ?? 0,
                     UserType = priceDTO.UserType,
+                    SpecialDate = priceDTO.SpecialDate ?? null ,
                     IsMainActivityType = string.IsNullOrWhiteSpace(priceDTO.ActivityType)
                     ? null
                     : priceDTO.IsMainActivityType == true,
