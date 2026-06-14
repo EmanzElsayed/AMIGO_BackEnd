@@ -1,4 +1,5 @@
-﻿using Amigo.Domain.DTO.TourSchedule;
+﻿using Amigo.Domain.DTO.AvailableSlots;
+using Amigo.Domain.DTO.TourSchedule;
 using Amigo.Domain.Entities;
 using Amigo.SharedKernal.DTOs.Price;
 using Amigo.SharedKernal.DTOs.TourSchedule;
@@ -45,62 +46,41 @@ namespace Amigo.Application.Services.Admin
         //    }
 
         //}
-        //public Task UpdateScheduleAsync(
-        //            Tour tour,
-        //            List<UpdateTourScheduleRequestDTO> schedulesDto,
-        //            IEnumerable<TourSchedule> ? existingSchedules)
-        //{
-        //    if (schedulesDto is null || schedulesDto.Count == 0)
-        //        return Task.CompletedTask;
-
-        //    //  تحسين الأداء
-
-
-        //    if (existingSchedules is not null && existingSchedules.Any())
-        //    {
-        //        _unitOfWork.GetRepository<TourSchedule, Guid>().RemoveRange(existingSchedules);
-        //    }
-
-        //    foreach (var scheduleDto in schedulesDto)
-        //    {
-        //        //if (scheduleDto.Id is not null &&
-        //        //    existingSchedulesDict.TryGetValue(scheduleDto.Id.Value, out var existingSchedule))
-        //        //{
-        //        //    // Update Schedule
-        //        //    if (scheduleDto.StartDate is not null)
-        //        //        existingSchedule.StartDate = scheduleDto.StartDate.Value;
-
-        //        //    if (!string.IsNullOrWhiteSpace(scheduleDto.AvailableDateStatus))
-        //        //        existingSchedule.AvailableDateStatus = EnumsMapping.ToAvailableSheduleStatus(scheduleDto.AvailableDateStatus);
-
-        //        //    //  Update Slots
-        //        //    _adminAvailableSlotsService.UpdateAvailableSlots(existingSchedule, scheduleDto.availableSlots);
-        //        //}
-        //        //else
-        //        //{
-        //            //  Create Schedule
-        //            var newSchedule = new TourSchedule
-        //            {
-        //                Id = scheduleDto.Id ?? Guid.NewGuid(),
-        //                StartDate = scheduleDto.StartDate ?? default,
-        //                EndDate = scheduleDto.EndDate,
-        //                AvailableDateStatus = EnumsMapping.ToAvailableSheduleStatus(scheduleDto.AvailableDateStatus),
-        //                TourId = tour.Id,
-        //                AvailableSlots = new List<AvailableSlots>()
-        //            };
-
-        //            //  Add Slots
-        //            _adminAvailableSlotsService.AddAvailableSlots(newSchedule, scheduleDto.availableSlots);
-
-        //            tour.AvailableTimes.Add(newSchedule);
-        //        //}
-        //    }
-
-        //    return Task.CompletedTask;
-        //}
-        public Task UpdateScheduleAsync(Tour tour, List<UpdateTourScheduleRequestDTO> schedulesDto, IEnumerable<TourSchedule> existingSchedules)
+        public async Task UpdateScheduleAsync(
+                    Tour tour,
+                    List<UpdateAvailableSlotsRequestDTO> schedulesDto,
+                    IEnumerable<AvailableSlots>? existingSchedules)
         {
-            throw new NotImplementedException();
+            if (schedulesDto is null || schedulesDto.Count == 0)
+                return ;
+
+            //  تحسين الأداء
+
+            var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+
+            if (existingSchedules is not null && existingSchedules.Any())
+            {
+                slotRepo.RemoveRange(existingSchedules);
+            }
+            List<AvailableSlots> slotList = new List<AvailableSlots>();
+            foreach (var scheduleDto in schedulesDto)
+            {
+                
+                //  Create slots
+                var newSchedule = new AvailableSlots
+                {
+                    Id = Guid.NewGuid(),
+                    StartTime = scheduleDto.Time ?? default,
+                    Tour = tour,
+                    TourId = tour.Id,
+                };
+
+                
+               slotList.Add(newSchedule);
+              
+            }
+            await slotRepo.AddRangeAsync(slotList);
         }
+        
     }
 }

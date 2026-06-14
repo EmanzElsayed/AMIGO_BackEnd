@@ -27,6 +27,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Amigo.Application.Services.Admin
@@ -91,6 +92,12 @@ namespace Amigo.Application.Services.Admin
             var validationResult = await _validationService.ValidateAsync(requestDTO);
             if (!validationResult.IsSuccess)
                 return validationResult;
+
+            if (requestDTO.IsFullTime == true && requestDTO.Schedule is not null && requestDTO.Schedule.Any())
+            {
+                return Result.Fail("You Should Select IsFullTime Or Enter Available Time Not Both");
+
+            }
 
             var destination = await _unitOfWork
                 .GetRepository<Destination, Guid>()
@@ -426,168 +433,224 @@ namespace Amigo.Application.Services.Admin
             return Result.Ok(MapTourToResponseDTO(tour, language , countryInfo,tourPrice,availableTimes,tourCancellations, inclusions,blackoutDates,blackoutWeekDayes));
         }
 
-       
-        //public async Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string Id)
-        //{
-        //    var validationResult = await _validationService.ValidateAsync(requestDTO);
-        //    if (!validationResult.IsSuccess)
-        //        return validationResult;
 
-        //    if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
-        //        return Result.Fail("Invalid UUID");
+        public async Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string Id)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestDTO);
+            if (!validationResult.IsSuccess)
+                return validationResult;
 
-        //    var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
-        //    var strategy = _unitOfWork.CreateExecutionStrategy();
 
-        //    return await strategy.ExecuteAsync(async () =>
-        //    {
-        //        await using var transaction = await _unitOfWork.BeginTransactionAsync();
-        //        try
-        //        {
-        //            var tour = await tourRepo.GetByIdAsync(new GetTourByIdSpecification(guid));
-        //            if (tour is null)
-        //                return Result.Fail(new NotFoundError("This Tour Not Found"));
+            if (requestDTO.IsFullTime == true && requestDTO.Schedule is not null && requestDTO.Schedule.Any())
+            {
+                return Result.Fail("You Should Select IsFullTime Or Enter Available Time Not Both");
 
-        //            SupportedLanguage? languageEnum = null;
-        //            TourTranslation? translation = null;
+            }
 
-        //            if (!string.IsNullOrWhiteSpace(requestDTO.Language))
-        //            {
-        //                languageEnum = EnumsMapping.ToLanguageEnum(requestDTO.Language);
-        //                translation = tour.Translations.FirstOrDefault(t => t.Language == languageEnum);
-        //            }
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
 
-        //            if (requestDTO.DestinationId is not null)
-        //            {
-        //                var destination = await _unitOfWork
-        //                    .GetRepository<Destination, Guid>()
-        //                    .GetByIdAsync(new GetNotDeletedDestinationByIdSpecification(requestDTO.DestinationId.Value));
+            var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
+            var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+            var strategy = _unitOfWork.CreateExecutionStrategy();
 
-        //                if (destination is null)
-        //                    return Result.Fail(new NotFoundError("This Destination Not Found"));
-
-        //                tour.Destination = destination;
-        //                tour.DestinationId = destination.Id;
-        //            }
-
-        //            TourMapping.UpdateTour(requestDTO, tour, translation, languageEnum);
-
-        //            if (requestDTO.Prices is not null && requestDTO.Prices.Any())
-        //            {
-        //                var existingPrices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PriceWithoutUserTypeForTourSpecification(tour.Id));
-        //                await _adminPriceService.UpdatePricesAsync(tour, requestDTO.Prices, languageEnum, existingPrices);
-
-        //            }
-
-        //            if (requestDTO.Schedule is not null && requestDTO.Schedule.Any())
-        //            {
-        //                var schedule = await _unitOfWork.GetRepository<TourSchedule, Guid>().GetAllAsync(new GetAvailableTimesWithTourIdSpecification(tour.Id));
-        //                await _adminTourScheduleService.UpdateScheduleAsync(tour, requestDTO.Schedule,schedule);
+            return await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _unitOfWork.BeginTransactionAsync();
+                try
+                {
                     
-        //            }
+
+                    var tour = await tourRepo.GetByIdAsync(new GetTourByIdSpecification(guid));
+                    if (tour is null)
+                        return Result.Fail(new NotFoundError("This Tour Not Found"));
+
+                    SupportedLanguage? languageEnum = null;
+                    TourTranslation? translation = null;
+
+
+
+                    if (!string.IsNullOrWhiteSpace(requestDTO.Language))
+                    {
+                        languageEnum = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+                        translation = tour.Translations.FirstOrDefault(t => t.Language == languageEnum);
+                    }
+
+                    if (requestDTO.DestinationId is not null)
+                    {
+                        var destination = await _unitOfWork
+                            .GetRepository<Destination, Guid>()
+                            .GetByIdAsync(new GetNotDeletedDestinationByIdSpecification(requestDTO.DestinationId.Value));
+
+                        if (destination is null)
+                            return Result.Fail(new NotFoundError("This Destination Not Found"));
+
+                        tour.Destination = destination;
+                        tour.DestinationId = destination.Id;
+                    }
+
+                    if (requestDTO.IsFullTime is not null && requestDTO.IsFullTime == true)
+                    {
                         
-                    
+                        var availableTimes = await slotRepo.GetAllAsync(new GetAllSlotsWithTourIdSpecification(tour.Id));
+                        slotRepo.RemoveRange(availableTimes);
+                        tour.IsFullTime = true;
+                    }
+                    if (requestDTO.IsFullTime is not null && requestDTO.IsFullTime == false && requestDTO.Schedule is not null  && requestDTO.Schedule.Any())
+                    {
+                        tour.IsFullTime = false;
+                    }
+                    TourMapping.UpdateTour(requestDTO, tour, translation, languageEnum);
 
-        //            if ((requestDTO.Includes is not null && requestDTO.Includes.Any()) ||
-        //                (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any()))
-        //                await _adminTourInclusionService.UpdateInclusionAsync(tour, requestDTO.Includes, requestDTO.NotIncludes, languageEnum);
+                    if (requestDTO.Prices is not null && requestDTO.Prices.Any())
+                    {
+                        var existingPrices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PriceWithoutUserTypeForTourSpecification(tour.Id));
+                        await _adminPriceService.UpdatePricesAsync(tour, requestDTO.Prices, languageEnum, existingPrices);
 
-        //            if (requestDTO.Cancellation is not null)
-        //                await _adminTourCancellationService.UpdateCancellationAsync(tour, requestDTO.Cancellation, languageEnum);
+                    }
 
-        //            if (requestDTO.Images is not null && requestDTO.Images.Any())
-        //                await _imageService.UpdateImagesAsync(tour, requestDTO.Images);
+                    if (requestDTO.Schedule is not null && requestDTO.Schedule.Any())
+                    {
+                        var schedule = await _unitOfWork.GetRepository<AvailableSlots, Guid>().GetAllAsync(new GetAvailableTimesWithTourIdSpecification(tour.Id));
+                        await _adminTourScheduleService.UpdateScheduleAsync(tour, requestDTO.Schedule, schedule);
 
-        //            await _unitOfWork.SaveChangesAsync();
-        //            await transaction.CommitAsync();
-
-        //            if (!string.IsNullOrWhiteSpace(requestDTO.Language))
-        //            { 
-        //                var sourceLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
-        //                _ = _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
-        //                {
-
-
-        //                    await TranslateUpdateTour(tour.Id, requestDTO.Title, requestDTO.Description, serviceProvider, sourceLanguage, requestDTO);
-
-
-        //                });
-        //            }
+                    }
 
 
-                    
-        //            return Result.Ok().WithSuccess(new Success("Tour Updated Successfully"));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            await transaction.RollbackAsync();
-        //            _logger.LogError(ex, "Error updating tour: {Message}, Inner: {InnerMessage}", ex.Message, ex.InnerException?.Message);
-        //            return FluentValidationExtension.FromException(details: $"{ex.Message} | Inner: {ex.InnerException?.Message}");
-        //        }
-        //    });
-        //}
 
-        //private async Task TranslateUpdateTour(Guid tourId,string? tourTitle, string? tourDescription, IServiceProvider serviceProvider,SupportedLanguage sourceLanguage,UpdateTourRequestDTO requestDTO)
-        //{
-        //    var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
+                    if ((requestDTO.Includes is not null && requestDTO.Includes.Any()) ||
+                        (requestDTO.NotIncludes is not null && requestDTO.NotIncludes.Any()))
+                        await _adminTourInclusionService.UpdateInclusionAsync(tour, requestDTO.Includes, requestDTO.NotIncludes, languageEnum);
 
-        //    var inclusions = (await unitOfWork
-        //        .GetRepository<TourInclusion, Guid>()
-        //        .GetAllAsync(new TourInclusionsByTourIdSpec(tourId)))
-        //        .ToList();
+                    if (requestDTO.Cancellation is not null)
+                        await _adminTourCancellationService.UpdateCancellationAsync(tour, requestDTO.Cancellation, languageEnum);
 
-        //    var cancellation = (await unitOfWork
-        //        .GetRepository<Cancellation, Guid>()
-        //        .GetByIdAsync(new CancellationsByTourIdSpec(tourId)));
-                
+                    if (requestDTO.Images is not null && requestDTO.Images.Any())
+                        await _imageService.UpdateImagesAsync(tour, requestDTO.Images);
 
-        //    var prices = (await unitOfWork
-        //        .GetRepository<Price, Guid>()
-        //        .GetAllAsync(new PricesByTourIdSpec(tourId)))
-        //        .ToList();
 
-        //    var inputTranslate = new TourTranslationItem()
-        //    {
-        //        TourId = tourId,
-        //        SourceLanguage = sourceLanguage,
-        //        Title = tourTitle ?? "",
-        //        Description = tourDescription ?? "",
-        //        Cancellation = requestDTO.Cancellation is null ? null :
-        //                new CancellationTranslationItem()
-        //                {
-        //                    CancellationId = cancellation.Id,
-        //                    Description = cancellation.Translations.Where(tr => tr.Language == sourceLanguage).Select(c => c.Description).FirstOrDefault() ?? ""
-        //                }
-        //               ,
+                    if (requestDTO.BlackoutDates is not null && requestDTO.BlackoutDates.Any())
+                    {
+                        var blackoutDatesRepo = _unitOfWork.GetRepository<BlackoutDate, Guid>();
+                        var blackoutDates = await blackoutDatesRepo.GetAllAsync(new GetBlackoutDatesWithTourIdSpecification(tour.Id));
 
-        //        Inclusions = ((requestDTO.Includes is null && requestDTO.NotIncludes is null) || !inclusions.Any())  ? null :
-        //                    inclusions.Select(i => new InclusionTranslationItem()
-        //                    {
-        //                        InclusionId = i.Id,
-        //                        Text = i.Translations.Where(tr => tr.Language == sourceLanguage).Select(c => c.Text).FirstOrDefault() ?? ""
+                        if (blackoutDates.Any())
+                        {
+                            blackoutDatesRepo.RemoveRange(blackoutDates);
+                        }
 
-        //                    }).ToList()
-        //        ,
-        //        Prices = requestDTO.Prices is null || !prices.Any() ? null:
-        //        prices.Select(p => new PriceTranslationItem()
-        //        {
-        //            PriceId = p.Id,
-        //            Type = p.Translations.Where(t => t.Language == sourceLanguage)
-        //                        .Select(t => t.Type)
-        //                        .FirstOrDefault() ?? "",
-        //            ActivityType = p.Translations.Where(t => t.Language == sourceLanguage)
-        //                        .Select(t => t.ActivityType)
-        //                        .FirstOrDefault() ?? ""
+                        var newBlackoutDates = requestDTO.BlackoutDates.Select(d => new BlackoutDate()
+                        {
+                            Id = Guid.NewGuid(),
+                            Tour = tour,
+                            TourId = tour.Id,
+                            Date = d.Date
 
-        //        }).ToList()
-        //    };
-        //    var autoTranslationService =
-        //                   serviceProvider.GetRequiredService<IAutoTranslationService>();
+                        });
+                        await blackoutDatesRepo.AddRangeAsync(newBlackoutDates);
+                    }
 
-        //    await autoTranslationService.TranslateTour(
-        //                  sourceLanguage,
-        //                  inputTranslate);
-        //}
+                    if (requestDTO.BlackoutWeekDays is not null && requestDTO.BlackoutWeekDays.Any())
+                    {
+                        var blackoutWeekDaysRepo = _unitOfWork.GetRepository<BlackoutWeekDay, Guid>();
+                        var blackoutWeekDays = await blackoutWeekDaysRepo.GetAllAsync(new GetBlackoutWeekDayesSpecification(tour.Id));
+
+                        if (blackoutWeekDays.Any())
+                        {
+                            blackoutWeekDaysRepo.RemoveRange(blackoutWeekDays);
+                        }
+
+                        var newBlackoutWeekDays = requestDTO.BlackoutWeekDays.Select(d => new BlackoutWeekDay()
+                        {
+                            Id = Guid.NewGuid(),
+                            Tour = tour,
+                            TourId = tour.Id,
+                            DayOfWeek = d.DayOfWeek
+
+                        });
+                        await blackoutWeekDaysRepo.AddRangeAsync(newBlackoutWeekDays);
+                    }
+
+
+                    await _unitOfWork.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    if (!string.IsNullOrWhiteSpace(requestDTO.Language))
+                    {
+                        var sourceLanguage = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+                        _ = _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
+                        {
+
+
+                            await TranslateUpdateTour(tour.Id, requestDTO.Title, requestDTO.Description, serviceProvider, sourceLanguage, requestDTO);
+
+
+                        });
+                    }
+
+
+
+                    return Result.Ok().WithSuccess(new Success("Tour Updated Successfully"));
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error updating tour: {Message}, Inner: {InnerMessage}", ex.Message, ex.InnerException?.Message);
+                    return FluentValidationExtension.FromException(details: $"{ex.Message} | Inner: {ex.InnerException?.Message}");
+                }
+            });
+        }
+
+        private async Task TranslateUpdateTour(Guid tourId, string? tourTitle, string? tourDescription, IServiceProvider serviceProvider, SupportedLanguage sourceLanguage, UpdateTourRequestDTO requestDTO)
+        {
+            var unitOfWork = serviceProvider.GetRequiredService<IUnitOfWork>();
+
+            var inclusions = (await unitOfWork
+                .GetRepository<TourInclusion, Guid>()
+                .GetAllAsync(new TourInclusionsByTourIdSpec(tourId)))
+                .ToList();
+
+
+            var prices = (await unitOfWork
+                .GetRepository<Price, Guid>()
+                .GetAllAsync(new PricesByTourIdSpec(tourId)))
+                .ToList();
+
+            var inputTranslate = new TourTranslationItem()
+            {
+                TourId = tourId,
+                SourceLanguage = sourceLanguage,
+                Title = tourTitle ?? "",
+                Description = tourDescription ?? "",
+                       
+                Inclusions = ((requestDTO.Includes is null && requestDTO.NotIncludes is null) || !inclusions.Any()) ? null :
+                            inclusions.Select(i => new InclusionTranslationItem()
+                            {
+                                InclusionId = i.Id,
+                                Text = i.Translations.Where(tr => tr.Language == sourceLanguage).Select(c => c.Text).FirstOrDefault() ?? ""
+
+                            }).ToList()
+                ,
+                Prices = requestDTO.Prices is null || !prices.Any() ? null :
+                prices.Select(p => new PriceTranslationItem()
+                {
+                    PriceId = p.Id,
+                    Type = p.Translations.Where(t => t.Language == sourceLanguage)
+                                .Select(t => t.Type)
+                                .FirstOrDefault() ?? "",
+                    ActivityType = p.Translations.Where(t => t.Language == sourceLanguage)
+                                .Select(t => t.ActivityType)
+                                .FirstOrDefault() ?? ""
+
+                }).ToList()
+            };
+            var autoTranslationService =
+                           serviceProvider.GetRequiredService<IAutoTranslationService>();
+
+            await autoTranslationService.TranslateTour(
+                          sourceLanguage,
+                          inputTranslate);
+        }
 
 
         public GetTourResponseDTO MapTourToResponseDTO(Tour tour, SupportedLanguage language , CountryInfo? country,IEnumerable< Price>? prices ,IEnumerable< AvailableSlots>? tourSchedule ,IEnumerable< Cancellation>? cancellations ,IEnumerable<TourInclusion>? inclustions , IEnumerable<BlackoutDate>? blackoutDates , IEnumerable<BlackoutWeekDay>? blackoutWeekDays)
@@ -753,9 +816,6 @@ namespace Amigo.Application.Services.Admin
         //    });
         //}
 
-        public Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string tourId)
-        {
-            throw new NotImplementedException();
-        }
+        
     }
 }

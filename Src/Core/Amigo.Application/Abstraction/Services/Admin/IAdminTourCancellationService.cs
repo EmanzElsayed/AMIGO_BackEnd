@@ -9,7 +9,7 @@ namespace Amigo.Application.Abstraction.Services.Admin
     {
         Task UpdateCancellationAsync(
                Tour tour,
-               UpdateCancellationRequestDTO? dto,
+               List< UpdateCancellationRequestDTO>? dto,
                SupportedLanguage? language);
     }
 }

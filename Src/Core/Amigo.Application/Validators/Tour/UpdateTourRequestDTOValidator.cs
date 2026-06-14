@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Validators.Cancellation;
+﻿using Amigo.Application.Validators.AvailableSlots;
+using Amigo.Application.Validators.Cancellation;
 using Amigo.Application.Validators.Images;
 using Amigo.Application.Validators.Price;
 using Amigo.Application.Validators.TourSchedule;
@@ -85,46 +86,46 @@ namespace Amigo.Application.Validators.Tour
 
 
             RuleForEach(x => x.Schedule)
-              .SetValidator(new UpdateTourScheduleRequestDTOValidator())
+              .SetValidator(new UpdateAvailableSlotsRequestDTOValidator())
               .When(x => x.Schedule != null);
 
-            RuleFor(x => x)
-              .Must(HaveScheduleMatchingDurationWhenProvided)
-              .WithMessage("Schedule date range must match the provided activity duration.")
-              .When(x => x.Duration is not null && x.Schedule is not null && x.Schedule.Any());
+            //RuleFor(x => x)
+            //  .Must(HaveScheduleMatchingDurationWhenProvided)
+            //  .WithMessage("Schedule date range must match the provided activity duration.")
+            //  .When(x => x.Duration is not null && x.Schedule is not null && x.Schedule.Any());
 
             RuleForEach(x => x.Prices)
            .SetValidator(new UpdatePriceRequestDTOValidator())
            .When(x => x.Prices != null);
 
 
-            RuleFor(x => x.Cancellation)
+            RuleForEach(x => x.Cancellation)
             .SetValidator(new UpdateCancellationRequestDTOValidator())
             .When(x => x.Cancellation != null);
         }
 
-        private static bool HaveScheduleMatchingDurationWhenProvided(UpdateTourRequestDTO request)
-        {
-            if (request.Duration is null || request.Schedule is null || request.Schedule.Count == 0)
-                return true;
+        //private static bool HaveScheduleMatchingDurationWhenProvided(UpdateTourRequestDTO request)
+        //{
+        //    if (request.Duration is null || request.Schedule is null || request.Schedule.Count == 0)
+        //        return true;
 
-            var totalMinutes = request.Duration.Value.TotalMinutes;
-            if (totalMinutes <= 0)
-                return false;
+        //    var totalMinutes = request.Duration.Value.TotalMinutes;
+        //    if (totalMinutes <= 0)
+        //        return false;
 
-            var requiredDaySpan = (int)Math.Floor(request.Duration.Value.TotalDays);
-            var uniqueDates = request.Schedule
-                .Where(x => x.StartDate.HasValue)
-                .Select(x => x.StartDate!.Value)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
+        //    var requiredDaySpan = (int)Math.Floor(request.Duration.Value.TotalDays);
+        //    var uniqueDates = request.Schedule
+        //        .Where(x => x.StartDate.HasValue)
+        //        .Select(x => x.StartDate!.Value)
+        //        .Distinct()
+        //        .OrderBy(x => x)
+        //        .ToList();
 
-            if (uniqueDates.Count == 0)
-                return false;
+        //    if (uniqueDates.Count == 0)
+        //        return false;
 
-            var actualDaySpan = uniqueDates[^1].DayNumber - uniqueDates[0].DayNumber;
-            return actualDaySpan == requiredDaySpan;
-        }
+        //    var actualDaySpan = uniqueDates[^1].DayNumber - uniqueDates[0].DayNumber;
+        //    return actualDaySpan == requiredDaySpan;
+        //}
     }
 }

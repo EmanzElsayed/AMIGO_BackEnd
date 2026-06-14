@@ -6,12 +6,13 @@ namespace Amigo.Domain.DTO.Price
 {
     public record UpdatePriceRequestDTO
     (
-        Guid? Id,
+        
         decimal? Discount,
         string? Type,
         decimal? Cost,
         UserType? UserType,
-        string ? ActivityType,
+         DateOnly? SpecialDate,
+        string? ActivityType,
         bool? IsMainActivityType
     );
 }

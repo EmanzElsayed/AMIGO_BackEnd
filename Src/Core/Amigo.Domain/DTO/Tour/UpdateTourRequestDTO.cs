@@ -1,4 +1,7 @@
-﻿using Amigo.Domain.DTO.Cancellation;
+﻿using Amigo.Domain.DTO.AvailableSlots;
+using Amigo.Domain.DTO.BlackoutDate;
+using Amigo.Domain.DTO.BlackoutWeekDays;
+using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.DTO.Price;
 using Amigo.Domain.DTO.TourSchedule;
@@ -25,11 +28,19 @@ namespace Amigo.Domain.DTO.Tour
          List<UserType>? UserType,
 
 
-         UpdateCancellationRequestDTO? Cancellation,
+         List<UpdateCancellationRequestDTO>? Cancellation,
          List<string>? Includes,
          List<string>? NotIncludes,
+
          List<UpdatePriceRequestDTO>? Prices,
-         List<UpdateTourScheduleRequestDTO>? Schedule,
+
+         bool? IsFullTime,
+
+        List<CreateBlackoutDateRequestDTO>? BlackoutDates,
+        List<CreateBlackoutWeekDaysRequestDTO>? BlackoutWeekDays,
+
+        List<UpdateAvailableSlotsRequestDTO>? Schedule,
+
 
 
          bool? IsPitsAllowed,

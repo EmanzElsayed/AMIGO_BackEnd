@@ -11,20 +11,14 @@ namespace Amigo.Application.Validators.Cancellation
         {
             RuleFor(x => x.CancellationBefore)
             .Must(x => x > TimeSpan.Zero)
-            .WithMessage("Cancellation must be greater than zero")
-            .When(x => x.CancellationBefore is not null);
+            .WithMessage("Cancellation must be greater than zero");
 
             RuleFor(x => x.RefundPercentage)
                .InclusiveBetween(0, 100)
-               .WithMessage("RefundPercentage must be between 0 and 100")
-               .When(x => x.RefundPercentage is not null);
+               .WithMessage("RefundPercentage must be between 0 and 100");
 
 
 
-            RuleFor(x => x.Description)
-               .MaximumLength(500)
-               .When(x => !string.IsNullOrEmpty(x.Description))
-               .WithMessage("Description must not exceed 500 characters");
 
             RuleFor(x => x.CancelationPolicyType)
                 .Must(BusinessRules.BeAValidCancellation)

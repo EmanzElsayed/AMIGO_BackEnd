@@ -1,69 +1,49 @@
-﻿using Amigo.Domain.DTO.Cancellation;
+﻿using Amigo.Application.Specifications.TourSpecification;
+using Amigo.Domain.DTO.Cancellation;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Amigo.Application.Services.Admin
 {
-    public class AdminTourCancellationService : IAdminTourCancellationService
+    public class AdminTourCancellationService(IUnitOfWork _unitOfWork) : IAdminTourCancellationService
     {
-        //public Task UpdateCancellationAsync(
-        //      Tour tour,
-        //      UpdateCancellationRequestDTO? dto,
-        //      SupportedLanguage? language)
-        //{
-        //    if (dto is null)
-        //        return Task.CompletedTask;
-
-
-
-        //    //  ضمان وجود object
-        //    var cancellation = tour.Cancellation ??= new Cancellation
-        //    {
-        //        TourId = tour.Id,
-        //        Translations = new List<CancellationTranslation>()
-        //    };
-
-        //    //  update basic fields
-        //    if (!string.IsNullOrWhiteSpace(dto.CancelationPolicyType))
-        //        cancellation.CancelationPolicyType =
-        //            Enum.Parse<CancelationPolicyType>(dto.CancelationPolicyType);
-
-        //    if (dto.CancellationBefore is not null)
-        //        cancellation.CancellationBefore = dto.CancellationBefore.Value;
-
-        //    if (dto.RefundPercentage is not null)
-        //        cancellation.RefundPercentage = dto.RefundPercentage.Value;
-
-        //    //  translation
-        //    if (language is not null &&
-        //        !string.IsNullOrWhiteSpace(dto.Description))
-        //    {
-
-
-        //        var translation = cancellation.Translations
-        //            .FirstOrDefault(t => t.Language == language);
-
-        //        if (translation is null)
-        //        {
-        //            cancellation.Translations.Add(new CancellationTranslation
-        //            {
-        //                Language = language.Value,
-        //                Description = dto.Description,
-        //                Cancellation = cancellation
-        //            });
-        //        }
-        //        else
-        //        {
-        //            translation.Description = dto.Description;
-        //        }
-        //    }
-
-        //    return Task.CompletedTask;
-        //}
-        public Task UpdateCancellationAsync(Tour tour, UpdateCancellationRequestDTO? dto, SupportedLanguage? language)
+        public async Task UpdateCancellationAsync(
+              Tour tour,
+             List<UpdateCancellationRequestDTO>? dto,
+              SupportedLanguage? language)
         {
-            throw new NotImplementedException();
+            if (dto is null)
+                return ;
+
+
+            var cancellationRepo = _unitOfWork.GetRepository<Cancellation, Guid>();
+            //  ضمان وجود object
+            var existingCancellations = await cancellationRepo.GetAllAsync(new GetCancellationWithTourIdSpecification(tour.Id));
+            if (existingCancellations is not null && existingCancellations.Any())
+            {
+                cancellationRepo.RemoveRange(existingCancellations);
+            }
+
+            var cancellations = dto.Select(c => new Cancellation()
+            {
+                Id = Guid.NewGuid(),
+                Tour = tour,
+                TourId = tour.Id,
+                RefundPercentage = c.RefundPercentage ,
+                CancelationPolicyType = Enum.Parse<CancelationPolicyType> (c.CancelationPolicyType),
+                CancellationBefore = c.CancellationBefore,
+
+
+
+            });
+
+
+
+            await cancellationRepo.AddRangeAsync(cancellations);
+            
+
         }
+        
     }
 }

@@ -1,4 +1,5 @@
-﻿using Amigo.Domain.DTO.Price;
+﻿using Amigo.Domain.DTO.AvailableSlots;
+using Amigo.Domain.DTO.Price;
 using Amigo.Domain.DTO.TourSchedule;
 using Amigo.SharedKernal.DTOs.Price;
 using Amigo.SharedKernal.DTOs.TourSchedule;
@@ -13,8 +14,8 @@ namespace Amigo.Application.Abstraction.Services.Admin
         //Task<Result<CreateTourScheduleResponseDTO>> CreateTourScheduleAsync(CreateTourScheduleRequestDTO requestDTO);
         Task UpdateScheduleAsync(
                   Tour tour,
-                  List<UpdateTourScheduleRequestDTO> schedulesDto,
-                  IEnumerable<TourSchedule> existingSchedules
+                  List<UpdateAvailableSlotsRequestDTO> schedulesDto,
+                  IEnumerable<AvailableSlots> existingSchedules
             );
     }
 }
