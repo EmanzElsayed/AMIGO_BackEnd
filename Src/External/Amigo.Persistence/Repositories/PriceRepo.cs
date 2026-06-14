@@ -24,7 +24,7 @@ namespace Amigo.Persistence.Repositories
                     (p.UserType & allowedUserType) == allowedUserType
                     &&
                     (p.IsMainActivityType == null || p.IsMainActivityType == true)
-                    
+                    && (p.SpecialDate == null)
                     )
               
                 .Select(p => new FlatSummeryPriceDTO

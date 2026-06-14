@@ -4,6 +4,7 @@ using Amigo.Domain.Enum;
 using Amigo.SharedKernal.QueryParams;
 using Stripe;
 using System.Linq.Expressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Amigo.Application.Validation.Common.Specifications;
 
@@ -21,6 +22,7 @@ public static class TourCatalogCriteria
         decimal? maxPrice,
         decimal? minPrice)
     {
+        DayOfWeek? day = availabilityDate is null ? null : availabilityDate.Value.DayOfWeek;
         return t =>
             t.DestinationId == destinationId
             && !t.IsDeleted
@@ -60,15 +62,14 @@ public static class TourCatalogCriteria
                     !p.IsDeleted
                     && p.Cost * (1 - p.Discount / 100m) <= maxPrice!.Value))
 
-            /*&& (!availabilityDate.HasValue
-                || t.AvailableTimes.Any(ts =>
-                    !ts.IsDeleted
-                    && ts.StartDate <= availabilityDate.Value
-                    && (ts.EndDate == null || ts.EndDate >= availabilityDate.Value)
-                    && ts.AvailableSlots.Any(s =>
-                        !s.IsDeleted
-                        && s.AvailableTimeStatus == AvailableDateTimeStatus.Available)))
-*/
+
+            && (!availabilityDate.HasValue
+                    || t.BlackoutDates == null
+                    || !t.BlackoutDates.Any(d => d.Date == availabilityDate.Value))
+
+         && (!day.HasValue
+                            || t.BlackoutWeekDays == null
+                            || !t.BlackoutWeekDays.Any(d => d.DayOfWeek == day.Value))
 
             && (!effectiveGuideLanguage.HasValue
                 || (t.GuideLanguage.HasValue && ((t.GuideLanguage.Value & effectiveGuideLanguage.Value) == effectiveGuideLanguage.Value)))
@@ -88,11 +89,13 @@ public static class TourCatalogCriteria
                         )
                     )
 
-         /*   && (q.FreeCancellation != true
-                || (t.Cancellation != null
-                    && !t.Cancellation.IsDeleted
-                    && t.Cancellation.CancelationPolicyType == CancelationPolicyType.Free)
-            )*/
+           
+
+            && (q.FreeCancellation != true
+                || (t.Cancellations == null) 
+                || (t.Cancellations.Any(c => !c.IsDeleted && c.CancelationPolicyType == CancelationPolicyType.Free))
+                    
+            )
 
             && (q.HotelPickup != true
                 || t.TourInclusions.Any(i =>
@@ -103,15 +106,7 @@ public static class TourCatalogCriteria
                 )
             )
 
-           /* && (q.RequireAvailableSlots != true
-                || t.AvailableTimes.Any(ts =>
-                    !ts.IsDeleted
-                    && ts.AvailableSlots.Any(s =>
-                        !s.IsDeleted
-                        && s.AvailableTimeStatus == AvailableDateTimeStatus.Available
-                    )
-                )
-            )*/
+          
 
             && (q.OnlyInUserLanguage != true
                 || t.Translations.Any(tr =>

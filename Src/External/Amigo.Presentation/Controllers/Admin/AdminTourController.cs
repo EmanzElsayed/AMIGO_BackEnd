@@ -48,6 +48,7 @@ namespace Amigo.Presentation.Controllers.Admin
 
         }
 
+        // not updated yet
 
         [HttpGet("stats")]
         public async Task<IResultBase> GetActivityStats()

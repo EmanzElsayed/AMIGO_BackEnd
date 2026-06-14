@@ -24,6 +24,8 @@ public class UserTourController(
 
     [HttpGet]
     //[Cache(1800)]
+
+    //updated done
     public async Task<IResultBase> GetTours([FromQuery] GetUserToursQuery query)
     {
         _logger.LogInformation("GetTours called: DestinationId={DestinationId}, AvailabilityDate={AvailabilityDate}, Language={Language}, Page={PageNumber}, Size={PageSize}", query.DestinationId, query.AvailabilityDate, query.Language, query.PageNumber, query.PageSize);
