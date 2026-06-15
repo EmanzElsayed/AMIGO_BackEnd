@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using GetCancellationResponseDTO = Amigo.Domain.DTO.Cancellation.GetCancellationResponseDTO;
 
 namespace Amigo.Application.Services.Admin
 {

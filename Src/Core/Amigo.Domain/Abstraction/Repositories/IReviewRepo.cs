@@ -11,5 +11,10 @@ namespace Amigo.Domain.Abstraction.Repositories
         GetTourReviewSummariesAsync(
           IReadOnlyCollection<Guid> tourIds,
           CancellationToken cancellationToken = default);
+
+        Task<List<decimal>>
+       GetTourReviewRatesAsync(
+           Guid tourId,
+       CancellationToken cancellationToken = default);
     }
 }

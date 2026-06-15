@@ -38,6 +38,15 @@ public record UserTourTravelerPhotoDto(
     string? AuthorLabel);
 
 
+public record UserTourReviewDTO
+    (
+
+        IReadOnlyList<UserTourReviewItemDto>? RecentReviews,
+        IReadOnlyList<UserTourTravelerPhotoDto>? TravelerPhotos
+
+    );
+
+
 public record ImageDTO(
     string url
     );
@@ -64,17 +73,19 @@ public record UserTourDetailDto(
     
     string? DestinationName,
     string? CountryName,
-    IReadOnlyList<string?>? ActivityTypes,
-    IReadOnlyList<UserTourPriceTierDto> PriceTiers,
-    IReadOnlyList<UserTourScheduleDayDto> ScheduleDays,
-    IReadOnlyList<UserTourReviewItemDto> RecentReviews,
-    IReadOnlyList<UserTourTravelerPhotoDto> TravelerPhotos,
 
     string? MeetingPoint,
     
     IReadOnlyList<string> Included,
     IReadOnlyList<string> NotIncluded,
-    
-    string? CancellationPolicyDescription
+
+    List<GetCancellationResponseDTO>? CancellationPolicyDescription
     
     );
+    public record GetCancellationResponseDTO
+   (
+      Guid Id,
+      string CancelationPolicyType,
+      TimeSpan CancellationBefore,
+      decimal RefundPercentage
+  );

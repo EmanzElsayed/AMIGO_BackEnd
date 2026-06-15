@@ -11,5 +11,9 @@ namespace Amigo.Domain.Abstraction.Repositories
     GetFreeCancellationLookupAsync(
         IReadOnlyCollection<Guid> tourIds,
         CancellationToken cancellationToken = default);
+        Task<bool>
+      GetIsFreeCancellationAsync(
+      Guid tourId,
+      CancellationToken cancellationToken = default);
     }
 }

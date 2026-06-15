@@ -1,23 +1,30 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Application.Mapping;
+using Amigo.Application.Specifications.AvailableSlotsSpecification;
+using Amigo.Application.Specifications.BlackoutDateSpecification;
+using Amigo.Application.Specifications.BlackoutWeekDaysSpecification;
 using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Application.Specifications.TourScheduleSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.User;
+using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Domain.DTO.Price;
 using Amigo.Domain.DTO.Tour;
+using Amigo.Domain.DTO.TourSchedule;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Entities.TranslationEntities;
 using Amigo.Domain.Enum;
-using System.Globalization;
 using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.SharedKernal.DTOs.Results;
 using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
-using System.Collections.Generic;
-using System.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Amigo.Application.Services;
 
@@ -308,127 +315,176 @@ public class UserTourCatalogService(
         return Result.Ok(new MaxPriceResponseDto { MaxPrice = maxPrice * rate.ValueOrDefault });
     }
 
-    //public async Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null)
-    //{
-    //    var validationResult = await _validationService.ValidateAsync(query);
-    //    if (!validationResult.IsSuccess)
-    //        return validationResult;
+    public async Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null)
+    {
+        var validationResult = await _validationService.ValidateAsync(query);
+        if (!validationResult.IsSuccess)
+            return validationResult;
 
-    //    var destId = await _slugResolver.ResolveDestinationIdAsync(query.DestinationSlug);
-    //    if (destId is null)
-    //        return Result.Fail(new NotFoundError("Destination not found for this link."));
+        var destId = await _slugResolver.ResolveDestinationIdAsync(query.DestinationSlug);
+        if (destId is null)
+            return Result.Fail(new NotFoundError("Destination not found for this link."));
 
-    //    var listingLang = _currentUserService.Language;
-    //    var filteredCurrency = _currentUserService.Currency;
+        var listingLang = _currentUserService.Language;
+        var filteredCurrency = _currentUserService.Currency;
 
-    //    var rate = await _currencyRateService.GetRateAsync(
-    //                   Constants.BaseCurrency,
-    //                   filteredCurrency, true);
+        var rate = await _currencyRateService.GetRateAsync(
+                       Constants.BaseCurrency,
+                       filteredCurrency, true);
 
-    //    if (!rate.IsSuccess)
-    //        return Result.Fail(rate.Errors);
-
-
-    //    var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
-
-    //    var requestSlug = SlugHelper.ToUrlSlug(query.TourSlug);
-    //    var normalizedRequestSlug = SlugHelper.Normalize(query.TourSlug);
+        if (!rate.IsSuccess)
+            return Result.Fail(rate.Errors);
 
 
-    //    var spec = new TourCatalogForSlugResolutionSpecification(destId.Value);
+        var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
 
-    //    var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
-    //    var tours = (await tourRepo.GetAllAsync(spec)).ToList();
-
-    //    Tour? match = null;
-    //    foreach (var t in tours)
-    //    {
-    //        var candidateTitles = t.Translations
-    //            .Where(x => !string.IsNullOrWhiteSpace(x.Title))
-    //            .OrderByDescending(x => x.Language == listingLang)
-    //            .Select(x => x.Title!.Trim())
-    //            .Distinct(StringComparer.OrdinalIgnoreCase)
-    //            .ToList();
-
-    //        if (candidateTitles.Count == 0)
-    //            continue;
-
-    //        var isMatch = candidateTitles.Any(title =>
-    //            SlugHelper.ToUrlSlug(title) == requestSlug
-    //            || SlugHelper.Normalize(title) == normalizedRequestSlug);
-
-    //        if (!isMatch)
-    //            continue;
-
-    //        match = t;
-    //        break;
-    //    }
-
-    //    if (match is null)
-    //        return Result.Fail(new NotFoundError("Tour not found for this link."));
-
-    //    if ((match.UserType & effectiveUserType) != effectiveUserType)
-    //        return Result.Fail(new NotFoundError("Tour not found for this link."));
-
-    //    var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
-
-    //    var priceRepo = _unitOfWork.GetRepository<Price, Guid>();
-
-    //    var scheduleRepo = _unitOfWork.GetRepository<TourSchedule, Guid>();
-    //    var reviewRepo = _unitOfWork.GetRepository<Review, Guid>();
-    //    //var reviewTrRepo = _unitOfWork.GetRepository<ReviewTranslation, Guid>();
-    //    //var allowedUserType = NormalizeEffectiveUserType(effectiveUserType);
-
-    //    var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id, effectiveUserType))).ToList();
-    //    var schedules = (await scheduleRepo.GetAllAsync(new TourSchedulesForTourSpecification(match.Id))).ToList();
-    //    var reviews = (await reviewRepo.GetAllAsync(new ReviewsForTourSpecification(match.Id))).ToList();
-    //    //var reviewTranslations = Array.Empty<ReviewTranslation>();
-    //    if (reviews.Count > 0)
-    //    {
-    //        var ids = reviews.Select(r => r.Id).ToList();
-    //        //reviewTranslations = (await reviewTrRepo.GetAllAsync(
-    //        //    new ReviewTranslationsForReviewsSpecification(ids, listingLang))).ToArray();
-    //    }
-
-    //    var ctRepo = _unitOfWork.GetRepository<Cancellation, Guid>();
-    //    var ctRow = (await ctRepo.GetByIdAsync(
-    //        new CancellationForTourSpecification(match.Id)));
-
-    //    var pick = ctRow is null ? null : ctRow.Translations.FirstOrDefault(x => x.Language == listingLang)
-    //                  ?? ctRow.Translations.FirstOrDefault();
-
-    //    string? cancellationPolicyDescription = pick is null ? null : pick.Description;
-
-    //    var countryInfo = await _unitOfWork
-    //           .GetRepository<CountryInfo, Guid>()
-    //           .GetByIdAsync(new GetCountryInfoByDestinationIdSpecification(destId.Value, listingLang));
-
-    //    var inclusions = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(new GetInclustionWithTourIdSpecification(match.Id));
-
-    //    var destination = await _unitOfWork.GetRepository<Destination, Guid>().GetByIdAsync(new GetDestinationWithTranslationsSpecification(destId.Value));
+        var requestSlug = SlugHelper.ToUrlSlug(query.TourSlug);
+        var normalizedRequestSlug = SlugHelper.Normalize(query.TourSlug);
 
 
-    //    var detail = UserTourCatalogMapper.ToDetail(
-    //        match,
-    //        listingLang,
-    //        prices,
-    //        effectiveUserType,
-    //        schedules,
-    //        reviews,
+        var spec = new TourCatalogForSlugResolutionSpecification(destId.Value);
 
-    //        todayUtc,
-    //        rate.ValueOrDefault,
-    //        filteredCurrency,
-    //        countryInfo,
-    //        inclusions,
-    //        ctRow,
-    //        destination,
-    //        cancellationPolicyDescription,
-    //        currentUserId
-    //    );
+        var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
+        var tours = (await tourRepo.GetAllAsync(spec)).ToList();
 
-    //    return Result.Ok(detail);
-    //}
+        Tour? match = null;
+        foreach (var t in tours)
+        {
+            var candidateTitles = t.Translations
+                .Where(x => !string.IsNullOrWhiteSpace(x.Title))
+                .OrderByDescending(x => x.Language == listingLang)
+                .Select(x => x.Title!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (candidateTitles.Count == 0)
+                continue;
+
+            var isMatch = candidateTitles.Any(title =>
+                SlugHelper.ToUrlSlug(title) == requestSlug
+                || SlugHelper.Normalize(title) == normalizedRequestSlug);
+
+            if (!isMatch)
+                continue;
+
+            match = t;
+            break;
+        }
+
+        if (match is null)
+            return Result.Fail(new NotFoundError("Tour not found for this link."));
+
+        if ((match.UserType & effectiveUserType) != effectiveUserType)
+            return Result.Fail(new NotFoundError("Tour not found for this link."));
+
+        var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var priceRepo = _unitOfWork.GetRepository<Price, Guid>();
+
+        
+        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(match.Id, effectiveUserType))).ToList();
+
+        
+        var reviews = await _unitOfWork.ReviewRepo.GetTourReviewRatesAsync(match.Id);
+        
+
+        var cancellationRepo = _unitOfWork.GetRepository<Cancellation, Guid>();
+        var cancellationRows = (await cancellationRepo.GetAllAsync(
+            new CancellationForTourSpecification(match.Id)));
+
+       
+        
+
+        var countryInfo = await _unitOfWork
+               .GetRepository<CountryInfo, Guid>()
+               .GetByIdAsync(new GetCountryInfoByDestinationIdSpecification(destId.Value, listingLang));
+
+        var inclusions = await _unitOfWork.GetRepository<TourInclusion, Guid>().GetAllAsync(new GetInclustionWithTourIdSpecification(match.Id));
+
+        var destination = await _unitOfWork.GetRepository<Destination, Guid>().GetByIdAsync(new GetDestinationWithTranslationsSpecification(destId.Value));
+
+
+        var detail = UserTourCatalogMapper.ToDetail(
+            match,
+            listingLang,
+            prices,
+            effectiveUserType,
+            reviews,
+
+            todayUtc,
+            rate.ValueOrDefault,
+            filteredCurrency,
+            countryInfo,
+            inclusions,
+            cancellationRows,
+            destination,
+            currentUserId
+        );
+
+        return Result.Ok(detail);
+    }
+
+    public async Task<Result<UserTourReviewDTO>> GetTourReviews(string Id, string? currentUserId )
+    {
+        if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+            return Result.Fail("Invalid UUID");
+
+        Guid tourId = guid;
+
+        var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new TourExistsByIdSpecification(tourId));
+
+        if (tour is null)
+            return Result.Fail(new NotFoundError("Tour not found for this link."));
+        
+        var reviewRepo = _unitOfWork.GetRepository<Review, Guid>();
+
+        var reviews = (await reviewRepo.GetAllAsync(new ReviewsForTourSpecification(tour.Id))).ToList();
+
+        var mappedData = UserTourCatalogMapper.UserTourReviewMapping(reviews, currentUserId);
+        return Result.Ok(mappedData);
+    }
+
+    public  async Task<Result< UserTourScheduleDetailDTO>> GetTourScheduleDetails(string Id, string? userType)
+    {
+
+        if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+            return Result.Fail("Invalid UUID");
+
+        Guid tourId = guid;
+
+        SupportedLanguage language = _currentUserService.Language;
+
+        var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
+        var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new TourExistsByIdSpecification(tourId));
+
+        if (tour is null)
+            return Result.Fail(new NotFoundError("Tour not found for this link."));
+
+        if ((tour.UserType & effectiveUserType) != effectiveUserType)
+            return Result.Fail(new NotFoundError("Tour not found for this link."));
+
+        var priceRepo = _unitOfWork.GetRepository<Price, Guid>();
+
+        var prices = (await priceRepo.GetAllAsync(new PricesForTourSpecification(tourId, effectiveUserType))).ToList();
+        var filteredCurrency = _currentUserService.Currency;
+
+        var rate = await _currencyRateService.GetRateAsync(
+                       Constants.BaseCurrency,
+                       filteredCurrency, true);
+
+        if (!rate.IsSuccess)
+            return Result.Fail(rate.Errors);
+
+        var blackoutDates = (await _unitOfWork.GetRepository<BlackoutDate, Guid>().GetAllAsync(new GetBlackoutDatesWithTourIdSpecification(tourId))).Select(b => b.Date).ToList();
+        var blackoutWeekDays = (await _unitOfWork.GetRepository<BlackoutWeekDay, Guid>().GetAllAsync(new GetBlackoutWeekDayesSpecification(tourId))).Select(b => b.DayOfWeek) .ToList();
+        var availableTimes = (await _unitOfWork.GetRepository<AvailableSlots, Guid>().GetAllAsync(new GetTourSlotsByTourIdSpecification(tourId))).Select(b => b.StartTime).ToList();
+        bool isFullTime = tour.IsFullTime;
+        var mappedData = UserTourCatalogMapper
+                .TourScheduleMapping(language,prices,effectiveUserType,rate.ValueOrDefault,blackoutDates, blackoutWeekDays, isFullTime,availableTimes);
+        return Result.Ok(mappedData);
+    }
+
+
     private static UserType NormalizeEffectiveUserType(UserType? effectiveUserType)
       => effectiveUserType == UserType.VIP ? UserType.VIP : UserType.Public;
     private static UserType? ParseUserType(string? s)
@@ -602,85 +658,103 @@ public class UserTourCatalogService(
         return Result.Ok<IEnumerable<UserTrendingTourItemDto>>(mapped);
     }
 
-    //public async Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync( string Id,PiceWithActivityTypeRequestQuery requestDTO, string? userType)
-    //{
-    //    //var validationResult = await _validationService.ValidateAsync(requestDTO);
-    //    //if (!validationResult.IsSuccess)
-    //    //    return validationResult;
-    //    if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
-    //        return Result.Fail("Invalid UUID");
-
-    //    Guid tourId = guid;
-
-    //    var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new GetTourByIdWithPriceIncludingOnlySpecification(tourId));
-
-    //    if (tour is null)
-    //    {
-    //        return Result.Fail(new NotFoundError("This Tour Not Found"));
-    //    }
-    //    var listingLang = _currentUserService.Language;
-    //    var filteredCurrency = _currentUserService.Currency;
-    //    var rate = await _currencyRateService.GetRateAsync(
-    //                   Constants.BaseCurrency,
-    //                   filteredCurrency, true);
-
-    //    if (!rate.IsSuccess)
-    //        return Result.Fail(rate.Errors);
-
-    //    var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
-
-    //    var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(tourId, effectiveUserType));
-    //    var filterdPrices = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ?
-    //        tour.Prices
-    //            .Where( p => 
-
-    //                p.IsMainActivityType == true
-
-    //                && p.Translations.Any(tr =>
-    //                    tr.Language == listingLang))
-    //            .OrderBy(x => x.RetailPrice)
-    //            .ToList()
-
-    //        :
-    //        tour.Prices
-    //            .Where(p =>
-    //                 p.Translations.Any(tr =>
-    //                    tr.Language == listingLang &&
-    //                    tr.ActivityType == requestDTO.ActivityType))
-    //            .OrderBy(x => x.RetailPrice)
-    //            .ToList();
-    //    var list = new List<UserTourPriceTierDto>();
-
-    //    foreach (var p in filterdPrices)
-
-    //        {
-    //            var tr = p.Translations.FirstOrDefault(x => x.Language == listingLang)
-    //                     ?? p.Translations.FirstOrDefault();
-    //            var label = tr?.Type ?? "Traveler";
-    //            var retail = Math.Round(p.RetailPrice * rate.ValueOrDefault, 2);
-    //            var isFree = retail <= 0;
-    //            var group = p.UserType.HasFlag(UserType.VIP) ? "VIP" : "Public";
-    //            list.Add(new UserTourPriceTierDto(p.Id, label, retail, isFree, group));
-    //        }
-    //    return list;
-    //}
-
-
-
-
-    public Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(string id, PiceWithActivityTypeRequestQuery requestDTO, string? userType)
+    public async Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(string Id, PiceWithActivityTypeRequestQuery requestDTO, string? userType)
     {
-        throw new NotImplementedException();
+
+        
+
+        if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+            return Result.Fail("Invalid UUID");
+
+        Guid tourId = guid;
+
+       
+        var tour = await _unitOfWork.GetRepository<Tour, Guid>().GetByIdAsync(new GetTourByIdWithPriceIncludingOnlySpecification(tourId));
+
+        if (tour is null)
+        {
+            return Result.Fail(new NotFoundError("This Tour Not Found"));
+        }
+        if (requestDTO.Date != null)
+        {
+            var blackoutDates = (await _unitOfWork.GetRepository<BlackoutDate, Guid>().GetAllAsync(new GetBlackoutDatesWithTourIdSpecification(tourId))).Select(b => b.Date).ToList();
+            var blackoutWeekDays = (await _unitOfWork.GetRepository<BlackoutWeekDay, Guid>().GetAllAsync(new GetBlackoutWeekDayesSpecification(tourId))).Select(b => b.DayOfWeek).ToList();
+            if (blackoutDates.Contains(requestDTO.Date.Value))
+            {
+                return Result.Fail(new NotFoundError("This Date Not Allowed"));
+
+            }
+            if (blackoutWeekDays.Contains(requestDTO.Date.Value.DayOfWeek))
+            {
+                return Result.Fail(new NotFoundError("This Day Not Allowed"));
+
+            }
+        }
+        
+
+        var listingLang = _currentUserService.Language;
+        var filteredCurrency = _currentUserService.Currency;
+        var rate = await _currencyRateService.GetRateAsync(
+                       Constants.BaseCurrency,
+                       filteredCurrency, true);
+
+        if (!rate.IsSuccess)
+            return Result.Fail(rate.Errors);
+
+        var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
+
+        var prices = await _unitOfWork.GetRepository<Price, Guid>().GetAllAsync(new PricesForTourSpecification(tourId, effectiveUserType));
+
+        var specialDates = prices.Select(p => p.SpecialDate).Distinct().ToList();
+        bool isSpecialDate = false;
+        if (requestDTO.Date == null) isSpecialDate = false;
+        if (requestDTO.Date != null && specialDates.Contains(requestDTO.Date)) isSpecialDate = true;
+
+        var filterdPrices = string.IsNullOrWhiteSpace(requestDTO.ActivityType) ?
+            tour.Prices
+                .Where(p =>
+
+                    p.IsMainActivityType == true
+                    && ((isSpecialDate == false && p.SpecialDate == null) || (isSpecialDate == true && p.SpecialDate == requestDTO.Date))
+                    && p.Translations.Any(tr =>
+                        tr.Language == listingLang))
+                .OrderBy(x => x.RetailPrice)
+                .ToList()
+
+            :
+            tour.Prices
+                .Where(p =>
+                  ((isSpecialDate == false && p.SpecialDate == null) || (isSpecialDate == true && p.SpecialDate == requestDTO.Date))
+                  &&
+                     p.Translations.Any(tr =>
+                        tr.Language == listingLang &&
+                        tr.ActivityType == requestDTO.ActivityType))
+                .OrderBy(x => x.RetailPrice)
+                .ToList();
+        var list = new List<UserTourPriceTierDto>();
+
+        foreach (var p in filterdPrices)
+
+        {
+            var tr = p.Translations.FirstOrDefault(x => x.Language == listingLang)
+                     ?? p.Translations.FirstOrDefault();
+            var label = tr?.Type ?? "Traveler";
+            var retail = Math.Round(p.RetailPrice * rate.ValueOrDefault, 2);
+            var isFree = retail <= 0;
+            var group = p.UserType.HasFlag(UserType.VIP) ? "VIP" : "Public";
+            list.Add(new UserTourPriceTierDto(p.Id, label, retail, isFree, group));
+        }
+        return list;
     }
 
-    public Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null)
-    {
-        throw new NotImplementedException();
-    }
 
-    
 
-   
 
-   
+
+
+
+
+
+
+
 }

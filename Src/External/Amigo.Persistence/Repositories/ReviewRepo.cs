@@ -27,5 +27,22 @@ namespace Amigo.Persistence.Repositories
                  })
             .ToListAsync(cancellationToken);
         }
+
+        public async Task<List<decimal>>
+        GetTourReviewRatesAsync(
+            Guid tourId,
+        CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Reviews
+                .AsNoTracking()
+                .Where(r =>
+                    r.TourId == tourId &&
+                    !r.IsDeleted)
+
+                 .Select(r => r.Rate
+
+                 ).ToListAsync(cancellationToken);
+            
+        }
     }
 }

@@ -47,6 +47,30 @@ public class UserTourController(
         return await _serviceManager.UserTourCatalogService.GetTourByPublicPathAsync(query, userType, userId);
     }
 
+    [EnableRateLimiting("token")]
+
+    [HttpGet("{id}/review")]
+    //[Cache(1800)]
+    public async Task<IResultBase> GetReviwsInfoByTourId(string id)
+    {
+        var userType = await ResolveEffectiveUserTypeAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return await _serviceManager.UserTourCatalogService.GetTourReviews(id, userId);
+    }
+
+
+    [EnableRateLimiting("token")]
+
+    [HttpGet("{id}/schedule-info")]
+    //[Cache(1800)]
+    public async Task<IResultBase> GetScheduleInfoByTourId(string id)
+    {
+        var userType = await ResolveEffectiveUserTypeAsync();
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return await _serviceManager.UserTourCatalogService.GetTourScheduleDetails(id,userType);
+    }
+
+
     [HttpGet("{id}/price-with-activity-type")]
     public async Task<IResultBase> GetPriceByActivityType(string id ,[FromQuery] PiceWithActivityTypeRequestQuery requestDTO)
     {

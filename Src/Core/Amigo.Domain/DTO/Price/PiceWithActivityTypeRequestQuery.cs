@@ -7,6 +7,7 @@ namespace Amigo.Domain.DTO.Price
     public record PiceWithActivityTypeRequestQuery
     (
        
-       string? ActivityType
+       string? ActivityType,
+       DateOnly? Date
      );
 }

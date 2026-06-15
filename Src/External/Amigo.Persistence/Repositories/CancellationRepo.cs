@@ -26,5 +26,18 @@ namespace Amigo.Persistence.Repositories
                })
             .ToListAsync(cancellationToken);
         }
+
+        public async Task<bool>
+        GetIsFreeCancellationAsync(
+        Guid tourId,
+        CancellationToken cancellationToken = default)
+        {
+            return  await _dbContext.Cancelations
+               
+                .AnyAsync(c =>
+                    c.TourId == tourId &&  c.CancelationPolicyType == CancelationPolicyType.Free &&
+                    !c.IsDeleted);
+               
+        }
     }
 }
