@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Amigo.Presentation.Controllers.Admin;
 
-[Route("api/v1/user/tours/reviews")]
+[Route("api/v1/admin/tours/reviews")]
 [Authorize(Roles = "Admin")]
 public class AdminTourReviewController( IServiceManager _serviceManager ) : BaseController
 {
