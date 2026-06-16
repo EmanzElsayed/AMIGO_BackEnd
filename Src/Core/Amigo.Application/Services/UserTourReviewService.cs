@@ -195,7 +195,7 @@ public class UserTourReviewService(
         if (review is null)
             return Result.Fail(new NotFoundError("Review not found."));
 
-        if (review.UserId != userId)
+        if (!string.IsNullOrWhiteSpace(userId) && review.UserId != userId)
             return Result.Fail(new ForbiddenError("You can only delete your own reviews."));
 
         review.SetIsDeleted(true);
