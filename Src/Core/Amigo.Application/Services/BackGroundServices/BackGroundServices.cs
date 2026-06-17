@@ -58,7 +58,7 @@ public sealed class BookingBackgroundService(
          
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         var voucherService = scope.ServiceProvider.GetRequiredService<IVoucherService>();
-        await ExpireReservations(unitOfWork);
+        //await ExpireReservations(unitOfWork);
         await ExpireOrders(unitOfWork);
         //await SoldOutSlots(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
@@ -73,38 +73,38 @@ public sealed class BookingBackgroundService(
     // =====================================================
     // 1) Expire Pending Reservations
     // =====================================================
-    private async Task ExpireReservations(IUnitOfWork _unitOfWork)
-    {
-        var now = DateTime.UtcNow;
+    //private async Task ExpireReservations(IUnitOfWork _unitOfWork)
+    //{
+    //    var now = DateTime.UtcNow;
 
-        var repo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+    //    var repo = _unitOfWork.GetRepository<SlotReservation, Guid>();
 
-        var reservations = await repo.GetAllAsync(
-            new GetExpiredPendingReservationsSpecification(now));
+    //    var reservations = await repo.GetAllAsync(
+    //        new GetExpiredPendingReservationsSpecification(now));
 
-        var slotGroups = reservations
-       .GroupBy(x => x.SlotId)
-       .Select(g => new
-       {
-           SlotId = g.Key,
-           Total = g.Sum(x => x.Quantity)
-       })
-       .ToList();
-
-
-        var updates = slotGroups
-                .Select(x => (x.SlotId, x.Total))
-                .ToList();
-
-        await _unitOfWork.SlotsRepo
-            .BulkDecreaseReservedCountAsync(updates); 
-
-        repo.RemoveRange(reservations);
+    //    var slotGroups = reservations
+    //   .GroupBy(x => x.SlotId)
+    //   .Select(g => new
+    //   {
+    //       SlotId = g.Key,
+    //       Total = g.Sum(x => x.Quantity)
+    //   })
+    //   .ToList();
 
 
+    //    var updates = slotGroups
+    //            .Select(x => (x.SlotId, x.Total))
+    //            .ToList();
 
-        await _unitOfWork.SaveChangesAsync();
-    }
+    //    await _unitOfWork.SlotsRepo
+    //        .BulkDecreaseReservedCountAsync(updates); 
+
+    //    repo.RemoveRange(reservations);
+
+
+
+    //    await _unitOfWork.SaveChangesAsync();
+    //}
 
     // =====================================================
     // 2) Expire Orders still unpaid

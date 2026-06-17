@@ -1,3 +1,4 @@
+using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Order;
 using System;
 using System.Collections.Generic;
@@ -45,10 +46,14 @@ namespace Amigo.Application.Mapping
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
                             MeetingPoint: item.MeetingPoint,
-                            CancelationPolicyType: item.CancelationPolicyType.ToString(),
-                            CancellationBefore: item.CancellationBefore,
-                            RefundPercentage: item.RefundPercentage,
+                            CancellationPloicy : item.CancellationPolicies is null || !item.CancellationPolicies.Any() ? null:  item.CancellationPolicies.Select(c => new GetCancellationResponseDTO(
+                                Id : c.Id,
+                                CancelationPolicyType: c.CancelationPolicyType.ToString(),
+                            CancellationBefore: c.CancellationBefore,
+                            RefundPercentage: c.RefundPercentage
 
+                                )).ToList(),
+                            
                             Prices: item.OrderedPrice.Select(price => new OrderedPricesResponseDTO(
 
                                     PriceId: price.Id,
@@ -104,9 +109,13 @@ namespace Amigo.Application.Mapping
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
                             MeetingPoint: item.MeetingPoint,
-                            CancelationPolicyType: item.CancelationPolicyType.ToString(),
-                            CancellationBefore: item.CancellationBefore,
-                            RefundPercentage: item.RefundPercentage,
+                             CancellationPloicy: item.CancellationPolicies is null || !item.CancellationPolicies.Any() ? null : item.CancellationPolicies.Select(c => new GetCancellationResponseDTO(
+                                Id: c.Id,
+                                CancelationPolicyType: c.CancelationPolicyType.ToString(),
+                            CancellationBefore: c.CancellationBefore,
+                            RefundPercentage: c.RefundPercentage
+
+                                )).ToList(),
                             Prices: item.OrderedPrice.Select(price => new OrderedPricesResponseDTO(
 
                                     PriceId: price.Id,
@@ -156,9 +165,13 @@ namespace Amigo.Application.Mapping
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
                             MeetingPoint: item.MeetingPoint,
-                            CancelationPolicyType: item.CancelationPolicyType.ToString(),
-                            CancellationBefore: item.CancellationBefore,
-                            RefundPercentage: item.RefundPercentage,
+                             CancellationPloicy: item.CancellationPolicies is null || !item.CancellationPolicies.Any() ? null : item.CancellationPolicies.Select(c => new GetCancellationResponseDTO(
+                                Id: c.Id,
+                                CancelationPolicyType: c.CancelationPolicyType.ToString(),
+                            CancellationBefore: c.CancellationBefore,
+                            RefundPercentage: c.RefundPercentage
+
+                                )).ToList(),
 
                             Prices: item.OrderedPrice.Select(price => new OrderedPricesResponseDTO(
 
@@ -211,9 +224,13 @@ namespace Amigo.Application.Mapping
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
                             MeetingPoint: item.MeetingPoint,
-                            CancelationPolicyType: item.CancelationPolicyType.ToString(),
-                            CancellationBefore: item.CancellationBefore,
-                            RefundPercentage: item.RefundPercentage,
+                             CancellationPloicy: item.CancellationPolicies is null || !item.CancellationPolicies.Any() ? null : item.CancellationPolicies.Select(c => new GetCancellationResponseDTO(
+                                Id: c.Id,
+                                CancelationPolicyType: c.CancelationPolicyType.ToString(),
+                            CancellationBefore: c.CancellationBefore,
+                            RefundPercentage: c.RefundPercentage
+
+                                )).ToList(),
                             Prices: item.OrderedPrice.Select(price => new OrderedPricesResponseDTO(
 
                                     PriceId: price.Id,

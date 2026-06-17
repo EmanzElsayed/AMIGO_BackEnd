@@ -11,11 +11,12 @@ public class CartItem:BaseEntity<Guid>
     public Tour Tour { get; set; } = null!;
 
     public string? ActivityType{ get; set; }
-    public Guid SlotId { get; set; }
-    public AvailableSlots Slot { get; set; } = null!;
+    public Guid? SlotId { get; set; }
+    public AvailableSlots? Slot { get; set; }
 
     public SupportedLanguage Language { get; set; }
 
+    public bool IsSpecialDate { get; set; } = false;
     public DateOnly TourDate { get; set; }
 
     public TimeOnly StartTime { get; set; }

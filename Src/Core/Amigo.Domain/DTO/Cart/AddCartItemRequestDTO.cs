@@ -8,7 +8,7 @@ namespace Amigo.Domain.DTO.Cart
     (
     
          Guid TourId ,
-         Guid SlotId ,
+         Guid? SlotId ,
        
          SupportedLanguage Language ,
          string RequestedCurrencyCode,

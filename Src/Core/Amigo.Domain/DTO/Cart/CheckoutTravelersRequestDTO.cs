@@ -6,12 +6,12 @@ namespace Amigo.Domain.DTO.Cart
 {
     public record CheckoutTravelersRequestDTO
     (
-        string Type ,
-        string FirstName,
-        string LastName,
-        string Nationality,
-        string PassportNumber,
-        DateOnly BirthDate
+        string? Type ,
+        string? FirstName,
+        string? LastName,
+        string? Nationality,
+        string? PassportNumber,
+        DateOnly? BirthDate
 
     );
 }

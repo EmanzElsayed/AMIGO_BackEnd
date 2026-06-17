@@ -16,6 +16,7 @@ public class OrderItem:BaseEntity<Guid>
     // Snapshot Data
 
     public string? ActivityType { get; set; }
+    public bool IsSpecialDate { get; set; } 
     public string TourTitle { get; set; } = null!;
     public string DestinationName { get; set; } = null!;
     public DateOnly TourDate { get; set; }
@@ -27,13 +28,12 @@ public class OrderItem:BaseEntity<Guid>
 
 
     // Cancellation Info :
-    public CancelationPolicyType CancelationPolicyType { get; set; }
-    public TimeSpan CancellationBefore { get; set; }
-    public decimal RefundPercentage { get; set; }
+    public ICollection<OrderItemCancellationPolicy>? CancellationPolicies { get; set; }
+     = new List<OrderItemCancellationPolicy>();
 
     // price
     public ICollection<OrderedPrice> OrderedPrice = new List<OrderedPrice>();
-    public ICollection<TravelerDraft> TravelersDraft { get; set; } = new List<TravelerDraft>();
+    public ICollection<TravelerDraft>? TravelersDraft { get; set; } = new List<TravelerDraft>();
 
 
 }

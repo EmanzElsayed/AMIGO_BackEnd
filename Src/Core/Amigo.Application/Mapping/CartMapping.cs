@@ -32,7 +32,7 @@ namespace Amigo.Application.Mapping
                        (
                            Id: item.Id,
                            TourId: item.TourId,
-                           SlotId: item.SlotId,
+                           SlotId: item.SlotId ?? null,
                            Language: item.Language,
                            TourDate: item.TourDate,
                            StartTime: item.StartTime,

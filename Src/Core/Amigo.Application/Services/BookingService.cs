@@ -1,6 +1,7 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.CancellationSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.RefundSpecification;
@@ -245,7 +246,7 @@ namespace Amigo.Application.Services
             if (orderItem is null)
             {
                 return Result.Fail(new ConfilctError($"Order item not found"));
-
+                    
             }
 
             var tripDateTime =
@@ -264,15 +265,17 @@ namespace Amigo.Application.Services
             var remaining =
             tripDateTime - DateTime.UtcNow;
             var refundAmount = 0m;
-            if (remaining < orderItem.CancellationBefore)
+            var cancellationPolicy = await _unitOfWork.GetRepository<OrderItemCancellationPolicy, Guid>().GetAllAsync(new GetAllCancellationPloicyWithOrderItemIdSpecification(orderItem.Id,remaining));
+            if (cancellationPolicy is null || !cancellationPolicy.Any())
             {
-                return Result.Fail(new ConfilctError($"Cancellation is not allowed at this time. Please cancel before the allowed deadline before the tour starts."));
+                return Result.Fail(new ConfilctError($"Cancellation is not allowed at this time. Please cancel before the allowed deadline before the tour starts Or Contact With Admin Phone Number."));
 
             }
             else
             {
+                var refundPercentage = cancellationPolicy.Max(c => c.RefundPercentage);
                 refundAmount =
-                   total * orderItem.RefundPercentage / 100m;
+                   total * refundPercentage / 100m;
             }
 
             var cancellationRequest = new CancellationRequest

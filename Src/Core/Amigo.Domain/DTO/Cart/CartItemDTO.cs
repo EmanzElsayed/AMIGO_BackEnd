@@ -9,7 +9,7 @@ namespace Amigo.Domain.DTO.Cart
      Guid Id               ,    
        
      Guid TourId                  ,
-     Guid SlotId                  ,
+     Guid? SlotId                  ,
                                    
      SupportedLanguage Language            ,
      DateOnly TourDate            ,

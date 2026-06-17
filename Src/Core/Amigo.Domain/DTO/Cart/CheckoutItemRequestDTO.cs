@@ -7,6 +7,6 @@ namespace Amigo.Domain.DTO.Cart
     public record CheckoutItemRequestDTO
     (
         Guid CartItemId,
-        List<CheckoutTravelersRequestDTO> Travelers
+        List<CheckoutTravelersRequestDTO>? Travelers
     );
 }

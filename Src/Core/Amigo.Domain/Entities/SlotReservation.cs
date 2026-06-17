@@ -7,9 +7,10 @@ namespace Amigo.Domain.Entities;
 
 public class SlotReservation : BaseEntity<Guid>
     {
-        public Guid SlotId { get; set; }
-        public AvailableSlots Slot { get; set; } = null!;
+        public Guid? SlotId { get; set; }
+        public AvailableSlots? Slot { get; set; } 
 
+        public DateTime TourDateTime { get; set; }
         public Guid OrderId { get; set; }
         public Order Order { get; set; } = null!;
 

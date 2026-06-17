@@ -14,8 +14,8 @@ namespace Amigo.Domain.Entities
         [Required]
         public string FullName { get; set; } = null!;
 
-        [Required]
-        public string Nationality { get; set; } = null!;
+       
+        public string? Nationality { get; set; } 
         
         public string? Type { get; set; }
         public DateOnly? BirthDate { get; set; }

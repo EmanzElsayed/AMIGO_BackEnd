@@ -31,11 +31,9 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
             builder.Property(x => x.MeetingPoint)
                    .HasMaxLength(500);
 
-            builder.Property(x => x.CancelationPolicyType)
-                   .HasConversion<int>();
+            
 
-            builder.Property(x => x.RefundPercentage)
-                   .HasColumnType("decimal(18,2)");
+            
 
             builder.HasIndex(x => x.OrderId);
 
@@ -44,8 +42,12 @@ namespace Amigo.Persistence.EntityConfiguration.Orders
                    .HasForeignKey(x => x.OrderItemId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            
-                    builder.HasOne(o => o.Booking)
+            builder.HasMany(x => x.CancellationPolicies)
+                 .WithOne(x => x.OrderItem)
+                 .HasForeignKey(x => x.OrderItemId)
+                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(o => o.Booking)
                     .WithOne(b => b.OrderItem)
                     .HasForeignKey<Booking>(b => b.OrderItemId);
 

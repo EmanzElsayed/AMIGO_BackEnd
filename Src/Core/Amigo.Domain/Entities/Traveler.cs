@@ -12,7 +12,7 @@ public class Traveler : BaseEntity<Guid>
     public string FullName { get; set; } = null!;
 
     [Required]
-    public string Nationality { get; set; } = null!;
+    public string? Nationality { get; set; } 
 
 
     [Required]
