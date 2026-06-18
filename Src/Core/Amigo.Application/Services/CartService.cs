@@ -43,14 +43,27 @@ namespace Amigo.Application.Services
                 if (cached is not null && cached.Items.Any())
                     return Result.Ok(cached);
 
-                // 2. DB
+            // 2. DB
+               
                 var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
+                
+            ApplicationUser? user = !string.IsNullOrWhiteSpace(userId) ? await _userRepo.GetByIdWithoutSpecAsync(userId) : null;
+                
+                PhoneNumber? number = user is not null && !string.IsNullOrWhiteSpace(user.PhoneNumber) ?  _phoneUtil.Parse(user.PhoneNumber, null) : null ;
+            //if( )  number = 
+            string? nationality = user is null ? null : (string.IsNullOrWhiteSpace(user.Nationality) ? null : user.Nationality);
+            string? countryCode = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) ? null : _phoneUtil.GetRegionCodeForNumber(number));
+            string? phoneNumber = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) || number == null ? null : number.NationalNumber.ToString());
 
-                if (cart == null || !cart.Items.Any())
+            if (cart == null || !cart.Items.Any())
                 {
                     return Result.Ok(new CartDTO(
                         Guid.Empty,
                         userId,
+                       nationality,
+                       countryCode,
+                        phoneNumber,
+
                         cartToken,
                         null,
                         0,
@@ -64,7 +77,7 @@ namespace Amigo.Application.Services
                 var tourIds = cart.Items.Select(i => i.TourId);
                 var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
             
-                var MappedCart = cart.ToDto(imageDic,_encryptionService);
+                var MappedCart = cart.ToDto(imageDic,_encryptionService,nationality,countryCode,phoneNumber);
                 // 3. Save Cache
                 await _cacheService.SetAsync(
                     cacheKey,
@@ -210,8 +223,15 @@ namespace Amigo.Application.Services
 
             var tourIds = cart.Items.Select(i => i.TourId);
             var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
+            ApplicationUser? user = !string.IsNullOrWhiteSpace(userId) ? await _userRepo.GetByIdWithoutSpecAsync(userId) : null;
 
-            var dto = cart.ToDto(imageDic, _encryptionService);
+            PhoneNumber? number = user is not null && !string.IsNullOrWhiteSpace(user.PhoneNumber) ? _phoneUtil.Parse(user.PhoneNumber, null) : null;
+            //if( )  number = 
+            string? nationality = user is null ? null : (string.IsNullOrWhiteSpace(user.Nationality) ? null : user.Nationality);
+            string? countryCode = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) ? null : _phoneUtil.GetRegionCodeForNumber(number));
+            string? phoneNumber = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) || number == null ? null : number.NationalNumber.ToString());
+
+            var dto = cart.ToDto(imageDic, _encryptionService,nationality,countryCode,phoneNumber);
             await _cacheService.SetAsync(
             BuildCartCacheKey(userId, cartToken),
             dto,
@@ -386,7 +406,13 @@ namespace Amigo.Application.Services
             var tourIds = cart.Items.Select(i => i.TourId);
             var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
 
-            var mappedCart = cart.ToDto(imageDic, _encryptionService);
+            PhoneNumber? number = user is not null && !string.IsNullOrWhiteSpace(user.PhoneNumber) ? _phoneUtil.Parse(user.PhoneNumber, null) : null;
+            //if( )  number = 
+            string? nationality = user is null ? null : (string.IsNullOrWhiteSpace(user.Nationality) ? null : user.Nationality);
+            string? countryCode = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) ? null : _phoneUtil.GetRegionCodeForNumber(number));
+            string? phoneNumber = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) || number == null ? null : number.NationalNumber.ToString());
+
+            var mappedCart = cart.ToDto(imageDic, _encryptionService,nationality,countryCode,phoneNumber);
             await _cacheService.SetAsync(
             BuildCartCacheKey(userId, cartToken),
             dto,
@@ -941,10 +967,17 @@ namespace Amigo.Application.Services
                 var tourIds = cart.Items.Select(i => i.TourId);
                 var imageDic = await _unitOfWork.TourRepo.GetFirstTourImagesAsync(tourIds);
 
-                
+                ApplicationUser? user = !string.IsNullOrWhiteSpace(userId) ? await _userRepo.GetByIdWithoutSpecAsync(userId) : null;
+
+                PhoneNumber? number = user is not null && !string.IsNullOrWhiteSpace(user.PhoneNumber) ? _phoneUtil.Parse(user.PhoneNumber, null) : null;
+                //if( )  number = 
+                string? nationality = user is null ? null : (string.IsNullOrWhiteSpace(user.Nationality) ? null : user.Nationality);
+                string? countryCode = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) ? null : _phoneUtil.GetRegionCodeForNumber(number));
+                string? phoneNumber = user is null ? null : (string.IsNullOrWhiteSpace(user.PhoneNumber) || number == null ? null : number.NationalNumber.ToString());
+
                 await _cacheService.SetAsync(
                     cacheKey,
-                    cart.ToDto(imageDic, _encryptionService),
+                    cart.ToDto(imageDic, _encryptionService,nationality,countryCode,phoneNumber),
                     TimeSpan.FromMinutes(25));
             }
 

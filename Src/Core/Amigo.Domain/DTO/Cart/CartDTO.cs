@@ -8,6 +8,9 @@ namespace Amigo.Domain.DTO.Cart
     (
          Guid Id, 
          string? UserId, 
+         string? Nationality,
+         string? CountryCode,
+         string? PhoneNumber,
          string? CartToken, 
          string? CurrencyCode, 
          decimal TotalAmount,

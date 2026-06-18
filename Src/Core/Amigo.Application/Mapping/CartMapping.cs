@@ -8,7 +8,7 @@ namespace Amigo.Application.Mapping
 {
     public  static class CartMapping
     {
-        public static CartDTO ToDto(this Cart cart, Dictionary<Guid, string> tourimages, EncryptionService _encryptionService)
+        public static CartDTO ToDto(this Cart cart, Dictionary<Guid, string> tourimages, EncryptionService _encryptionService,string? nationality , string? countryCode,string? phoneNumber)
         {
 
             return new CartDTO
@@ -16,6 +16,9 @@ namespace Amigo.Application.Mapping
 
                 Id: cart.Id,
                 UserId: cart.UserId,
+                nationality,
+                countryCode,
+                phoneNumber,
                 CartToken: cart.CartToken,
                 CurrencyCode: cart.CurrencyCode.ToString(),
                 TotalAmount: cart.TotalAmount,
