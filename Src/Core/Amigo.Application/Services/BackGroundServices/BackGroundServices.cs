@@ -2,6 +2,7 @@
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.GetBackGroundServicesSpecification;
+using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Application.Specifications.TourScheduleSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Entities;
@@ -117,10 +118,17 @@ public sealed class BookingBackgroundService(
 
         var orders = await repo.GetAllAsync(
             new GetPendingOrdersBeforeDateSpecification(now));
+        var orderIds = orders.Select(o => o.Id).ToHashSet();
+        var payments = await _unitOfWork.GetRepository<Payment, Guid>().GetAllAsync(new GetPendingPaymentWithOrderIdsSpecifciation(orderIds));
+        foreach (var payment in payments)
+        {
+            payment.Status = PaymentStatus.Failed;
 
+        }
         foreach (var order in orders)
         {
             order.Status = OrderStatus.Failed;
+
         }
 
         await _unitOfWork.SaveChangesAsync();

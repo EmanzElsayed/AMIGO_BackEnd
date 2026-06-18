@@ -12,6 +12,7 @@ namespace Amigo.Application.Specifications.GetBackGroundServicesSpecification
                 o.Status == OrderStatus.PendingPayment &&
                 o.ExpiresAt < now && !o.IsDeleted)
         {
+            AddInclude(o => o.Payments);
         }
     }
 }
