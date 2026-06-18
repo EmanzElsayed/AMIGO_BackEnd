@@ -3,6 +3,7 @@ using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.AvailableSlotsSpecification;
 using Amigo.Application.Specifications.BlackoutDateSpecification;
 using Amigo.Application.Specifications.BlackoutWeekDaysSpecification;
+using Amigo.Application.Specifications.CancellationSpecification;
 using Amigo.Application.Specifications.CartSpecification;
 using Amigo.Application.Specifications.TourSpecification;
 using Amigo.Application.Specifications.TourSpecification.User;
@@ -429,6 +430,11 @@ namespace Amigo.Application.Services
                     var tours = await tourRepo.GetAllAsync(
                                      new GetToursByIdsSpecification(tourIds));
 
+                    var cancellations = await _unitOfWork.GetRepository<Cancellation, Guid>().GetAllAsync(new GetAllCancellationWithToursIdsSpecification(tourIds));
+                    var cancellationDic = cancellations.GroupBy(c => c.TourId)
+                                        .ToDictionary(g => g.Key,
+                                                      g => g.ToList());
+
 
                     var blackoutDates = await _unitOfWork.GetRepository<BlackoutDate, Guid>().GetAllAsync(new GetBlackoutDatesWithTourIdsSpecification(tourIds));
                     var blackoutDatesDic = blackoutDates
@@ -546,7 +552,7 @@ namespace Amigo.Application.Services
                         if (tour.IsFullTime == false)
                         {
                             availableTimesDic.TryGetValue(item.TourId, out var availableTimesForitem);
-                            if (availableTimesForitem is not null && availableTimesForitem.Any() && availableTimesForitem.Contains(item.StartTime))
+                            if (availableTimesForitem is not null && availableTimesForitem.Any() && !availableTimesForitem.Contains(item.StartTime))
                                 return Result.Fail("Time not allowed");
 
                         }
@@ -580,7 +586,10 @@ namespace Amigo.Application.Services
                             Id = Guid.NewGuid(),
                             SlotId = item.SlotId,
                             Slot = item.Slot,
-                            TourDateTime = item.TourDate.ToDateTime(item.StartTime),
+                            TourDateTime = DateTime.SpecifyKind(
+                                        item.TourDate.ToDateTime(item.StartTime),
+                                        DateTimeKind.Utc
+                                    ),
                             OrderId = order.Id,
                             Quantity = totalPeople,
                             CreatedAt = DateTime.UtcNow,
@@ -619,6 +628,8 @@ namespace Amigo.Application.Services
                             };
                         }
                         requestItemMap.TryGetValue(item.Id, out var itemRequest);
+                        cancellationDic.TryGetValue(item.TourId, out var cancellationsPolicy);
+
                         var orderItem = new OrderItem
                         {
                             Id = Guid.NewGuid(),
@@ -635,8 +646,8 @@ namespace Amigo.Application.Services
                             Duration = tour.Duration,
                             TourTitle = tourTitle,
                             DestinationName = destinationName,
-                            CancellationPolicies = tour.Cancellations is null || !tour.Cancellations.Any() ? null:
-                                                     tour.Cancellations
+                            CancellationPolicies = cancellationsPolicy is null || !cancellationsPolicy.Any() ? null:
+                                                     cancellationsPolicy
                                                     .Select(x => new OrderItemCancellationPolicy
                                                     {
                                                         Id = Guid.NewGuid(),
