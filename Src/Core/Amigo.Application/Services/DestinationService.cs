@@ -72,16 +72,16 @@ namespace Amigo.Application.Services
                 Constants.AverageReviewRating);
             var reviewsCount = (reviews != null && reviews.Any() ? reviews.Count() : 0 ) + Constants.ReviewCount;
 
-            var bookings = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetBookingsByTourIdsSpecification(toursIds));
+            //var bookings = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetBookingsByTourIdsSpecification(toursIds));
            
-            var traveleresCount = Constants.TravelersCount + bookings?.Sum(b => b.Travelers?.Count()) ?? 0;
+            var traveleresCount = Constants.TravelersCount + await _unitOfWork.PriceRepo.GetTravelersCount(toursIds);
             var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language,averageRating,traveleresCount,reviewsCount);
            
 
             return Result.Ok(mappedDestinationData);
         }
 
-        public async Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery, CancellationToken cancellationToken)
+        public async Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery,string? userType ,CancellationToken cancellationToken)
         {
             var validationResult = await _validationService.ValidateAsync(requestQuery);
             if (!validationResult.IsSuccess)
@@ -89,7 +89,7 @@ namespace Amigo.Application.Services
                 return validationResult;
             }
 
-            var data = await _topDestinationsReader.GetTopAsync(requestQuery);
+            var data = await _topDestinationsReader.GetTopAsync(requestQuery,userType);
             return Result.Ok(data).WithSuccess(new Success("Top destinations loaded successfully."));
         }
     }

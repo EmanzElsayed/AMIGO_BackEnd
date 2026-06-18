@@ -36,5 +36,17 @@ namespace Amigo.Persistence.Repositories
                 }).ToListAsync(cancellationToken);
 
         }
+
+        public async Task<int> GetTravelersCount(List<Guid> tourIds)
+        {
+            return await _dbContext.OrderItems
+           .Where(o =>
+               o.TourId.HasValue &&
+               tourIds.Contains(o.TourId.Value) &&
+               o.Booking != null &&
+               !o.Booking.IsDeleted &&
+               o.Booking.Status == BookingStatus.Confirmed)
+           .SumAsync(o => o.OrderedPrice.Sum(p => p.Quantity));
+        }
     }
 }

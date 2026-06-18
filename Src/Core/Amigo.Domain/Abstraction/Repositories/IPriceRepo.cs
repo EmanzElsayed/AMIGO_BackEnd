@@ -13,5 +13,8 @@ namespace Amigo.Domain.Abstraction.Repositories
        IReadOnlyCollection<Guid> tourIds,
         UserType allowedUserType,
        CancellationToken cancellationToken = default);
+
+        Task<int> GetTravelersCount(List<Guid> tourIds);
+
     }
 }

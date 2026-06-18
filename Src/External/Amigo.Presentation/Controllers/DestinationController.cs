@@ -1,17 +1,22 @@
 ﻿using Amigo.Application.Abstraction.Services;
 using Amigo.Domain.DTO.Destination;
+using Amigo.Domain.Entities.Identity;
 using Amigo.Domain.Errors.BusinessErrors;
 using Amigo.Presentation.Attributes;
 using Amigo.SharedKernal.QueryParams;
 using FluentResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace Amigo.Presentation.Controllers.User
 {
     [Route("api/v1/user/destination")]
 
     public class DestinationController(
-       IServiceManager _serviceManager) : BaseController
+       IServiceManager _serviceManager,
+       UserManager<ApplicationUser> _userManager) 
+        : BaseController
     {
         [EnableRateLimiting("token")]
         [HttpGet]
@@ -42,7 +47,24 @@ namespace Amigo.Presentation.Controllers.User
         //[Cache(1800)]
         public async Task<IResultBase> GetTopDestinations([FromQuery] GetTopDestinationsQuery requestQuery, CancellationToken cancellationToken)
         {
-            return await _serviceManager.DestinationService.GetTopDestinationsAsync(requestQuery, cancellationToken);
+            var userType = await ResolveEffectiveUserTypeAsync();
+
+            return await _serviceManager.DestinationService.GetTopDestinationsAsync(requestQuery, userType, cancellationToken);
         }
+
+        private async Task<string> ResolveEffectiveUserTypeAsync()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+                return "Public";
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                return "Public";
+
+            var isVip = await _userManager.IsInRoleAsync(user, "VIP");
+            return isVip ? "VIP" : "Public";
+        }
+
     }
 }
