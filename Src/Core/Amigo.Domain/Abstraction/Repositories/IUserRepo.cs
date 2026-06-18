@@ -7,6 +7,7 @@ namespace Amigo.Domain.Abstraction.Repositories
     public interface IUserRepo
     {
         public Task<ApplicationUser?> GetByIdAsync(IUserSpecification specifications);
+        public Task<ApplicationUser?> GetByIdWithoutSpecAsync(string Id);
 
         public Task<IEnumerable<ApplicationUser>> GetAllAsync(IUserSpecification specifications);
 

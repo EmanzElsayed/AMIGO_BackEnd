@@ -6,7 +6,10 @@ namespace Amigo.Domain.DTO.Cart
 {
     public record UpdateCartItemRequestDTO
     (
-        List<AddCartPriceRequestDTO> Prices,
+        string? Nationality,
+        string? CountryIsoCode,
+        string? PhoneNumber,
+        List<AddCartPriceRequestDTO>? Prices,
         List<CheckoutTravelersRequestDTO>? Travelers
         
     );

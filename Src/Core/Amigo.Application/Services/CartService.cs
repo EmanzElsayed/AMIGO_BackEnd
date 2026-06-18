@@ -11,6 +11,7 @@ using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cart;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
+using PhoneNumbers;
 using System.Collections.Frozen;
 
 
@@ -19,13 +20,17 @@ namespace Amigo.Application.Services
     public class CartService(IUnitOfWork _unitOfWork ,
         EncryptionService _encryptionService,
         ICurrencyRateService _currencyRateService,
-        ISlotsRepo _slotsRepo,
+        IUserRepo _userRepo,
         ICacheService _cacheService,
+        IValidationService _validationService,
+
         Microsoft.AspNetCore.Identity.UserManager<Amigo.Domain.Entities.Identity.ApplicationUser> _userManager
         ) 
         : ICartService
     {
-            public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
+        private readonly PhoneNumberUtil _phoneUtil = PhoneNumberUtil.GetInstance();
+
+        public async Task<Result<CartDTO>> GetCurrentCartAsync(string? userId, string? cartToken)
             {
                 var cacheKey =
                 BuildCartCacheKey(userId, cartToken);
@@ -236,17 +241,35 @@ namespace Amigo.Application.Services
             return role == "VIP" ? UserType.VIP : UserType.Public;
         }
 
-
+        private string FormatPhone(string phone, string region)
+        {
+            var number = _phoneUtil.Parse(phone, region);
+            return _phoneUtil.Format(number, PhoneNumberFormat.E164);
+        }
         public async Task<Result<CartDTO>> UpdateItemAsync(
                 Guid itemId,
                 string? userId,
                 string? cartToken,
                 UpdateCartItemRequestDTO dto)
         {
+
+            var validationResult = await _validationService.ValidateAsync(dto);
+            if (!validationResult.IsSuccess)
+            {
+                return validationResult;
+            }
+
             var cart = await GetOrCreateCart(userId, cartToken, autoCreate: false);
             if (cart == null) return Result.Fail(new NotFoundError("Cart not found"));
 
-            
+            ApplicationUser? user = string.IsNullOrWhiteSpace(userId) ? null : await _userRepo.GetByIdWithoutSpecAsync(userId);
+            if (user is not null)
+            {
+                user.Nationality = string.IsNullOrWhiteSpace( dto.Nationality) ? null : dto.Nationality;
+                user.PhoneNumber = !string.IsNullOrWhiteSpace(dto.PhoneNumber) && !string.IsNullOrWhiteSpace(dto.CountryIsoCode) ? FormatPhone(dto.PhoneNumber, dto.CountryIsoCode) : null;
+
+
+            }
             var item = cart.Items.FirstOrDefault(x => x.Id == itemId);
 
             if (item is null || item.CartId != cart.Id)

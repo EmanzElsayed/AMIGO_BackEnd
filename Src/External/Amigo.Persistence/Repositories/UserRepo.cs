@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Amigo.Persistence.Repositories
 {
@@ -54,5 +55,9 @@ namespace Amigo.Persistence.Repositories
                 .ToListAsync();
         }
 
+        public async Task<ApplicationUser?> GetByIdWithoutSpecAsync(string Id)
+        
+        => await _dbContext.Set < ApplicationUser>().FindAsync(Id);
+        
     }
 }
