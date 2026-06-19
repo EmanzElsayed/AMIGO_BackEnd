@@ -749,7 +749,7 @@ namespace Amigo.Application.Services.Admin
             );
         }
 
-      
+
         //public async Task<Result<object>> GetActivityStatsAsync()
         //{
         //    var now = DateTime.UtcNow;
@@ -817,6 +817,6 @@ namespace Amigo.Application.Services.Admin
         //    });
         //}
 
-        
+
     }
 }
