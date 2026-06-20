@@ -18,6 +18,8 @@ namespace Amigo.Domain.Abstraction
         IReviewRepo ReviewRepo { get; }
         ICancellationRepo CancellationRepo { get; }
         ITourRepo TourRepo { get; }
+        IRefundRepo RefundRepo { get; }
+
         public Task<int> SaveChangesAsync(CancellationToken ct = default);
         public Task<IDbContextTransaction> BeginTransactionAsync();
 

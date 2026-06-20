@@ -461,7 +461,7 @@ public class AuthService(
 
         await _emailService.SendEmailAsync(
             request.Email,
-            "Verification Code for Amigo Tourism Checkout",
+            "Verification Code for Amigo Arabe Tours Checkout",
             $@"
                 <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
                     <h2 style='color: #db2777;'>Verification Code</h2>
@@ -473,7 +473,7 @@ public class AuthService(
                     <p>This code will expire in 10 minutes.</p>
                     <p>If you didn't request this, please ignore this email.</p>
                     <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
-                    <p style='font-size: 12px; color: #999;'>Amigo Tourism Team</p>
+                    <p style='font-size: 12px; color: #999;'>Amigo Arabe Tours Team</p>
                 </div>"
         );
 
@@ -582,10 +582,10 @@ public class AuthService(
 
         await _emailService.SendEmailAsync(
             user.Email,
-            "Account Created Successfully - Amigo Tourism",
+            "Account Created Successfully - Amigo Arabe Tours",
             $@"
                 <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
-                    <h2 style='color: #db2777;'>Welcome to Amigo Tourism!</h2>
+                    <h2 style='color: #db2777;'>Welcome to Amigo Arabe Tours!</h2>
                     <p>Hello <b>{user.FullName}</b>,</p>
                     <p>We have created an account for you to manage your bookings easily.</p>
                     <p>To secure your account, please click the link below to set your password:</p>

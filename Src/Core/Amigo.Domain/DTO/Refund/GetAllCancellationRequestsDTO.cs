@@ -14,11 +14,14 @@ namespace Amigo.Domain.DTO.Refund
          DateTime TourDate,
          string UserName,
          string UserEmail,
+         
          decimal PaidAmount,
          decimal RefundAmount,
          DateTime RequestedAt,
          string Status,
-         string Reason
+         string Reason,
+         string CancellationPolicyType,
+         decimal RefundPercentage
 
     );
 }

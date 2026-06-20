@@ -8,7 +8,7 @@ namespace Amigo.Domain.DTO.User
    (
         string FullName,
         string Email,
-        string? Phone,
+        string? PhoneNumber,
         string? ImageUrl,
         string? Gender,
         DateOnly? BirthDate,

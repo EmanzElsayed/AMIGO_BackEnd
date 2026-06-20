@@ -62,6 +62,10 @@ namespace Amigo.Persistence
         public ITourRepo TourRepo
             => _tourRepo ??= new TourRepo(_dbContext);
 
+        private IRefundRepo? _refundRepo;
+        public IRefundRepo RefundRepo
+            => _refundRepo ??= new RefundRepo(_dbContext);
+
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
                 => await _dbContext.SaveChangesAsync(ct);
 

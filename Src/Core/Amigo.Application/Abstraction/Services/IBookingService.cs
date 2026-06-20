@@ -13,7 +13,9 @@ namespace Amigo.Application.Abstraction.Services
 
         Task FinalizeBooking(Guid paymentId);
 
-        Task<Result> BookingCancellation(string bookingId , CancellationRequestDTO requestDTO,string userId); 
+        Task<Result> BookingCancellation(string bookingId , CancellationRequestDTO requestDTO,string userId);
+        Task<Result> RemoveBookingCancellation(string bookingId,string userId);
 
+        Task<Result<RefundDetailsForUserDTO>> GetRefundDetails(string Id, string UserId);
     }
 }

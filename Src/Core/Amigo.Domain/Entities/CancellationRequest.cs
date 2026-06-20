@@ -13,6 +13,9 @@ public class CancellationRequest : BaseEntity<Guid>
 
     public string Reason { get; set; } = null!;
 
+    public CancelationPolicyType cancelationPolicyType { get; set; }
+    public decimal RefundPercentage { get; set; }
+
     public CancellationRequestStatus Status { get; set; }
 
     public decimal RefundAmount { get; set; }

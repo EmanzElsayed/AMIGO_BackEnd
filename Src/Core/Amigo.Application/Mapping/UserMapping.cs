@@ -19,7 +19,7 @@ namespace Amigo.Application;
         return new UserInfoResponseDTO(
                 FullName: user.FullName ?? string.Empty,
                 Email: user.Email ?? string.Empty,
-                Phone: user.PhoneNumber,
+                PhoneNumber: user.PhoneNumber,
                 ImageUrl : user.ImageUrl,
                 Gender : user.Gender.ToString(),
                 BirthDate : user.BirthDate,

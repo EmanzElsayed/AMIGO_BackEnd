@@ -25,5 +25,27 @@ namespace Amigo.Presentation.Controllers.User
             }
             return await _serviceManager.BookingService.BookingCancellation(bookingId,requestDTO,userId);
         }
+        [HttpPost("{bookingId}/remove-cancel-request")]
+        [Authorize]
+        public async Task<IResultBase> RemoveBookingCancellation(string bookingId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null)
+            {
+                return Result.Fail(new UnauthorizedError("Unauthorized"));
+            }
+            return await _serviceManager.BookingService.RemoveBookingCancellation(bookingId, userId);
+        }
+        [HttpGet("{bookingId}/refund-details")]
+        [Authorize]
+        public async Task<IResultBase> RefundDetails(string bookingId)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId is null)
+            {
+                return Result.Fail(new UnauthorizedError("Unauthorized"));
+            }
+            return await _serviceManager.BookingService.GetRefundDetails(bookingId, userId);
+        }
     }
 }

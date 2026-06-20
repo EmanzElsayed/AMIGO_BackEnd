@@ -11,7 +11,7 @@ namespace Amigo.Application.Services
 {
     public class VoucherService(IWebHostEnvironment env
         ,IEmailService emailService
-        ,IUnitOfWork _unitOfWork)
+        ,IUnitOfWork _unitOfWork,IConfiguration _configuration)
         :IVoucherService
     {
         private string? _cachedTemplate;
@@ -37,7 +37,7 @@ namespace Amigo.Application.Services
             
             await emailService.SendEmailAsync(
                 booking.CustomerEmail,
-                "Your Voucher - Amigo Tourism",
+                "Your Voucher - Amigo Arabe Tours",
                 html,qrBytes);
         }
 
@@ -68,7 +68,13 @@ namespace Amigo.Application.Services
                 .Replace("{{MeetingPoint}}", booking.OrderItem.MeetingPoint ?? "")
                 .Replace("{{TravelerCount}}", booking.Travelers.Count.ToString())
                 .Replace("{{TravelersRows}}", GenerateTravelersRows(booking.Travelers.ToList()))
-                .Replace("{{QRCode}}", booking.QRCodeBase64);
+                .Replace("{{QRCode}}", booking.QRCodeBase64)
+                .Replace("{{WebsiteLink}}", _configuration["ContactInfo:WebsiteLink"])
+                .Replace("{{FacebookLink}}", _configuration["ContactInfo:FacebookLink"])
+                .Replace("{{YoutubeLink}}", _configuration["ContactInfo:YoutubeLink"])
+                .Replace("{{InstaLink}}", _configuration["ContactInfo:InstaLink"])
+                .Replace("{{CreatedAt}}", _configuration["ContactInfo:CreatedAt"]);
+
         }
 
         private string BuildReminderHtml(Booking booking)
@@ -89,23 +95,44 @@ namespace Amigo.Application.Services
                 return "<div style='color:#999;font-size:13px;'>No travelers found</div>";
 
             var sb = new StringBuilder();
+            var groupedTravelers = travelers
+               .GroupBy(t => t.Type)
+               .Select(g => new
+               {
+                   Type = g.Key,
+                   Count = g.Count()
+               });
+            //foreach (var t in travelers)
+            //{
+            //   sb.Append($@"
+            //        <div style='border:1px solid #eee; border-radius:10px; padding:12px 15px; margin-bottom:10px; background:#fff;'>
 
-            foreach (var t in travelers)
+            //            <div style='font-weight:600; font-size:14px; color:#222; margin-bottom:4px;'>
+            //                {Escape(t.FullName)}
+            //            </div>
+
+            //            <div style='font-size:12px; color:#777; display:flex; gap:10px;'>
+            //                <span>🌍 {Escape(t.Nationality)}</span>
+            //                <span>•</span>
+            //                <span>🧾 {Escape(t.Type.ToString())}</span>
+            //            </div>
+
+            //        </div>");
+            //}
+            foreach (var item in groupedTravelers)
             {
-               sb.Append($@"
-                    <div style='border:1px solid #eee; border-radius:10px; padding:12px 15px; margin-bottom:10px; background:#fff;'>
+                sb.Append($@"
+                <div style='border:1px solid #eee; border-radius:10px; padding:12px 15px; margin-bottom:10px; background:#fff;'>
 
-                        <div style='font-weight:600; font-size:14px; color:#222; margin-bottom:4px;'>
-                            {Escape(t.FullName)}
-                        </div>
+                <div style='font-weight:600; font-size:14px; color:#222;'>
+                    {Escape(item.Type.ToString())}
+                </div>
 
-                        <div style='font-size:12px; color:#777; display:flex; gap:10px;'>
-                            <span>🌍 {Escape(t.Nationality)}</span>
-                            <span>•</span>
-                            <span>🧾 {Escape(t.Type.ToString())}</span>
-                        </div>
+                <div style='font-size:12px; color:#777;'>
+                    Count: {item.Count}
+                </div>
 
-                    </div>");
+            </div>");
             }
 
             return sb.ToString();

@@ -9,7 +9,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Amigo.Application.Services.Admin
 {
-    public class AdminCancellationService(IUnitOfWork _unitOfWork) 
+    public class AdminCancellationService(IUnitOfWork _unitOfWork, IEmailService _emailService) 
         : IAdminCancellationService
     {
         public async Task<Result<PaginatedResponse<GetAllCancellationRequestsDTO>>> GetAllCancellationRequestsAsync(GetAllAdminCancellationRequestQuery requestQuery)
@@ -128,7 +128,9 @@ namespace Amigo.Application.Services.Admin
                     RefundAmount: request.RefundAmount,
                     RequestedAt: request.RequestedAt,
                     Status: request.Status.ToString(),
-                    Reason: request.Reason
+                    Reason: request.Reason,
+                    CancellationPolicyType: request.cancelationPolicyType.ToString(),
+                    RefundPercentage : request.RefundPercentage
 
 
                     )
@@ -182,6 +184,64 @@ namespace Amigo.Application.Services.Admin
             try
             {
                 await _unitOfWork.SaveChangesAsync();
+
+                var rejectionReasonSection = string.IsNullOrWhiteSpace(requestDTO.RejectionReason)
+                    ? string.Empty
+                    : $@"
+                        <div style='background:#fef2f2;padding:15px;border-radius:8px;margin:20px 0;border-left:4px solid #dc2626;'>
+                            <p style='margin:0;font-weight:bold;color:#b91c1c;'>Reason for Rejection</p>
+                            <p style='margin:8px 0 0 0;color:#444;'>{requestDTO.RejectionReason}</p>
+                        </div>";
+                        await _emailService.SendEmailAsync(
+                        request.Booking.CustomerEmail,
+                        "Cancellation Request Update",
+                        $@"
+                        <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+
+                            <h2 style='color: #dc2626;'>Cancellation Request Declined</h2>
+
+                            <p>Hello {request.Booking.CustomerName},</p>
+
+                            <p>
+                                We have reviewed your cancellation request for the booking below.
+                            </p>
+
+                            <div style='background:#f9fafb;padding:15px;border-radius:8px;margin:20px 0;border:1px solid #e5e7eb;'>
+
+                                <p style='margin:0 0 10px 0;'>
+                                    <strong>Booking Reference:</strong> {request.Booking?.BookingNumber}
+                                </p>
+
+                                <p style='margin:0;'>
+                                    <strong>Tour:</strong> {request.Booking?.OrderItem?.TourTitle}
+                                </p>
+
+                            </div>
+
+                            <p>
+                                Unfortunately, your cancellation request has been declined and your booking remains
+                                <strong>confirmed</strong>.
+                            </p>
+
+                            {rejectionReasonSection}
+
+                            <p>
+                                If you believe this decision was made in error or you need further clarification,
+                                please contact our support team.
+                            </p>
+
+                            <p>
+                                Thank you for your understanding.
+                            </p>
+
+                            <hr style='border:0;border-top:1px solid #eee;margin:20px 0;'>
+
+                            <p style='font-size:12px;color:#999;'>
+                                Amigo Arabe Tours Team
+                            </p>
+
+                        </div>"
+                    );
 
                 return Result.Ok()
                     .WithSuccess(

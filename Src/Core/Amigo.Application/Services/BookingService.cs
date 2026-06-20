@@ -271,13 +271,12 @@ namespace Amigo.Application.Services
                 return Result.Fail(new ConfilctError($"Cancellation is not allowed at this time. Please cancel before the allowed deadline before the tour starts Or Contact With Admin Phone Number."));
 
             }
-            else
-            {
+            
                 var refundPercentage = cancellationPolicy.Max(c => c.RefundPercentage);
                 refundAmount =
                    total * refundPercentage / 100m;
-            }
 
+            var cancellationPolicyType = cancellationPolicy.Where(c => c.RefundPercentage == refundPercentage).Select(c => c.CancelationPolicyType).FirstOrDefault();
             var cancellationRequest = new CancellationRequest
             {
                 BookingId = booking.Id,
@@ -285,7 +284,9 @@ namespace Amigo.Application.Services
                 RefundAmount = refundAmount,
                 Reason = requestDTO.Reason,
                 Status = CancellationRequestStatus.Pending,
-                RequestedAt = DateTime.UtcNow
+                RequestedAt = DateTime.UtcNow,
+                cancelationPolicyType = cancellationPolicyType,
+                RefundPercentage = refundPercentage
             };
 
             await _unitOfWork.GetRepository<CancellationRequest, Guid>().AddAsync(cancellationRequest);
@@ -304,6 +305,107 @@ namespace Amigo.Application.Services
             }
 
 
+        }
+
+        public async Task<Result> RemoveBookingCancellation(string Id, string userId)
+        {
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid bookingId = guid;
+
+
+            var booking = await _unitOfWork.GetRepository<Booking, Guid>()
+                                        .GetByIdAsync(
+                                        new Specifications.RefundSpecification.GetBookingByIdSpecification(bookingId));
+            if (booking is null)
+            {
+                return Result.Fail(new NotFoundError("Not Found"));
+            }
+            if (booking.UserId != userId)
+            {
+                return Result.Fail(new UnauthorizedError("Unauthorized"));
+
+            }
+            if (booking.Status != BookingStatus.PendingCancellation)
+            {
+                return Result.Fail($"Booking is {booking.Status}");
+            }
+            var orderItem = await _unitOfWork.GetRepository<OrderItem, Guid>().GetByIdAsync(new GetOrderItemByBookingIdSpecification(bookingId));
+            if (orderItem is null)
+            {
+                return Result.Fail(new ConfilctError($"Order item not found"));
+
+            }
+
+            var tripDateTime =
+                   orderItem.TourDate.ToDateTime(
+                        orderItem.StartTime);
+
+            if (tripDateTime <= DateTime.UtcNow)
+            {
+                return Result.Fail(new ConfilctError($"Booking is up to date"));
+
+            }
+            var cancellationRequestRepo = _unitOfWork.GetRepository<CancellationRequest, Guid>();
+            var cancellationRequest = await cancellationRequestRepo.GetByIdAsync(new GetCancellationRequestByBookingIdSpecification(bookingId));
+
+            if (cancellationRequest is null)
+            {
+                return Result.Fail(new NotFoundError("Not Found Request"));
+
+            }
+            if (cancellationRequest.Status != CancellationRequestStatus.Pending)
+            {
+                return Result.Fail($"Booking is {cancellationRequest.Status}");
+            }
+            cancellationRequestRepo.Remove(cancellationRequest);
+            booking.Status =
+                BookingStatus.Confirmed;
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+                return Result.Ok().WithSuccess(new Success("Cancellation Request Removed Successfully"));
+
+            }
+            catch (Exception ex)
+            {
+                return FluentValidationExtension.FromException(details: ex.Message);
+            }
+        }
+
+        public async Task<Result<RefundDetailsForUserDTO>> GetRefundDetails(string Id, string userId)
+        {
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid bookingId = guid;
+
+
+            var booking = await _unitOfWork.GetRepository<Booking, Guid>()
+                                        .GetByIdAsync(
+                                        new Specifications.RefundSpecification.GetBookingByIdSpecification(bookingId));
+            if (booking is null)
+            {
+                return Result.Fail(new NotFoundError("Not Found"));
+            }
+            if (booking.UserId != userId)
+            {
+                return Result.Fail(new UnauthorizedError("Unauthorized"));
+
+            }
+            if (booking.Status != BookingStatus.Cancelled)
+            {
+                return Result.Fail($"Booking is {booking.Status}");
+            }
+            var refund = await _unitOfWork.RefundRepo.GetRefundDetails(bookingId);
+            if (refund is null)
+            {
+                return Result.Fail(new NotFoundError("Not Found"));
+            }
+            
+            return Result.Ok(refund);
         }
     }
 }
