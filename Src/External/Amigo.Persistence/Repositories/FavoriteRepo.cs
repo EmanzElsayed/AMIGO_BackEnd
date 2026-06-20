@@ -1,3 +1,4 @@
+using Amigo.Application.Helpers;
 using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Domain.DTO.Favorite;
 using Amigo.Domain.Entities;
@@ -12,7 +13,7 @@ namespace Amigo.Persistence.Repositories;
 
 public class FavoriteRepo(AmigoDbContext _dbContext) : IFavoriteRepo
 {
-    public async Task<List<FavoriteResponseDTO>> GetUserFavoritesAsync(string userId)
+    public async Task<List<FavoriteResponseDTO>> GetUserFavoritesAsync(string userId,SupportedLanguage language )
     {
         var rows = await _dbContext.Favorites.AsNoTracking()
             .Where(f => f.UserId == userId && !f.IsDeleted)
@@ -20,20 +21,35 @@ public class FavoriteRepo(AmigoDbContext _dbContext) : IFavoriteRepo
                 f => f.TourId,
                 t => t.Id,
                 (f, t) => new { f, t })
-            .Select(x => new FavoriteResponseDTO
-            {
-                TourId = x.t.Id,
-                Title = x.t.Translations
-                    .Where(tr => !tr.IsDeleted)
-                    .OrderBy(tr => tr.Language == SupportedLanguage.en ? 0 : 1)
-                    .Select(tr => tr.Title)
-                    .FirstOrDefault() ?? "Tour",
-                DestinationId = x.t.DestinationId,
-                CoverImageUrl = _dbContext.TourImages
-                    .Where(img => img.TourId == x.t.Id && !img.IsDeleted)
-                    .Select(img => img.ImageUrl)
-                    .FirstOrDefault()
-            })
+            .Select(x =>
+            
+                
+
+                new FavoriteResponseDTO
+                {
+                    TourId = x.t.Id,
+                    Title = x.t.Translations
+                        .Where(tr => !tr.IsDeleted )
+                        .OrderByDescending(tr => tr.Language == language)
+                        .Select(tr => tr.Title)
+                        .FirstOrDefault() ?? "Tour",
+                    DestinationId = x.t.DestinationId,
+                    CoverImageUrl = _dbContext.TourImages
+                        .Where(img => img.TourId == x.t.Id && !img.IsDeleted)
+                        .Select(img => img.ImageUrl)
+                        .FirstOrDefault(),
+
+                    DestinationSlug = x.t.Destination.Translations
+                        .Where(tr => !tr.IsDeleted)
+                        .OrderByDescending(tr => tr.Language == language)
+                        .Select(tr => tr.Name)
+                        .FirstOrDefault() ?? "Destination"
+                    
+
+                }
+            
+            )
+            
             .ToListAsync();
 
         return rows;

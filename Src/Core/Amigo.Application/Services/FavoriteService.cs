@@ -1,4 +1,5 @@
 using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Helpers;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.DTO.Favorite;
 using Amigo.Domain.Entities;
@@ -10,11 +11,17 @@ using System.Threading.Tasks;
 
 namespace Amigo.Application.Services;
 
-public class FavoriteService(IUnitOfWork _unitOfWork) : IFavoriteService
+public class FavoriteService(IUnitOfWork _unitOfWork, ICurrentUserService _currentUserService) : IFavoriteService
 {
     public async Task<Result<List<FavoriteResponseDTO>>> GetFavoritesAsync(string userId)
     {
-        var favorites = await _unitOfWork.FavoritesRepo.GetUserFavoritesAsync(userId);
+        var language = _currentUserService.Language;
+        var favorites = await _unitOfWork.FavoritesRepo.GetUserFavoritesAsync(userId, language);
+        foreach (var favorite in favorites)
+        {
+            favorite.TourSlug = SlugHelper.ToUrlSlug(favorite.Title);
+            favorite.DestinationSlug = SlugHelper.ToUrlSlug(favorite.DestinationSlug);
+        }
         return Result.Ok(favorites);
     }
 

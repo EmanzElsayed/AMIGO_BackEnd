@@ -50,11 +50,11 @@ namespace Amigo.Presentation.Controllers.Admin
 
         // not updated yet
 
-        [HttpGet("stats")]
-        public async Task<IResultBase> GetActivityStats()
-        {
-            return await _serviceManager.AdminTourService.GetActivityStatsAsync();
-        }
+        //[HttpGet("stats")]
+        //public async Task<IResultBase> GetActivityStats()
+        //{
+        //    return await _serviceManager.AdminTourService.GetActivityStatsAsync();
+        //}
 
         //    private static string EscapeLikePattern(string value)
         //    {

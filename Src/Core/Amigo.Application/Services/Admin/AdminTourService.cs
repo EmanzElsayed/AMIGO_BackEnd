@@ -293,10 +293,7 @@ namespace Amigo.Application.Services.Admin
             };
         }
 
-        public Task<Result<object>> GetActivityStatsAsync()
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public async Task<Result<PaginatedResponse<AdminTourListItemResponseDTO>>> GetAllToursAsync(
             GetAllAdminTourQuery requestQuery)

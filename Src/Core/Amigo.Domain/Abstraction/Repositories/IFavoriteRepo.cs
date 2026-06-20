@@ -8,7 +8,7 @@ namespace Amigo.Domain.Abstraction.Repositories;
 
 public interface IFavoriteRepo
 {
-    Task<List<FavoriteResponseDTO>> GetUserFavoritesAsync(string userId);
+    Task<List<FavoriteResponseDTO>> GetUserFavoritesAsync(string userId, SupportedLanguage language);
     Task<bool> ExistsAsync(string userId, Guid tourId);
     Task AddAsync(Favorites favorite);
     Task<Favorites?> GetByUserAndTourAsync(string userId, Guid tourId);

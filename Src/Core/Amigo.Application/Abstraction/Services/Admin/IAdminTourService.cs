@@ -12,6 +12,6 @@ namespace Amigo.Application.Abstraction.Services.Admin
         Task<Result> UpdateTourAsync(UpdateTourRequestDTO requestDTO, string tourId);
         Task<Result<PaginatedResponse<AdminTourListItemResponseDTO>>> GetAllToursAsync(GetAllAdminTourQuery requestQuery);
         Task<Result<GetTourResponseDTO>> GetTourById(string id, GetTourByIdRequestDTO requestDTO);
-        Task<Result<object>> GetActivityStatsAsync();
+        //Task<Result<object>> GetActivityStatsAsync();
     }
 }
