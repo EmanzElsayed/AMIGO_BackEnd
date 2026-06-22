@@ -1,4 +1,5 @@
-﻿using Amigo.Domain.DTO.Enums;
+﻿using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Domain.DTO.Enums;
 using Amigo.Domain.DTO.Translation;
 using Amigo.Domain.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -14,7 +15,7 @@ namespace Amigo.Application.Services.AutoTranslation
                         ITourTranslationQueryService _queryService)
                 : IAutoTranslationService
     {
-        public async Task<Result> TranslateDestination(SupportedLanguage sourceLanguage, DestinationTranslationItem destinationTranslationItem)
+        public async Task<Result> TranslateDestination(SupportedLanguage sourceLanguage, DestinationTranslationItem destinationTranslationItem,Guid countryId)
         {
             if (destinationTranslationItem is null)
             {
@@ -33,7 +34,7 @@ namespace Amigo.Application.Services.AutoTranslation
                 var existingDestination = await _unitOfWork
                    .GetRepository<DestinationTranslation, Guid>()
                    .GetAllWithTrackingAsync();
-
+                var countryInfoTr = await _unitOfWork.GetRepository<CountryInfoTranslation, Guid>().GetAllAsync(new GetAllTranslationWithCountryIdSpecifciation(countryId));
                 var destinationMap = existingDestination
                  .ToDictionary(x => (x.DestinationId, x.Language));
 
@@ -61,8 +62,12 @@ namespace Amigo.Application.Services.AutoTranslation
                                Name = lang.Destination.Name
                            });
                         }
+                        if (countryInfoTr is not null && countryInfoTr.Any() && !string.IsNullOrWhiteSpace(lang.Destination.CountryDescription))
+                        { 
+                            var countryWithLang = countryInfoTr.Where(tr => tr.Language == language).FirstOrDefault();
+                            if (countryWithLang != null) countryWithLang.Description = lang.Destination.CountryDescription;
 
-
+                        }
                     }
 
                 }

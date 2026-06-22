@@ -53,7 +53,9 @@ namespace Amigo.Application.Helpers
                 "language": "string",
                 "destination": {
                   "destinationId":  "guid",
-                  "name": "string"
+                  "name": "string",
+                  "description": "string,
+                  "countryDescription: "string"
                 }
               }
             ]

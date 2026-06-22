@@ -1,6 +1,7 @@
 
 
 using Amigo.Application.BackgroundTasks;
+using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.CountriesInfo;
 using Amigo.Domain.DTO.Translation;
 using Amigo.Domain.Entities;
@@ -40,7 +41,12 @@ namespace Amigo.Application.Services.Admin
 
                 if (countryInfo is null)
                     return Result.Fail(new NotFoundError("This Country Not Found"));
-
+                countryInfo.ImageUrl = requestDTO.CountryImageUrl;
+                countryInfo.PublicId = requestDTO.CountryPublicId;
+                var countryTr =
+                countryInfo.Translations.Where(tr => tr.Language == requestLanguage).FirstOrDefault();
+                if (countryTr != null) countryTr.Description = requestDTO.CountryDescrpition;
+                
                 var destination = new Destination
                 {
                     IsActive = requestDTO.IsActive ?? true,
@@ -59,6 +65,7 @@ namespace Amigo.Application.Services.Admin
                 var destinationTranslation = new DestinationTranslation
                 {
                     Name = requestDTO.Name,
+                    Description = requestDTO.Description,
                     Language = requestLanguage,
                     DestinationId = destination.Id
                 };
@@ -75,7 +82,9 @@ namespace Amigo.Application.Services.Admin
                 {
                     SourceLanguage = sourceLanguage,
                     DestinationId = destination.Id,
-                    Name = requestDTO.Name
+                    Name = requestDTO.Name,
+                    Description = requestDTO.Description,
+                    CountryDescription = requestDTO.CountryDescrpition
                 };
                 await _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
                 {
@@ -84,7 +93,8 @@ namespace Amigo.Application.Services.Admin
 
                     await autoTranslationService.TranslateDestination(
                         sourceLanguage,
-                        inputTranslate);
+                        inputTranslate,
+                        countryInfo.Id);
                     //await TranslateDestinationInBackgroundAsync(destinationId, originalName, requestLanguage, serviceProvider);
                 });
 
@@ -216,6 +226,7 @@ namespace Amigo.Application.Services.Admin
             {
                 return Result.Fail(new NotFoundError("This Destination Not Found"));
             }
+            var countryInfoRepo = _unitOfWork.GetRepository<CountryInfo, Guid>();
             DestinationTranslation? translation = null;
             SupportedLanguage? languageEnum = null;
 
@@ -226,24 +237,42 @@ namespace Amigo.Application.Services.Admin
                              .FirstOrDefault(t => t.Language == languageEnum);
             }
 
+            var countryInfo =  await countryInfoRepo.GetByIdAsync(new GetCountryInfoByDestinationIdSpecification(destinationId, languageEnum ?? Constants.BaseLanguage));
 
-            
+            if (countryInfo is null)
+            {
+                return Result.Fail(new NotFoundError("This Country Not Found"));
+            }
 
 
             if (!string.IsNullOrWhiteSpace(requestDTO.CountryCode) && languageEnum is not null)
             { 
                 CountryCode countryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
-                var countryInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetByIdAsync(new GetCountryByCountryCodeSpecification(countryCode, languageEnum.Value));
+                 countryInfo = await _unitOfWork.GetRepository<CountryInfo, Guid>().GetByIdAsync(new GetCountryByCountryCodeSpecification(countryCode, languageEnum.Value));
 
                 if (countryInfo is null)
                 {
-                    return Result.Fail(new NotFoundError("This County Not Found"));
+                    return Result.Fail(new NotFoundError("This Country Not Found"));
                 }
+                if (requestDTO.Description != null) {
+                    var tr = countryInfo.Translations.Where(tr => tr.Language == languageEnum).FirstOrDefault();
+                    if(tr is not null) tr.Description = requestDTO.Description;
+                        
+                  }
+
                 destination.CountryInfoId = countryInfo.Id;
                 destination.CountryInfo = countryInfo;
 
             }
+            if (string.IsNullOrWhiteSpace(requestDTO.CountryCode) && (!string.IsNullOrWhiteSpace(requestDTO.CountryDescription) && languageEnum is not null))
+            {
+                if (countryInfo != null)
+                {
+                    var tr = countryInfo.Translations.Where(tr => tr.Language == languageEnum).FirstOrDefault();
+                    if (tr is not null) tr.Description = requestDTO.Description;
 
+                }
+            }
 
             // image logic
             if (!string.IsNullOrWhiteSpace(requestDTO.ImageUrl) )
@@ -255,6 +284,16 @@ namespace Amigo.Application.Services.Admin
 
                 if (requestDTO.PublicId is not null)
                     destination.ImagePublicId = requestDTO.PublicId;
+            }
+            if (!string.IsNullOrWhiteSpace(requestDTO.CountryImageUrl) && countryInfo is not null)
+            {
+                countryInfo.ImageUrl = requestDTO.ImageUrl;
+
+                if (countryInfo.PublicId is not null)
+                    _imageCloud.DeleteImage(countryInfo.PublicId);
+
+                if (requestDTO.PublicId is not null)
+                    countryInfo.PublicId = requestDTO.PublicId;
             }
 
             DestinationMapping.UpdateDestination(requestDTO, destination, translation, languageEnum);
@@ -270,7 +309,9 @@ namespace Amigo.Application.Services.Admin
                     {
                         SourceLanguage = sourceLanguage,
                         DestinationId = destination.Id,
-                        Name = requestDTO.Name ?? ""
+                        Name = requestDTO.Name ?? "",
+                        Description = requestDTO.Description,
+                        CountryDescription = requestDTO.CountryDescription,
                     };
                     _ = _backgroundTaskQueue.EnqueueAsync(async (serviceProvider, cancellationToken) =>
                     {
@@ -280,7 +321,8 @@ namespace Amigo.Application.Services.Admin
 
                         await autoTranslationService.TranslateDestination(
                             sourceLanguage,
-                            inputTranslate);
+                            inputTranslate,
+                            destination.CountryInfoId.Value);
 
 
                     });

@@ -11,6 +11,7 @@ public class DestinationTranslation:BaseEntity<Guid>
 
    
     public string Name { get; set; } = null!;
+    public string? Description { get; set; }
 
     public SupportedLanguage Language { get; set; }
 }

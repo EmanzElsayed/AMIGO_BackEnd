@@ -128,7 +128,7 @@ namespace Amigo.Application.Mapping
                 destination.IsActive = requestDTO.IsActive.Value;
 
          
-            if (requestDTO.Name is not null && language is not null)
+            if ((requestDTO.Name is not null || requestDTO.Description is not null) && language is not null)
             {
                 if (translation is null)
                 {
@@ -136,18 +136,19 @@ namespace Amigo.Application.Mapping
                     destination.Translations.Add(new DestinationTranslation
                     {
                         Language = language.Value,
-                        Name = requestDTO.Name,
+                        Name = requestDTO.Name ?? "",
+                        Description = requestDTO.Description ?? "",
                         DestinationId = destination.Id,
                     });
                 }
                 else
                 {
                     //  update existing language
-                    translation.Name = requestDTO.Name;
+                    translation.Name = requestDTO.Name ?? translation.Name;
+                    translation.Description = requestDTO.Description ?? translation.Description;
                 }
             }
 
-            
         }
     }
 }

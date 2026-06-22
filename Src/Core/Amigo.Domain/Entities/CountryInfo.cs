@@ -13,6 +13,8 @@ public class CountryInfo:BaseEntity<Guid>
     
     [Required]
     public string PhoneCode { get; set; } = null!;
+    public string? ImageUrl { get; set; }
+    public string? PublicId { get; set; }
 
     public ICollection<CountryInfoTranslation> Translations = new List<CountryInfoTranslation>();
 

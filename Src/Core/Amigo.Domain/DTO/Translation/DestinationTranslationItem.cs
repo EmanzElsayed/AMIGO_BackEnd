@@ -10,6 +10,8 @@ namespace Amigo.Domain.DTO.Translation
 
         public Guid DestinationId { get; set; }
         public string Name { get; set; } = null!;
+        public string? Description { get; set; }
+        public string ? CountryDescription { get; set; }
 
     }
 }

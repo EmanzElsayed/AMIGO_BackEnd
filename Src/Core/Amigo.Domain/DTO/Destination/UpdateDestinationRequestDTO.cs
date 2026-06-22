@@ -11,6 +11,10 @@ namespace Amigo.Domain.DTO.Destination
         bool?    IsActive,
         string?  CountryCode,
         string?  Name,
-        string?  Language
+        string?  Language,
+        string? Description,
+        string? CountryDescription,
+         string? CountryImageUrl,
+        string? CountryPublicId
     );
 }
