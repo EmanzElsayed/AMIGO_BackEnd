@@ -44,7 +44,7 @@ namespace Amigo.Application.Services
             return Result.Ok(paginatedResult);
         }
 
-        public async Task<Result<GetDestinationByIdResponseDTO>> GetDestinationByIdAsync(string Id, CancellationToken cancellationToken)
+        public async Task<Result<GetDestinationByIdResponseDTO>> GetDestinationByIdAsync(string Id,string userType ,CancellationToken cancellationToken)
         {
            
             if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
@@ -53,7 +53,7 @@ namespace Amigo.Application.Services
             Guid destinationId = guid;
 
             SupportedLanguage language = _currentUserService.Language;
-
+            var user_type = ParseUserType(userType);
             var destinationRepo = _unitOfWork.GetRepository<Destination, Guid>();
             var destinationSpecification = new GetDestinationByIdSpecification(destinationId ,language );
             
@@ -62,7 +62,7 @@ namespace Amigo.Application.Services
             {
                 return Result.Fail(new NotFoundError(_localizationService.Get("NotFoundDestination")));
             }
-            var toursIds = await _unitOfWork.TourRepo.GetTourIdsWithDestinationId(destinationId);
+            var toursIds = await _unitOfWork.TourRepo.GetTourIdsWithDestinationId(destinationId, user_type);
 
             var reviews = await _unitOfWork.ReviewRepo.GetTourReviewSummariesAsync(toursIds);
             var averageRating = Math.Max(
@@ -74,9 +74,9 @@ namespace Amigo.Application.Services
 
             //var bookings = await _unitOfWork.GetRepository<Booking, Guid>().GetAllAsync(new GetBookingsByTourIdsSpecification(toursIds));
            
+            var toursCount = toursIds.Count();
             var traveleresCount = Constants.TravelersCount + await _unitOfWork.PriceRepo.GetTravelersCount(toursIds);
-            var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language,averageRating,traveleresCount,reviewsCount);
-           
+            var mappedDestinationData = DestinationMapping.EntityToDestination(destinationData , language,averageRating,traveleresCount,reviewsCount,toursCount);
 
             return Result.Ok(mappedDestinationData);
         }
@@ -92,5 +92,19 @@ namespace Amigo.Application.Services
             var data = await _topDestinationsReader.GetTopAsync(requestQuery,userType);
             return Result.Ok(data).WithSuccess(new Success("Top destinations loaded successfully."));
         }
+
+        private static UserType ParseUserType(string? s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                return UserType.Public;
+            if (s.Equals("VIP", StringComparison.OrdinalIgnoreCase))
+                return UserType.VIP;
+            if (s.Equals("Standard", StringComparison.OrdinalIgnoreCase)
+                || s.Equals("Public", StringComparison.OrdinalIgnoreCase))
+                return UserType.Public;
+            return UserType.Public;
+        }
+
     }
+
 }

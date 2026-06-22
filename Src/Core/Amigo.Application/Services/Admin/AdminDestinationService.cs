@@ -440,7 +440,7 @@ namespace Amigo.Application.Services.Admin
             return Result.Ok(paginatedResult);
         }
 
-        public async Task<Result<GetDestinationResponseDTO>> GetDestinationByIdAsync(string Id, GetLanuageQuery requestQuery)
+        public async Task<Result<GetDestinationDetailsDTO>> GetDestinationByIdAsync(string Id, GetLanuageQuery requestQuery)
         {
             var validationResult = await _validationService.ValidateAsync(requestQuery);
             if (!validationResult.IsSuccess)

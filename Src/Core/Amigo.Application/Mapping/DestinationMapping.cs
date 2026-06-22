@@ -64,25 +64,31 @@ namespace Amigo.Application.Mapping
                 
             ));
         }
-        public static GetDestinationResponseDTO EntityToAdminDestination(Destination destination ,  SupportedLanguage? language)
+        public static GetDestinationDetailsDTO EntityToAdminDestination(Destination destination ,  SupportedLanguage? language)
         {
             if (language is null) language = Constants.BaseLanguage;
 
-            return new GetDestinationResponseDTO(
+            return new GetDestinationDetailsDTO(
                    DestinationId: destination.Id,
-                     Country: destination.CountryInfo is null ? null : new GetCountryInfoResponseDTO(
+                     Country: destination.CountryInfo is null ? null : new CountryInfoDetailsDTO(
                         destination.CountryInfo.Id,
                         destination.CountryInfo.CountryCode.ToString(),
                         destination.CountryInfo.PhoneCode,
                         destination.CountryInfo.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
-                        language.ToString()
+                        language.ToString(),
+                        destination.CountryInfo.ImageUrl,
+                        destination.CountryInfo.Translations.Where(c => c.Language == language).Select(c => c.Description).FirstOrDefault()
+
+
                     ),
                    IsActive: destination.IsActive,
                    ImageUrl: destination.ImageUrl,
                                        
                    Name: !destination.Translations.Any()? "": destination.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault() ?? "",
-                   Language : language.ToString()
-               
+                   Language : language.ToString(),
+                   Description : !destination.Translations.Any() ? "" : destination.Translations.Where(c => c.Language == language).Select(c => c.Description).FirstOrDefault() ?? ""
+
+
               );
            
 
@@ -90,7 +96,7 @@ namespace Amigo.Application.Mapping
         }
 
 
-        public static GetDestinationByIdResponseDTO EntityToDestination(Destination destination, SupportedLanguage language,decimal averageRating, int travelersCount,int reviewsCount)
+        public static GetDestinationByIdResponseDTO EntityToDestination(Destination destination, SupportedLanguage language,decimal averageRating, int travelersCount,int reviewsCount,int toursCount)
         {
 
 
@@ -110,7 +116,9 @@ namespace Amigo.Application.Mapping
                   Language: language.ToString(),
                   ReviewsCount : reviewsCount,
                   TravelersCount: travelersCount,
-                  AverageReviewRating : averageRating
+                  AverageReviewRating : averageRating,
+                  ToursCount: toursCount,
+                  Description: destination.Translations.Where(c => c.Language == language).Select(c => c.Description).FirstOrDefault()
             );
 
 

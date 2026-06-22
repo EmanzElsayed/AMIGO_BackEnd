@@ -5,18 +5,16 @@ using System.Text;
 
 namespace Amigo.Domain.DTO.Destination
 {
-    public record GetDestinationByIdResponseDTO
-    (
+    public record GetDestinationDetailsDTO
+     (
         Guid DestinationId,
-        GetCountryInfoResponseDTO? Country,
+        CountryInfoDetailsDTO? Country,
         bool IsActive,
         string? ImageUrl,
          string? Name,
-         string? Language,
-        int? ReviewsCount,
-        int? TravelersCount,
-        decimal? AverageReviewRating,
-        int ToursCount,
+        string? Language,
         string? Description
+       
+
     );
 }

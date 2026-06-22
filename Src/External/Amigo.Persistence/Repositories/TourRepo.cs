@@ -1,4 +1,5 @@
 ﻿using Amigo.Domain.Abstraction.Repositories;
+using Amigo.Domain.Enum;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,10 +26,10 @@ namespace Amigo.Persistence.Repositories
                     x => x.ImageUrl);
         }
 
-        public async Task<List<Guid>> GetTourIdsWithDestinationId(Guid destinationId)
+        public async Task<List<Guid>> GetTourIdsWithDestinationId(Guid destinationId,UserType userType)
         { 
             return await _dbContext.Tours
-                                   .Where(t => t.DestinationId == destinationId)
+                                   .Where(t => t.DestinationId == destinationId && t.UserType == userType)
                                    .Select(t => t.Id).ToListAsync();
         }
 

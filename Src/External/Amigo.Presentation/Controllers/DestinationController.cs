@@ -33,13 +33,17 @@ namespace Amigo.Presentation.Controllers.User
             var id = await _serviceManager.DestinationSlugResolver.ResolveDestinationIdAsync(slug, cancellationToken);
             if (id is null)
                 return Result.Fail(new NotFoundError("Destination not found for this link."));
-            return await _serviceManager.DestinationService.GetDestinationByIdAsync(id.Value.ToString(), cancellationToken);
+            var userType = await ResolveEffectiveUserTypeAsync();
+
+            return await _serviceManager.DestinationService.GetDestinationByIdAsync(id.Value.ToString(), userType,cancellationToken);
         }
         [EnableRateLimiting("token")]
         [HttpGet("{id:guid}")]
         public async Task<IResultBase> GetDestinationById(string id, CancellationToken cancellationToken)
         {
-            return await _serviceManager.DestinationService.GetDestinationByIdAsync(id, cancellationToken);
+            var userType = await ResolveEffectiveUserTypeAsync();
+
+            return await _serviceManager.DestinationService.GetDestinationByIdAsync(id,userType ,cancellationToken);
         }
 
         [EnableRateLimiting("token")]

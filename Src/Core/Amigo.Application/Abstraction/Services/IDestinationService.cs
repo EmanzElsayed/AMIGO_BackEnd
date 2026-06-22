@@ -12,7 +12,7 @@ namespace Amigo.Application.Abstraction.Services
     public interface IDestinationService
     {
         Task<Result<PaginatedResponse<GetDestinationResponseDTO>>> GetAllDestinationAsync(GetAllDestinationQuery requestQuery, CancellationToken cancellationToken);
-        Task<Result<GetDestinationByIdResponseDTO>> GetDestinationByIdAsync(string destinationId, CancellationToken cancellationToken);
+        Task<Result<GetDestinationByIdResponseDTO>> GetDestinationByIdAsync(string destinationId, string userType, CancellationToken cancellationToken);
 
         Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery,  string? userType,CancellationToken cancellationToken);
     }
