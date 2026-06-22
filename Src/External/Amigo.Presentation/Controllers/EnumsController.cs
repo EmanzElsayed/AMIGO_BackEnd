@@ -21,6 +21,8 @@ namespace Amigo.Presentation.Controllers
         IServiceManager _serviceManager
        ) : BaseController
     {
+        
+
         [HttpGet("languages")]
         public IResultBase GetLanguages()
         {

@@ -8,6 +8,6 @@ namespace Amigo.Application.Abstraction.Services
     {
         Result<IEnumerable< GetEnumResponseDTO>> GetEnum<T>() where T : Enum;
         Result<List<GetLanguageResponseDTO>> GetLanguageEnum();
-
+        Result<ContactInfoDTO> GetContactInfo();
     }
 }

@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Amigo.Application.Services
 {
-    public class EnumService : IEnumService
+    public class EnumService(IConfiguration _configuration) : IEnumService
     {
         Dictionary<SupportedLanguage,string> GetLanguageName = new Dictionary<SupportedLanguage, string>() {
 
@@ -70,7 +70,21 @@ namespace Amigo.Application.Services
             return displayAttr?.Name ?? value.ToString();
         }
 
+        public Result<ContactInfoDTO> GetContactInfo()
+        {
+            return new ContactInfoDTO(
+                    WebsiteLink: _configuration["ContactInfo:WebsiteLink"],
+                    PhoneNumber: _configuration["ContactInfo:PhoneNumber"],
+                    FacebookLink: _configuration["ContactInfo:FacebookLink"],
+                    YoutubeLink: _configuration["ContactInfo:YoutubeLink"],
+                    InstaLink: _configuration["ContactInfo:InstaLink"],
+                    LinkedInLink: _configuration["ContactInfo:LinkedInLink"],
+                    CreatedAt: _configuration["ContactInfo:CreatedAt"],
+                    Email: _configuration["ContactInfo:Email"],
+                    Location: _configuration["ContactInfo:Location"]
 
 
+                );
+        }
     }
 }

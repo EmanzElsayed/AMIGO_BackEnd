@@ -1,3 +1,4 @@
+using Amigo.Application.Helpers;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Order;
 using System;
@@ -42,6 +43,7 @@ namespace Amigo.Application.Mapping
                                                 ? image : null
                                                 ),
                             TourTitle: item.TourTitle,
+                            TourSlug: SlugHelper.ToUrlSlug(item.TourTitle),
                             DestinationName: item.DestinationName,
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
@@ -105,6 +107,7 @@ namespace Amigo.Application.Mapping
                                                 ? image : null
                                                 ),
                             TourTitle: item.TourTitle,
+                             TourSlug: SlugHelper.ToUrlSlug(item.TourTitle),
                             DestinationName: item.DestinationName,
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
@@ -161,6 +164,7 @@ namespace Amigo.Application.Mapping
 
                             TourId: item.TourId,
                             TourTitle: item.TourTitle,
+                            TourSlug: SlugHelper.ToUrlSlug(item.TourTitle),
                             DestinationName: item.DestinationName,
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,
@@ -220,6 +224,7 @@ namespace Amigo.Application.Mapping
                              BookingStatus: item.Booking is null ? "" : item.Booking.Status.ToString(),
                             TourId: item.TourId,
                             TourTitle: item.TourTitle,
+                            TourSlug: SlugHelper.ToUrlSlug(item.TourTitle),
                             DestinationName: item.DestinationName,
                             TourDate: item.TourDate,
                             StartTime: item.StartTime,

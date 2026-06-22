@@ -14,6 +14,7 @@ namespace Amigo.Domain.DTO.Order
         Guid? TourId,
         
         string TourTitle,
+        string TourSlug,
         string DestinationName,
         DateOnly TourDate,
         TimeOnly StartTime,
