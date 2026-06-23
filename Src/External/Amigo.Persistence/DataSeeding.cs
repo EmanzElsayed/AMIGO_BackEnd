@@ -98,12 +98,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+20",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Egypt" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Egipto" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Égypte" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Egitto" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Egito" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Egito" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Egypt",Capital = "Cairo" , OfficialLanguage = "Arabic" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Egipto" ,Capital = "El Cairo" , OfficialLanguage = "Árabe" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Égypte" ,Capital = "Le Caire" , OfficialLanguage = "Arabe" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Egitto" ,Capital = "Il Cairo" , OfficialLanguage = "Arabo" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Egito" ,Capital = "Cairo" , OfficialLanguage = "Árabe" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Egito" ,Capital = "Cairo" , OfficialLanguage = "Árabe" }
                 }
             },
 
@@ -115,12 +115,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+971",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "United Arab Emirates" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Emiratos Árabes Unidos" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Émirats arabes unis" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Emirati Arabi Uniti" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Emirados Árabes Unidos" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Emirados Árabes Unidos" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "United Arab Emirates"   ,Capital = "Abu Dhabi" , OfficialLanguage = "Arabic" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Emiratos Árabes Unidos" ,Capital = "Abu Dabi" , OfficialLanguage = "Árabe"   },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Émirats arabes unis"    ,Capital = "Abou Dabi" , OfficialLanguage = "Arabe"  },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Emirati Arabi Uniti"    ,Capital = "Abu Dhabi" , OfficialLanguage = "Arabo"  },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Emirados Árabes Unidos" ,Capital = "Abu Dhabi" , OfficialLanguage = "Árabe"  },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Emirados Árabes Unidos" ,Capital = "Abu Dhabi" , OfficialLanguage = "Árabe"  }
                 }
             },
 
@@ -132,12 +132,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+90",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Turkey" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Turquía" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Turquie" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Turchia" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Turquia" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Turquia" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Turkey"  ,Capital = "Ankara" , OfficialLanguage = "Turkish"   },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Turquía" ,Capital = "Ankara" , OfficialLanguage = "Turco"     },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Turquie" ,Capital = "Ankara" , OfficialLanguage = "Turc"    },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Turchia" ,Capital = "Ankara" , OfficialLanguage = "Turco"     },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Turquia" ,Capital = "Ancara" , OfficialLanguage = "Turco"    },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Turquia" ,Capital = "Ancara" , OfficialLanguage = "Turco"    }
                 }
             },
 
@@ -149,12 +149,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 PhoneCode = "+966",
                 Translations = new List<CountryInfoTranslation>
                 {
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Saudi Arabia" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Arabia Saudita" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Arabie saoudite" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Arabia Saudita" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Arábia Saudita" },
-                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Arábia Saudita" }
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.en, Name = "Saudi Arabia"    ,Capital = "Riyadh" , OfficialLanguage = "Arabic" },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.es, Name = "Arabia Saudita"  ,Capital = "Riad" , OfficialLanguage = "Árabe"   },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.fr, Name = "Arabie saoudite" ,Capital = "Riyad" , OfficialLanguage = "Arabe"  },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.it, Name = "Arabia Saudita"  ,Capital = "Riad" , OfficialLanguage = "Arabo"  },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.pt, Name = "Arábia Saudita"  ,Capital = "Riade" , OfficialLanguage = "Árabe"  },
+                    new() { Id = Guid.NewGuid(), Language = SupportedLanguage.br, Name = "Arábia Saudita"  ,Capital = "Riade" , OfficialLanguage = "Árabe"  }
                 }
             }
         };

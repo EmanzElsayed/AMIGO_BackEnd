@@ -1,3 +1,4 @@
+using Amigo.Domain.DTO.CountryInfo;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.Entities;
 using Amigo.SharedKernal.DTOs.Destination;
@@ -15,5 +16,8 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result<GetDestinationByIdResponseDTO>> GetDestinationByIdAsync(string destinationId, string userType, CancellationToken cancellationToken);
 
         Task<Result<PaginatedResponse<TopDestinationSummaryResponseDTO>>> GetTopDestinationsAsync(GetTopDestinationsQuery requestQuery,  string? userType,CancellationToken cancellationToken);
+
+        Task<Result<GetCountryByIdResponseDTO>> GetCountryByIdAsync(string Id, string userType, CancellationToken cancellationToken);
+
     }
 }

@@ -499,7 +499,7 @@ public class UserTourCatalogService(
         return null;
     }
 
-    public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType, int take = 6)
+    public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType,string? countryCode ,int take = 6)
     {   
         var listingLang = _currentUserService.Language;
         var filteredCurrency = _currentUserService.Currency;
@@ -512,9 +512,10 @@ public class UserTourCatalogService(
 
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
         var top = take <= 0 ? 6 : Math.Min(take, 24);
-
+        CountryCode? countryCodeEnum = string.IsNullOrWhiteSpace(countryCode) ?
+                                null : EnumsMapping.ToCountryCodeEnum(countryCode);
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var spec = new TrendingToursSpecification(todayUtc);
+        var spec = new TrendingToursSpecification(todayUtc,countryCodeEnum);
         var tourRepo = _unitOfWork.GetRepository<Tour, Guid>();
         var rows = (await tourRepo.GetAllAsync(spec)).ToList();
 

@@ -15,6 +15,9 @@ public class CountryInfoTranslation:BaseEntity<Guid>
 
     [Required]
     public string Name { get; set; } = null!;
+    public string? Capital {  get; set; }
+    public string? OfficialLanguage { get; set; }
+
     public string? Description { get; set; }
     public SupportedLanguage Language { get; set; }
 }

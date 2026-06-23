@@ -20,4 +20,18 @@ public class DestinationSlugResolver(AmigoDbContext _db)
 
         return pairs.FirstOrDefault(p => SlugHelper.MatchesName(p.Name, slug))?.Id;
     }
+
+    public async Task<Guid?> ResolveCountryIdAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+            return null;
+
+        var pairs = await _db.CountryInfo
+            .AsNoTracking()
+            .Where(d => !d.IsDeleted)
+            .SelectMany(d => d.Translations.Select(t => new { d.Id, t.Name }))
+            .ToListAsync(cancellationToken);
+
+        return pairs.FirstOrDefault(p => SlugHelper.MatchesName(p.Name, slug))?.Id;
+    }
 }

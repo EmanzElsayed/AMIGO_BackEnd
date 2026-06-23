@@ -24,15 +24,17 @@ public class TopDestinationsReader(AmigoDbContext _db,ICurrentUserService _curre
         CurrencyCode? currencyFilter = _currentUserService.Currency;
 
         var preferredLanguage = _currentUserService.Language;
-        
 
-        var rankingSpec = new TopDestinationsRankingSpecification();
+        CountryCode? countryCode = string.IsNullOrWhiteSpace(query.CountryCode) ?
+                            null : EnumsMapping.ToCountryCodeEnum(query.CountryCode);
+
+        var rankingSpec = new TopDestinationsRankingSpecification(countryCode);
         var eligibleDestinations = SpeceficationEvaluator.CreateQuery(
             _db.Destinations.AsNoTracking(),
             rankingSpec);
         var tourIds = await eligibleDestinations
                 .SelectMany(d => d.Tours)
-                .Where(t => !t.IsDeleted)
+                .Where(t => !t.IsDeleted  )
                 .Select(t => t.Id)
                 .ToListAsync(cancellationToken);
         var travelersCount = await _unitOfWork.PriceRepo.GetTravelersCount(tourIds);

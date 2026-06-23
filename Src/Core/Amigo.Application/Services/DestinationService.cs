@@ -1,6 +1,9 @@
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.BookingSpecification;
+using Amigo.Application.Specifications.CountriesInfo;
+using Amigo.Domain.DTO.CountryInfo;
+using Amigo.Domain.Entities;
 
 namespace Amigo.Application.Services
 {
@@ -105,6 +108,40 @@ namespace Amigo.Application.Services
             return UserType.Public;
         }
 
+        public async Task<Result<GetCountryByIdResponseDTO>> GetCountryByIdAsync(string Id, string userType, CancellationToken cancellationToken)
+        {
+            if (!BusinessRules.TryCleanGuid(Id, out Guid guid))
+                return Result.Fail("Invalid UUID");
+
+            Guid countryId = guid;
+
+            SupportedLanguage language = _currentUserService.Language;
+            var user_type = ParseUserType(userType);
+            var countryRepo = _unitOfWork.GetRepository<CountryInfo, Guid>();
+            var countrySpecification = new GetCountryInfoByIdSpecification(countryId, language);
+
+            var countryData = await countryRepo.GetByIdAsync(countrySpecification, cancellationToken);
+            if (countryData is null)
+            {
+                return Result.Fail("Not Found Country");
+            }
+            var toursIds = await _unitOfWork.TourRepo.GetTourIdsWithCountryId(countryId, user_type);
+
+            var reviews = await _unitOfWork.ReviewRepo.GetTourReviewSummariesAsync(toursIds);
+            var averageRating = Math.Max(
+                reviews != null && reviews.Any()
+                    ? reviews.Average(r => r.Rate)
+                    : 0,
+                Constants.AverageReviewRating);
+            var reviewsCount = (reviews != null && reviews.Any() ? reviews.Count() : 0) + Constants.CountryReviewCount;
+
+            var destinationCount = await _unitOfWork.TourRepo.GetDestinationCountWithCountryId(countryId);
+            var toursCount = toursIds.Count();
+            var traveleresCount = Constants.CountryTravelersCount + await _unitOfWork.PriceRepo.GetTravelersCount(toursIds);
+            var mappedCountryData = CountryInfoMapping.EntityToCountry(countryData, language, averageRating, traveleresCount, reviewsCount, toursCount, destinationCount);
+
+            return Result.Ok(mappedCountryData);
+        }
     }
 
 }

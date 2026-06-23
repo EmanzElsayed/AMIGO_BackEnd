@@ -37,5 +37,31 @@ namespace Amigo.Application.Mapping
                 );
             return result;
         }
+
+        public static GetCountryByIdResponseDTO EntityToCountry(CountryInfo country, SupportedLanguage language, decimal averageRating, int travelersCount, int reviewsCount, int toursCount,int destinationCount)
+        {
+
+
+            return new GetCountryByIdResponseDTO(
+                 CountryId: country.Id,
+                  CountryCode : country.CountryCode.ToString(),
+                  PhoneCode: country.PhoneCode,
+                  Capital : country.Translations.Where(c => c.Language == language).Select(c => c.Capital).FirstOrDefault(),
+                  OfficialLanguage: country.Translations.Where(c => c.Language == language).Select(c => c.OfficialLanguage).FirstOrDefault(),
+                  ImageUrl: country.ImageUrl,
+
+                  Name: country.Translations.Where(c => c.Language == language).Select(c => c.Name).FirstOrDefault(),
+                  Language: language.ToString(),
+                  ReviewsCount: reviewsCount,
+                  TravelersCount: travelersCount,
+                  AverageReviewRating: averageRating,
+                  ToursCount: toursCount,
+                  DestinationCount : destinationCount,
+                  Description: country.Translations.Where(c => c.Language == language).Select(c => c.Description).FirstOrDefault()
+            );
+
+
+
+        }
     }
 }

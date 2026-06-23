@@ -8,10 +8,11 @@ namespace Amigo.Application.Validation.Common.Specifications;
 /// </summary>
 public static class TopDestinationCommonSpecification
 {
-    public static Expression<Func<Destination, bool>> BuildRankingEligibleCriteria()
+    public static Expression<Func<Destination, bool>> BuildRankingEligibleCriteria(CountryCode? countryCode)
     {
         return d =>
             d.IsActive
-            && !d.IsDeleted;
+            && !d.IsDeleted
+            &&(countryCode == null || d.CountryInfo.CountryCode == countryCode);
     }
 }

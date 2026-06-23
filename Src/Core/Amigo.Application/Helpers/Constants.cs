@@ -16,10 +16,13 @@ namespace Amigo.Application.Helpers
 
         public const decimal AverageReviewRating = 9.5m;
 
-        public const int ReviewCount = 1000;
+        public const int ReviewCount = 321;
 
-        public const int TravelersCount = 5000;
+        public const int TravelersCount = 3502;
 
+        public const int CountryReviewCount = 939;
+
+        public const int CountryTravelersCount = 4927;
 
     }
 }

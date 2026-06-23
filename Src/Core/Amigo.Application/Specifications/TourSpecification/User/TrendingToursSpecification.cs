@@ -7,8 +7,8 @@ namespace Amigo.Application.Specifications.TourSpecification.User;
 
 public class TrendingToursSpecification : BaseSpecification<Tour, Guid>
 {
-    public TrendingToursSpecification(DateOnly todayUtc)
-        : base(BuildCriteria(todayUtc))
+    public TrendingToursSpecification(DateOnly todayUtc,CountryCode? countryCode)
+        : base(BuildCriteria(todayUtc , countryCode))
     {
         AddInclude(t => t.Translations);
         AddInclude(t => t.Images);
@@ -20,11 +20,13 @@ public class TrendingToursSpecification : BaseSpecification<Tour, Guid>
         AddOrderBYDescending(t => t.Reviews.Count);
     }
 
-    private static Expression<Func<Tour, bool>> BuildCriteria(DateOnly todayUtc)
+    private static Expression<Func<Tour, bool>> BuildCriteria(DateOnly todayUtc , CountryCode? countryCode)
     {
         return t =>
             !t.IsDeleted
             && !t.Destination.IsDeleted
-            && t.Destination.IsActive;
+            && t.Destination.IsActive
+            && (countryCode == null || t.Destination.CountryInfo.CountryCode == countryCode)
+            ;
     }
 }

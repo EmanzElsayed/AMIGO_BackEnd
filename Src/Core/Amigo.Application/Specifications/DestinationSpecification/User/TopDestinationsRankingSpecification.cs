@@ -7,8 +7,8 @@ namespace Amigo.Application.Specifications.DestinationSpecification.User;
 
 public class TopDestinationsRankingSpecification : BaseSpecification<Destination, Guid>
 {
-    public TopDestinationsRankingSpecification()
-        : base(TopDestinationCommonSpecification.BuildRankingEligibleCriteria())
+    public TopDestinationsRankingSpecification(CountryCode? countryCode )
+        : base(TopDestinationCommonSpecification.BuildRankingEligibleCriteria(countryCode))
     {
     }
 }
