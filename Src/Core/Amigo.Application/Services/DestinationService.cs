@@ -3,7 +3,9 @@ using Amigo.Application.Helpers;
 using Amigo.Application.Specifications.BookingSpecification;
 using Amigo.Application.Specifications.CountriesInfo;
 using Amigo.Domain.DTO.CountryInfo;
+using Amigo.Domain.DTO.Search;
 using Amigo.Domain.Entities;
+using System.Runtime.CompilerServices;
 
 namespace Amigo.Application.Services
 {
@@ -141,6 +143,23 @@ namespace Amigo.Application.Services
             var mappedCountryData = CountryInfoMapping.EntityToCountry(countryData, language, averageRating, traveleresCount, reviewsCount, toursCount, destinationCount);
 
             return Result.Ok(mappedCountryData);
+        }
+
+        public async Task<Result<List<SearchResponseDTO>>> SearchQuery(SearchQueryRequestDTO requestDTO)
+        { 
+            if(string.IsNullOrWhiteSpace( requestDTO.query))
+            {
+                return new List<SearchResponseDTO>();
+            }
+
+            var language = _currentUserService.Language;
+          
+            var searchResult = await _unitOfWork.TourRepo.SearchQueryInDestination(requestDTO.query, language);
+            if (searchResult is null || !searchResult.Any())
+            {
+                searchResult = await _unitOfWork.TourRepo.SearchQueryInCountry(requestDTO.query, language);
+            }
+            return Result.Ok(searchResult);
         }
     }
 
