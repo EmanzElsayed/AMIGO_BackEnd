@@ -8,7 +8,8 @@ using System.Text;
 
 namespace Amigo.Application.Services
 {
-    public class CountryInfoService(IValidationService _validationService,IUnitOfWork _unitOfWork) : ICountryInfoService
+    public class CountryInfoService(IValidationService _validationService,IUnitOfWork _unitOfWork) 
+        : ICountryInfoService
     {
         public async Task<Result<List<GetCountryInfoResponseDTO>>> GetAllCountryInfoAsync(GetAllCountryInfoQuery requestQuery)
         {
@@ -27,6 +28,15 @@ namespace Amigo.Application.Services
 
             return Result.Ok(mappedCountriesInfo);
 
+        }
+
+        public async Task<Result<CountryDescriptionResponseDTO>> GetCountryDescription(CountryDescriptionQueryDTO requestQuery)
+        {
+            if (string.IsNullOrWhiteSpace(requestQuery.Language) || string.IsNullOrWhiteSpace(requestQuery.CountryCode))
+            {
+                return Result.Fail("Language And Country Code Required");
+            }
+            return await _unitOfWork.TourRepo.GetCountryDescription(requestQuery);
         }
 
         public async Task<Result<GetCountryInfoResponseDTO>> GetCountryInfoByIdAsync(string Id, GetLanuageQuery query)

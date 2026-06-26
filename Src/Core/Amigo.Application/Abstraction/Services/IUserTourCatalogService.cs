@@ -18,7 +18,7 @@ public interface IUserTourCatalogService
 
     Task<Result<UserTourDetailDto>> GetTourByPublicPathAsync(GetTourByPublicPathQuery query, string? userType, string? currentUserId = null);
 
-    Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType,  string? countryCode,int take = 10);
+    Task<Result<PaginatedResponse<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType,  string? countryCode,int take = 6,int pageNumber = 1 );
 
     Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(string id,PiceWithActivityTypeRequestQuery requestDTO, string? userType);
     Task<Result<UserTourScheduleDetailDTO>> GetTourScheduleDetails(string Id, string? userType);

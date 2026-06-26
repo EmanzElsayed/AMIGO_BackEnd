@@ -21,6 +21,7 @@ using Amigo.SharedKernal.DTOs.Tour;
 using Amigo.SharedKernal.QueryParams;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -499,7 +500,7 @@ public class UserTourCatalogService(
         return null;
     }
 
-    public async Task<Result<IEnumerable<UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType,string? countryCode ,int take = 6)
+    public async Task<Result<PaginatedResponse< UserTrendingTourItemDto>>> GetTrendingToursAsync(string? language, string? currency, string? userType,string? countryCode ,int take = 6,int pageNumber = 1)
     {   
         var listingLang = _currentUserService.Language;
         var filteredCurrency = _currentUserService.Currency;
@@ -511,7 +512,6 @@ public class UserTourCatalogService(
             return Result.Fail(rate.Errors);
 
         var effectiveUserType = ParseUserType(userType) ?? UserType.Public;
-        var top = take <= 0 ? 6 : Math.Min(take, 24);
         CountryCode? countryCodeEnum = string.IsNullOrWhiteSpace(countryCode) ?
                                 null : EnumsMapping.ToCountryCodeEnum(countryCode);
         var todayUtc = DateOnly.FromDateTime(DateTime.UtcNow.Date);
@@ -520,7 +520,8 @@ public class UserTourCatalogService(
         var rows = (await tourRepo.GetAllAsync(spec)).ToList();
 
         if (rows.Count == 0)
-            return Result.Ok<IEnumerable<UserTrendingTourItemDto>>([]);
+            return Result.Ok( new PaginatedResponse<UserTrendingTourItemDto>());
+
 
         var tourIds = rows
               .Select(x => x.Id)
@@ -562,8 +563,10 @@ public class UserTourCatalogService(
                 g => g.Key,
                 g => g.Any(x => x.IsFree));
         CultureInfo culture = CultureInfo.InvariantCulture;
+        take = take <= 0 ? 6 : Math.Min(take, 24);
 
-        var mapped = rows
+        pageNumber = pageNumber <= 0 ? 1 : pageNumber;
+        var query = rows
             .Select(t =>
             {
                 var tr = t.Translations
@@ -585,7 +588,7 @@ public class UserTourCatalogService(
                     if (inferredPct > 0)
                     {
                         discountPct = inferredPct;
-                        originalDisplay = $"{filteredCurrency} {(price.MaxCostPrice.Value * rate.ValueOrDefault).ToString("0.##",culture)}";
+                        originalDisplay = $"{filteredCurrency} {(price.MaxCostPrice.Value * rate.ValueOrDefault).ToString("0.##", culture)}";
                     }
                 }
                 var dur = t.Duration;
@@ -596,15 +599,15 @@ public class UserTourCatalogService(
                             Title: title,
                             Description: tr?.Description,
                             HeroImageUrl: hero?.ImageUrl,
-                            AverageRating: Math.Max(review?.AverageRating ?? 0,Constants.AverageReviewRating),
-                            ReviewCount:  review?.ReviewCount ?? 0 +  Constants.ReviewCount,
+                            AverageRating: Math.Max(review?.AverageRating ?? 0, Constants.AverageReviewRating),
+                            ReviewCount: review?.ReviewCount ?? 0 + Constants.ReviewCount,
                             FreeCancellation: cancellationMap.GetValueOrDefault(t.Id),
 
                             IsWheelchairAvailable: t.IsWheelchairAvailable,
                             IsPitsAllowed: t.IsPitsAllowed,
                             OriginalPrice: originalDisplay,
                             FromPrice: price is null || price.MaxRetailPrice is null ? null :
-                            $"{filteredCurrency} {(price.MaxRetailPrice.Value * rate.ValueOrDefault).ToString("0.##",culture)}",
+                            $"{filteredCurrency} {(price.MaxRetailPrice.Value * rate.ValueOrDefault).ToString("0.##", culture)}",
                             DiscountPercent: discountPct,
                             DurationDisplay: dur.TotalHours >= 24
                                 ? $"{(int)dur.TotalDays}d {dur.Hours}h"
@@ -638,8 +641,12 @@ public class UserTourCatalogService(
             .Where(x => !string.IsNullOrWhiteSpace(x.DestinationSlug))
             .Where(x => !string.IsNullOrWhiteSpace(x.FromPrice))
             .OrderByDescending(x => x.Item.ReviewCount)
-            .ThenByDescending(x => x.Rating)
-            .Take(top)
+            .ThenByDescending(x => x.Rating);
+        var totalCount = query.Count();
+
+        var mapped = query
+             .Skip((pageNumber - 1) * take)
+            .Take(take)
             .Select(x => new UserTrendingTourItemDto(
                 TourId: x.Item.TourId,
                 Title: x.Item.Title,
@@ -655,8 +662,22 @@ public class UserTourCatalogService(
                 TourSlug: x.Item.TourSlug,
                 DestinationSlug: x.DestinationSlug))
             .ToList();
+        var totalPages = take <= 0
+           ? 0
+           : (int)Math.Ceiling(totalCount / (double)take);
 
-        return Result.Ok<IEnumerable<UserTrendingTourItemDto>>(mapped);
+        var paginatedResult = new PaginatedResponse<UserTrendingTourItemDto>()
+        {
+            Data  = mapped,
+            PageSize = take,
+            PageNumber = pageNumber,
+            TotalItems = totalCount,
+            TotalPages = totalPages
+
+        };
+        return Result.Ok(paginatedResult);
+            
+            
     }
 
     public async Task<Result<List<UserTourPriceTierDto>>> GetPriceByActivityTypeAsync(string Id, PiceWithActivityTypeRequestQuery requestDTO, string? userType)

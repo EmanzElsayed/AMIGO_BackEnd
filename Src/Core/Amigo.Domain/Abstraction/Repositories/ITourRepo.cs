@@ -1,4 +1,5 @@
-﻿using Amigo.Domain.DTO.Search;
+﻿using Amigo.Domain.DTO.CountryInfo;
+using Amigo.Domain.DTO.Search;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,6 +16,6 @@ namespace Amigo.Domain.Abstraction.Repositories
         Task<int> GetDestinationCountWithCountryId(Guid countryId);
         Task<List<SearchResponseDTO>> SearchQueryInDestination(string query, SupportedLanguage language);
         Task<List<SearchResponseDTO>> SearchQueryInCountry(string query, SupportedLanguage language);
-
+        Task<CountryDescriptionResponseDTO> GetCountryDescription(CountryDescriptionQueryDTO requestDTO);
     }
 }

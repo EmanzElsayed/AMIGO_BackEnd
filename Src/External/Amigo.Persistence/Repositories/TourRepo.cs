@@ -1,5 +1,7 @@
 ﻿using Amigo.Application.Helpers;
+using Amigo.Application.Mapping;
 using Amigo.Domain.Abstraction.Repositories;
+using Amigo.Domain.DTO.CountryInfo;
 using Amigo.Domain.DTO.Search;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
@@ -109,5 +111,23 @@ namespace Amigo.Persistence.Repositories
 
                 )).ToList();
         }
+
+        public async Task<CountryDescriptionResponseDTO> GetCountryDescription(CountryDescriptionQueryDTO requestDTO)
+        {
+            var countryCode = EnumsMapping.ToCountryCodeEnum(requestDTO.CountryCode);
+            var language = EnumsMapping.ToLanguageEnum(requestDTO.Language);
+            return await _dbContext.CountryInfo
+                .Where(c => c.CountryCode == countryCode)
+                .Select(c => new CountryDescriptionResponseDTO (
+                         c.Translations
+                        .Where(c => c.Language == language)
+                        .Select(c => c.Description)
+                        .FirstOrDefault() ?? ""
+                    
+                    )).FirstOrDefaultAsync() ?? new CountryDescriptionResponseDTO(string.Empty);
+        }
+
+
+        
     }
 }

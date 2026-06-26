@@ -11,5 +11,7 @@ namespace Amigo.Application.Abstraction.Services
         Task<Result<List<GetCountryInfoResponseDTO>>> GetAllCountryInfoAsync(GetAllCountryInfoQuery requestQuery);
 
         Task<Result<GetCountryInfoResponseDTO>> GetCountryInfoByIdAsync(string countryInfoId, GetLanuageQuery query);
+
+        Task<Result<CountryDescriptionResponseDTO>> GetCountryDescription(CountryDescriptionQueryDTO requestQuery);
     }
 }

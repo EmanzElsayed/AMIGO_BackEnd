@@ -1,4 +1,5 @@
 ﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Domain.DTO.CountryInfo;
 using Amigo.Domain.DTO.Search;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,11 @@ namespace Amigo.Presentation.Controllers
             return await _serviceManager.DestinationService.SearchQuery(requestDTO);
 
 
+        }
+        [HttpGet("country-description")]
+        public async Task<IResultBase> GetCountryDescription([FromQuery] CountryDescriptionQueryDTO requestDTO)
+        {
+            return await _serviceManager.CountryInfoService.GetCountryDescription(requestDTO);
         }
     }
 }

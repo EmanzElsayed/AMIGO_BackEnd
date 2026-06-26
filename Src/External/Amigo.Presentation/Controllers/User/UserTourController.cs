@@ -110,10 +110,10 @@ public class UserTourController(
     [HttpGet("trending")]
     //[Cache(1800)]
 
-    public async Task<IResultBase> GetTrendingTours([FromQuery] string? language, [FromQuery] string? currency, [FromQuery] string?countryCode ,[FromQuery] int take = 6)
+    public async Task<IResultBase> GetTrendingTours([FromQuery] string? language, [FromQuery] string? currency, [FromQuery] string?countryCode ,[FromQuery] int take = 6, [FromQuery] int pageNumber = 1)
     {
         var userType = await ResolveEffectiveUserTypeAsync();
-        return await _serviceManager.UserTourCatalogService.GetTrendingToursAsync(language, currency, userType, countryCode,take);
+        return await _serviceManager.UserTourCatalogService.GetTrendingToursAsync(language, currency, userType, countryCode,take,pageNumber);
     }
     [EnableRateLimiting("token")]
 
