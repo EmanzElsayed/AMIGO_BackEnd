@@ -69,7 +69,8 @@ namespace Amigo.Persistence
         public async Task<int> SaveChangesAsync(CancellationToken ct = default)
                 => await _dbContext.SaveChangesAsync(ct);
 
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        public void Detach<TEntity>(TEntity entity) where TEntity : class
+            => _dbContext.Entry(entity).State = EntityState.Detached;
         {
             return await _dbContext.Database.BeginTransactionAsync();
         }
