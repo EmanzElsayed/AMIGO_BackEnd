@@ -348,6 +348,8 @@ namespace Amigo.Application.Services
 
             }
             var cancellationRequestRepo = _unitOfWork.GetRepository<CancellationRequest, Guid>();
+            _unitOfWork.Detach(booking);
+
             var cancellationRequest = await cancellationRequestRepo.GetByIdAsync(new GetCancellationRequestByBookingIdSpecification(bookingId));
 
             if (cancellationRequest is null)
@@ -360,8 +362,15 @@ namespace Amigo.Application.Services
                 return Result.Fail($"Booking is {cancellationRequest.Status}");
             }
             cancellationRequestRepo.Remove(cancellationRequest);
-            booking.Status =
-                BookingStatus.Confirmed;
+
+            // Reload booking as a fresh tracked instance. At this point cancellationRequest
+            // is in Deleted state, so EF Core's fixup will not link it to the new booking entry.
+            var bookingForUpdate = await _unitOfWork.GetRepository<Booking, Guid>()
+                .GetByIdAsync(new Specifications.RefundSpecification.GetBookingByIdSpecification(bookingId));
+            if (bookingForUpdate is null)
+                return Result.Fail(new NotFoundError("Not Found"));
+
+            bookingForUpdate.Status = BookingStatus.Confirmed;
 
             try
             {

@@ -25,5 +25,6 @@ namespace Amigo.Domain.Abstraction
 
         public IExecutionStrategy CreateExecutionStrategy();
 
+        void Detach<TEntity>(TEntity entity) where TEntity : class;
     }
 }
