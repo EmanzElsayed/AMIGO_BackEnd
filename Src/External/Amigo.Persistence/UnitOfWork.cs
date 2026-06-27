@@ -71,6 +71,8 @@ namespace Amigo.Persistence
 
         public void Detach<TEntity>(TEntity entity) where TEntity : class
             => _dbContext.Entry(entity).State = EntityState.Detached;
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             return await _dbContext.Database.BeginTransactionAsync();
         }
