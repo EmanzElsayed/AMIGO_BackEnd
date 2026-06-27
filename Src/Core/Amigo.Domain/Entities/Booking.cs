@@ -27,5 +27,6 @@ public class Booking:BaseEntity<Guid>
     public string? VoucherToken { get; set; }
 
     public bool ReminderSent { get; set; } = false;
-    public ICollection<Traveler>? Travelers { get; set; } = new List<Traveler>(); 
+    public ICollection<Traveler>? Travelers { get; set; } = new List<Traveler>();
+    public CancellationRequest? CancellationRequest { get; set; }
 }

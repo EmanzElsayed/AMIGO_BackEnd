@@ -63,7 +63,14 @@ namespace Amigo.Application.Mapping
                                     ConvertedRetailPrice: price.ConvertedRetailPrice,
                                     Quantity: price.Quantity,
                                     FinalPrice: price.FinalPrice
-                            )).ToList()
+                            )).ToList(),
+                            CancellationRequest: item.Booking?.CancellationRequest is null ? null : new BookingCancellationRequestDTO(
+                                RequestedAt: item.Booking.CancellationRequest.RequestedAt,
+                                CancelationPolicyType: item.Booking.CancellationRequest.cancelationPolicyType.ToString(),
+                                RefundPercentage: item.Booking.CancellationRequest.RefundPercentage,
+                                RefundAmount: item.Booking.CancellationRequest.RefundAmount,
+                                Status: item.Booking.CancellationRequest.Status.ToString()
+                            )
                      )).ToList()
 
 
@@ -126,7 +133,14 @@ namespace Amigo.Application.Mapping
                                     ConvertedRetailPrice: price.BaseRetailPrice,
                                     Quantity: price.Quantity,
                                     FinalPrice: price.FinalPrice
-                            )).ToList()
+                            )).ToList(),
+                            CancellationRequest: item.Booking?.CancellationRequest is null ? null : new BookingCancellationRequestDTO(
+                                RequestedAt: item.Booking.CancellationRequest.RequestedAt,
+                                CancelationPolicyType: item.Booking.CancellationRequest.cancelationPolicyType.ToString(),
+                                RefundPercentage: item.Booking.CancellationRequest.RefundPercentage,
+                                RefundAmount: item.Booking.CancellationRequest.RefundAmount,
+                                Status: item.Booking.CancellationRequest.Status.ToString()
+                            )
                      )).ToList()
 
             );

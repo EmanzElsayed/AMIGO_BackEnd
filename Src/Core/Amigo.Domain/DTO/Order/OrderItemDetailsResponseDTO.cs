@@ -21,7 +21,9 @@ namespace Amigo.Domain.DTO.Order
         string? MeetingPoint,
         List<GetCancellationResponseDTO>? CancellationPloicy,
          List<OrderedPricesResponseDTO> Prices,
-        string? TourImage = null
+        string? TourImage = null,
+        BookingCancellationRequestDTO? CancellationRequest = null
 
     );
 }
+
