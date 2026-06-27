@@ -23,8 +23,8 @@ namespace Amigo.Persistence.EntityConfiguration.Bookings
             builder.HasIndex(x => x.BookingId);
 
             builder.HasOne(x => x.Booking)
-                   .WithMany()
-                   .HasForeignKey(x => x.BookingId)
+                   .WithOne(b => b.CancellationRequest)
+                   .HasForeignKey<CancellationRequest>(x => x.BookingId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
