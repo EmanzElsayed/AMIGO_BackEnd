@@ -196,9 +196,13 @@ public static class DependencyInjection
         services.AddScoped<Func<IRefundProviderResolver>>(provider => () => provider.GetRequiredService<IRefundProviderResolver>());
 
 
-      
-     
-       
+
+
+        services.AddHttpClient<IPaymentProvider, PayTabsPaymentProvider>(client =>
+        {
+            client.BaseAddress = new Uri("https://secure-egypt.paytabs.com/");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
 
         services.AddSingleton<PayPalHttpClient>(sp =>
         {
@@ -267,7 +271,6 @@ public static class DependencyInjection
 
         services.AddSingleton<EncryptionService>();
 
-      
 
         services.AddHttpClient();
 

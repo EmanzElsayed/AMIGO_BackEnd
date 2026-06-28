@@ -1,4 +1,5 @@
-﻿using Amigo.Application.Specifications.PaymentSpecification;
+﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Domain.DTO.Payment;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,8 @@ namespace Amigo.Application.Services
 {
     public class PaymentService(
     IUnitOfWork _unitOfWork,
-    IPaymentProviderResolver _resolver) :IPaymentService
+    IPaymentProviderResolver _resolver,
+        IPaymentOrchestrator _paymentOrchestrator) :IPaymentService
 
     {
         public async Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto,string requestId)
@@ -45,12 +47,21 @@ namespace Amigo.Application.Services
                 var provider = _resolver.Resolve(dto.Provider);
 
                 // 4. Call provider
-                var providerResult = await provider.CreatePaymentAsync(order,requestId);
+                var providerResult = await provider.CreatePaymentAsync(order,requestId,dto.PaymentToken);
 
                 // 5. Save provider reference
                 payment.PaymentProviderReferenceId = providerResult.PaymentIntentId;
                 payment.Provider = dto.Provider;
+                if (string.IsNullOrWhiteSpace(dto.PaymentMethod) && dto.Provider == PaymentProvider.Paypal)
+                    payment.PaymentMethod = PaymentMethod.PayPal_balance;
 
+                if (dto.Provider == PaymentProvider.PayTabs)
+                { 
+                     payment.PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? PaymentMethod.MasterCard : EnumsMapping.ToEnum<PaymentMethod>(dto.PaymentMethod, false);
+                    
+                }
+                
+                
                 await _unitOfWork.SaveChangesAsync();
 
                 await tx.CommitAsync();
@@ -116,5 +127,59 @@ namespace Amigo.Application.Services
             });
         }
 
+        public async Task<Result<PayTabsStatusResponseDTO>> PayTabsStatus(string tranRef)
+        {
+            if (string.IsNullOrWhiteSpace(tranRef))
+            {
+               return Result.Fail("TranRef Required");
+            }
+            var payment = await _unitOfWork.GetRepository<Payment, Guid>().GetByIdAsync(new GetPaymentByPaymentIntentSpecification(tranRef));
+
+            if (payment is null)
+            { 
+               return Result.Fail("Payment Not Found");
+
+            }
+
+            if (payment.Status == PaymentStatus.Pending)
+            { 
+                await RecoverPayment(tranRef);
+            }
+            var result = new PayTabsStatusResponseDTO(Status: payment.Status.ToString());
+            return Result.Ok(result);
+        }
+
+        public async Task RecoverPayment(
+            string tranRef)
+        {
+            var provider =
+                _resolver.Resolve(
+                    PaymentProvider.PayTabs);
+
+            var result =
+                await provider.QueryTransactionAsync(
+                    tranRef);
+
+            switch (result.Status)
+            {
+                case "Succeeded":
+                    await _paymentOrchestrator
+                        .HandleRecoveredSuccessAsync(
+                            PaymentProvider.PayTabs,
+                            result);
+                    break;
+
+                case "Failed":
+                case "Cancelled":
+                    await _paymentOrchestrator
+                        .HandleRecoveredFailureAsync(
+                            PaymentProvider.PayTabs,
+                            result);
+                    break;
+
+                case "Pending":
+                    break;
+            }
+        }
     }
 }

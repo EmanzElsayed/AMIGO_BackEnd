@@ -11,6 +11,8 @@ namespace Amigo.Application.Abstraction.Services
 
         Task<Result<CapturePaymentResponseDTO>> CapturePaymentAsync(Guid paymentId);
 
+        Task<Result<PayTabsStatusResponseDTO>> PayTabsStatus(string tranRef);
+
         //Task<Result<bool>> CancelPaymentAsync(Guid paymentId);
     }
 }

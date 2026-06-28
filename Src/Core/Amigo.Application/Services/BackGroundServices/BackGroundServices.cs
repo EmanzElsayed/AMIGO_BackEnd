@@ -58,9 +58,11 @@ public sealed class BookingBackgroundService(
         using var scope = scopeFactory.CreateScope();
          
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentService>();
+
         var voucherService = scope.ServiceProvider.GetRequiredService<IVoucherService>();
         //await ExpireReservations(unitOfWork);
-        await ExpireOrders(unitOfWork);
+        await ExpireOrders(unitOfWork, paymentService);
         //await SoldOutSlots(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
         await SendTourReminderEmails(voucherService, unitOfWork);
@@ -110,7 +112,7 @@ public sealed class BookingBackgroundService(
     // =====================================================
     // 2) Expire Orders still unpaid
     // =====================================================
-    private async Task ExpireOrders(IUnitOfWork _unitOfWork)
+    private async Task ExpireOrders(IUnitOfWork _unitOfWork,IPaymentService paymentService)
     {
         var now = DateTime.UtcNow;
 
@@ -120,9 +122,14 @@ public sealed class BookingBackgroundService(
             new GetPendingOrdersBeforeDateSpecification(now));
         var orderIds = orders.Select(o => o.Id).ToHashSet();
         var payments = await _unitOfWork.GetRepository<Payment, Guid>().GetAllAsync(new GetPendingPaymentWithOrderIdsSpecifciation(orderIds));
-        foreach (var payment in payments)
+        if (payments.Any())
         {
-            payment.Status = PaymentStatus.Failed;
+            foreach (var payment in payments)
+            {
+                if (!string.IsNullOrWhiteSpace(payment.PaymentProviderReferenceId))
+                    await paymentService.PayTabsStatus(payment.PaymentProviderReferenceId);
+                else payment.Status = payment.Status = PaymentStatus.Succeeded;
+            }
 
         }
         foreach (var order in orders)

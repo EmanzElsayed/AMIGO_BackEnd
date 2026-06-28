@@ -4,5 +4,6 @@ public enum PaymentMethod
 {
     Linked_card = 0,
     PayPal_balance = 1,
-    Card = 2
+    MasterCard = 2,
+    Visa = 3
 }

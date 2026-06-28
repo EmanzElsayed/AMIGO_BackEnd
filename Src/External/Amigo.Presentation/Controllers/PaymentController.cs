@@ -35,6 +35,13 @@ namespace Amigo.Presentation.Controllers
             return await _serviceManager.PaymentService.CapturePaymentAsync(paymentId);
         }
 
+        [HttpGet("status/{tranRef}")]
+        [EnableRateLimiting("booking")]
+
+        public async Task<IResultBase> PayTabsStatus(string tranRef)
+        {
+            return await _serviceManager.PaymentService.PayTabsStatus(tranRef);
+        }
        
     }
 }

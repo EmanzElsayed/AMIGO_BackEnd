@@ -587,9 +587,14 @@ namespace Amigo.Application.Services
 
                     foreach (var item in cart.Items.Where(i => !i.IsDeleted))
                     {
-                        if (!tourDict.TryGetValue(item.TourId, out var tour))
-                            return Result.Fail($"Tour {item.TourId} not found");
 
+                        if (!tourDict.TryGetValue(item.TourId, out var tour))
+                            return Result.Fail($"Tour {item.TourTitle} not found");
+                        if (item.TourDate.ToDateTime(item.StartTime) <= DateTime.UtcNow)
+                        {
+                            return Result.Fail($"Tour {item.TourTitle} up to date");
+
+                        }
                         blackoutDatesDic.TryGetValue(item.TourId, out var blackoutDatesForitem);
                         if( blackoutDatesForitem is not null && blackoutDatesForitem.Any() && blackoutDatesForitem.Contains(item.TourDate))
                             return Result.Fail("Date not allowed");

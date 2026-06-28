@@ -31,7 +31,7 @@ public class PaypalPaymentProvider : IPaymentProvider
 
     }
 
-    public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Domain.Entities.Order order,string requestId)
+    public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Domain.Entities.Order order,string requestId,string? paymentToken)
     {
 
         var repo =
@@ -221,5 +221,10 @@ public class PaypalPaymentProvider : IPaymentProvider
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         return json.GetProperty("access_token").GetString();
+    }
+
+    public Task<QueryPaymentResponseDTO> QueryTransactionAsync(string providerReferenceId)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Domain.DTO.Payment;
 using Amigo.Domain.Enum;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -91,6 +92,41 @@ namespace Amigo.Presentation.Controllers
                 return StatusCode(500);
             }
           
+        }
+
+        [HttpPost("paytabs")]
+        public async Task<IActionResult> PayTabsCallback()
+        {
+            var json =
+                await new StreamReader(Request.Body)
+                    .ReadToEndAsync();
+            var callback =
+                    JsonSerializer.Deserialize<
+                        PayTabsCallbackDto>(json);
+            if (callback is null)
+                return BadRequest();
+
+            if (string.IsNullOrWhiteSpace(callback.TranRef))
+                return BadRequest();
+
+            if (callback.RespStatus == "A")
+            {
+                await _serviceManager
+                    .PaymentOrchestrator
+                    .HandleSuccessAsync(
+                        PaymentProvider.PayTabs,
+                        json);
+            }
+            else
+            {
+                await _serviceManager
+                    .PaymentOrchestrator
+                    .HandleFailureAsync(
+                        PaymentProvider.PayTabs,
+                        json);
+            }
+
+            return Ok();
         }
     }
 }
