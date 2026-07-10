@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class ApplyNewSchema : Migration
+    public partial class applyData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,7 +45,9 @@ namespace Amigo.Persistence.Migrations
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CountryCode = table.Column<int>(type: "integer", nullable: false),
-                    PhoneCode = table.Column<string>(type: "text", nullable: false)
+                    PhoneCode = table.Column<string>(type: "text", nullable: false),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
+                    PublicId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -249,6 +251,9 @@ namespace Amigo.Persistence.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CountryInfoId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Capital = table.Column<string>(type: "text", nullable: true),
+                    OfficialLanguage = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     Language = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -541,6 +546,7 @@ namespace Amigo.Persistence.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DestinationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     Language = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -604,16 +610,14 @@ namespace Amigo.Persistence.Migrations
                     TourId = table.Column<Guid>(type: "uuid", nullable: true),
                     SlotId = table.Column<Guid>(type: "uuid", nullable: true),
                     ActivityType = table.Column<string>(type: "text", nullable: true),
+                    IsSpecialDate = table.Column<bool>(type: "boolean", nullable: false),
                     TourTitle = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: false),
                     DestinationName = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
                     TourDate = table.Column<DateOnly>(type: "date", nullable: false),
                     StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     Language = table.Column<int>(type: "integer", nullable: false),
                     MeetingPoint = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    Duration = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    CancelationPolicyType = table.Column<int>(type: "integer", nullable: false),
-                    CancellationBefore = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    RefundPercentage = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
+                    Duration = table.Column<TimeSpan>(type: "interval", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -983,6 +987,33 @@ namespace Amigo.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrderItemCancellationPolicy",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedBy = table.Column<int>(type: "integer", nullable: true),
+                    ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    OrderItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CancelationPolicyType = table.Column<int>(type: "integer", nullable: false),
+                    CancellationBefore = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    RefundPercentage = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItemCancellationPolicy", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderItemCancellationPolicy_OrderItem_OrderItemId",
+                        column: x => x.OrderItemId,
+                        principalSchema: "booking",
+                        principalTable: "OrderItem",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Booking",
                 schema: "booking",
                 columns: table => new
@@ -1047,8 +1078,9 @@ namespace Amigo.Persistence.Migrations
                     CartId = table.Column<Guid>(type: "uuid", nullable: false),
                     TourId = table.Column<Guid>(type: "uuid", nullable: false),
                     ActivityType = table.Column<string>(type: "text", nullable: true),
-                    SlotId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SlotId = table.Column<Guid>(type: "uuid", nullable: true),
                     Language = table.Column<int>(type: "integer", nullable: false),
+                    IsSpecialDate = table.Column<bool>(type: "boolean", nullable: false),
                     TourDate = table.Column<DateOnly>(type: "date", nullable: false),
                     StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     TourTitle = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: false),
@@ -1092,7 +1124,8 @@ namespace Amigo.Persistence.Migrations
                     ModifiedBy = table.Column<int>(type: "integer", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "TIMEZONE('UTC', NOW())"),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    SlotId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SlotId = table.Column<Guid>(type: "uuid", nullable: true),
+                    TourDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     OrderId = table.Column<Guid>(type: "uuid", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -1300,6 +1333,8 @@ namespace Amigo.Persistence.Migrations
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     BookingId = table.Column<Guid>(type: "uuid", nullable: false),
                     Reason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    cancelationPolicyType = table.Column<int>(type: "integer", nullable: false),
+                    RefundPercentage = table.Column<decimal>(type: "numeric", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     RefundAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -1315,7 +1350,7 @@ namespace Amigo.Persistence.Migrations
                         principalSchema: "booking",
                         principalTable: "Booking",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1537,7 +1572,8 @@ namespace Amigo.Persistence.Migrations
                 name: "IX_CancellationRequest_BookingId",
                 schema: "booking",
                 table: "CancellationRequest",
-                column: "BookingId");
+                column: "BookingId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_CancellationTranslation_CancellationId_Language",
@@ -1700,6 +1736,11 @@ namespace Amigo.Persistence.Migrations
                 schema: "booking",
                 table: "OrderItem",
                 column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItemCancellationPolicy_OrderItemId",
+                table: "OrderItemCancellationPolicy",
+                column: "OrderItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_NextRetryAt",
@@ -1996,6 +2037,9 @@ namespace Amigo.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "OrderedPrice",
                 schema: "booking");
+
+            migrationBuilder.DropTable(
+                name: "OrderItemCancellationPolicy");
 
             migrationBuilder.DropTable(
                 name: "OTP",

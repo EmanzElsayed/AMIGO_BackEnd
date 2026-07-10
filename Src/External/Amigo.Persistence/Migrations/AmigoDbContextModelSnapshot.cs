@@ -392,7 +392,8 @@ namespace Amigo.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingId");
+                    b.HasIndex("BookingId")
+                        .IsUnique();
 
                     b.ToTable("CancellationRequest", "booking");
                 });
@@ -2959,9 +2960,9 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.CancellationRequest", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithOne("CancellationRequest")
+                        .HasForeignKey("Amigo.Domain.Entities.CancellationRequest", "BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Booking");
@@ -3446,6 +3447,8 @@ namespace Amigo.Persistence.Migrations
 
             modelBuilder.Entity("Amigo.Domain.Entities.Booking", b =>
                 {
+                    b.Navigation("CancellationRequest");
+
                     b.Navigation("Travelers");
                 });
 

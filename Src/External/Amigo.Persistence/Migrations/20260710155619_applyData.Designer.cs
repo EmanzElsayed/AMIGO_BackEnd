@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Amigo.Persistence.Migrations
 {
     [DbContext(typeof(AmigoDbContext))]
-    [Migration("20260616234457_ApplyNewChanges")]
-    partial class ApplyNewChanges
+    [Migration("20260710155619_applyData")]
+    partial class applyData
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -381,15 +381,22 @@ namespace Amigo.Persistence.Migrations
                     b.Property<decimal>("RefundAmount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<decimal>("RefundPercentage")
+                        .HasColumnType("numeric");
+
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<int>("cancelationPolicyType")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingId");
+                    b.HasIndex("BookingId")
+                        .IsUnique();
 
                     b.ToTable("CancellationRequest", "booking");
                 });
@@ -621,6 +628,9 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -639,6 +649,9 @@ namespace Amigo.Persistence.Migrations
 
                     b.Property<string>("PhoneCode")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PublicId")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -2148,6 +2161,9 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnOrder(1)
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<string>("Capital")
+                        .HasColumnType("text");
+
                     b.Property<Guid>("CountryInfoId")
                         .HasColumnType("uuid");
 
@@ -2160,6 +2176,9 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -2184,6 +2203,9 @@ namespace Amigo.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
+
+                    b.Property<string>("OfficialLanguage")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -2267,6 +2289,9 @@ namespace Amigo.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnOrder(3)
                         .HasDefaultValueSql("TIMEZONE('UTC', NOW())");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("DestinationId")
                         .HasColumnType("uuid");
@@ -2938,9 +2963,9 @@ namespace Amigo.Persistence.Migrations
             modelBuilder.Entity("Amigo.Domain.Entities.CancellationRequest", b =>
                 {
                     b.HasOne("Amigo.Domain.Entities.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithOne("CancellationRequest")
+                        .HasForeignKey("Amigo.Domain.Entities.CancellationRequest", "BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Booking");
@@ -3425,6 +3450,8 @@ namespace Amigo.Persistence.Migrations
 
             modelBuilder.Entity("Amigo.Domain.Entities.Booking", b =>
                 {
+                    b.Navigation("CancellationRequest");
+
                     b.Navigation("Travelers");
                 });
 

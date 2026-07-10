@@ -53,7 +53,9 @@ namespace Amigo.Persistence.EntityConfiguration.Bookings
                        .HasForeignKey(x => x.BookingId)
                        .OnDelete(DeleteBehavior.Cascade);
 
-                  
+                builder.HasOne(b => b.CancellationRequest)
+                .WithOne(c => c.Booking)
+                .HasForeignKey<CancellationRequest>(c => c.BookingId);
 
             }
         }

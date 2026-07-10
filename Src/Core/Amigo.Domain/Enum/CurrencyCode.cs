@@ -22,5 +22,6 @@ public enum CurrencyCode
 
     GBP = 9,
 
+    EGP = 10
 
 }

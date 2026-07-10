@@ -1,28 +1,17 @@
 ﻿
 using Amigo.API.MiddleWare;
 using Amigo.Application;
-using Amigo.Application.Abstraction.Services;
-using Amigo.Application.Abstraction.Services.Authentication;
 using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Services;
 using Amigo.Domain.Abstraction;
-using Amigo.Domain.Entities;
 using Amigo.Infrastructure;
 using Amigo.Persistence;
-using Amigo.Persistence.Services;
 using Amigo.Presentation;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Stripe;
-using System.Security.Claims;
-using System.Text;
+
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Amigo.API
 {
@@ -75,7 +64,8 @@ namespace Amigo.API
 
             #endregion
 
-            builder.Services.AddOpenApi();
+            //builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddProblemDetails();
 
@@ -105,7 +95,7 @@ namespace Amigo.API
             app.UseMiddleware<CultureMiddleware>();
 
             app.UseRateLimiter();
-            app.MapOpenApi();
+            //app.MapOpenApi();
             app.UseSwagger();
             app.UseSwaggerUI();
 
@@ -139,3 +129,7 @@ var expired = Reservations
     .Where(x => x.Status == Pending &&
                 x.ExpiresAt < DateTime.UtcNow);
  */
+// <PackageReference Include="Microsoft.OpenApi" Version="3.8.0" />
+//  	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+
+//

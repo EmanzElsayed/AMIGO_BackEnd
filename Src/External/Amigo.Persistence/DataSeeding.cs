@@ -170,7 +170,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.GBP,
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776216202/pound_pyfhhn.png",
+            Icon = _configuration["CurrencyIcon:PoundStr"],
             Translations =
                 {
                     new CurrencyTranslation
@@ -218,7 +218,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.EUR,
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776216203/euro_ngyshv.png",
+            Icon = _configuration["CurrencyIcon:Euro"],
             Translations =
                 {
                     new CurrencyTranslation
@@ -261,11 +261,12 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                     },
             }
         };
+
         var brazillianReal = new Currency
         {
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.BRL,
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776216202/brazilian-real_e0dcby.png",
+            Icon = _configuration["CurrencyIcon:BrazillianReal"],
             Translations =
                 {
                     new CurrencyTranslation
@@ -361,7 +362,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.ARS,
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776216201/argentina-money_daz5jk.png",
+            Icon = _configuration["CurrencyIcon:ArgentinePeso"],
             Translations =
                 {
                     new CurrencyTranslation
@@ -408,7 +409,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         {
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.COP,
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776216837/peso_1_gehnq9.png",
+            Icon = _configuration["CurrencyIcon:ColombianPeso"],
             Translations =
                 {
                     new CurrencyTranslation
@@ -504,7 +505,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.USD,
             CodeIcon = "US",
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776215325/dollar_zjaa5h.png",
+            Icon = _configuration["CurrencyIcon:UnitedStatesDollar"],
             Translations =
     {
         new CurrencyTranslation
@@ -551,7 +552,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
             Id = Guid.NewGuid(),
             CurrencyCode = CurrencyCode.CLP,
             CodeIcon = "CL",
-            Icon = "https://res.cloudinary.com/dxxiuvnko/image/upload/v1776215325/dollar_zjaa5h.png",
+            Icon = _configuration["CurrencyIcon:chileanPeso"],
             Translations =
     {
         new CurrencyTranslation
@@ -593,6 +594,54 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
     }
         };
 
+        var egyptionPound = new Currency
+        {
+            Id = Guid.NewGuid(),
+            CurrencyCode = CurrencyCode.EGP,
+            Icon = _configuration["CurrencyIcon:EgyptionPound"],
+            Translations =
+                {
+                    new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Egyptian Pound",
+                        Language = SupportedLanguage.en
+                    },
+                    new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Lira egiziana",
+                        Language = SupportedLanguage.it
+                    },
+                     new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Libra egipcia",
+                        Language = SupportedLanguage.es
+                    },
+                      new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Livre égyptienne",
+                        Language = SupportedLanguage.fr
+                    },
+
+                      new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Libra egípcia",
+                        Language = SupportedLanguage.pt
+                    },
+
+                      new CurrencyTranslation
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Libra egípcia",
+                        Language = SupportedLanguage.br
+                    },
+            }
+        };
+
         List<Currency> currencies = new List<Currency>();
 
         currencies.Add(chileanPeso);
@@ -604,6 +653,7 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         currencies.Add(colombianPeso);
         currencies.Add(mexicanPeso);
         currencies.Add(unitedStatesDollar);
+        currencies.Add(egyptionPound);
 
         await _unitOfWork.GetRepository<Currency, Guid>().AddRangeAsync(currencies);
     }
