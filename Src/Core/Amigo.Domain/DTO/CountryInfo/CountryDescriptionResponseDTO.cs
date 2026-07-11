@@ -6,6 +6,7 @@ namespace Amigo.Domain.DTO.CountryInfo
 {
     public record CountryDescriptionResponseDTO
     (
-        string Description   
+        string Description,
+        string? ImageUrl
      );
 }

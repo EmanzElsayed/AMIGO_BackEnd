@@ -122,9 +122,10 @@ namespace Amigo.Persistence.Repositories
                          c.Translations
                         .Where(c => c.Language == language)
                         .Select(c => c.Description)
-                        .FirstOrDefault() ?? ""
+                        .FirstOrDefault() ?? "",
+                         c.ImageUrl ?? null
                     
-                    )).FirstOrDefaultAsync() ?? new CountryDescriptionResponseDTO(string.Empty);
+                    )).FirstOrDefaultAsync() ?? new CountryDescriptionResponseDTO(string.Empty,null);
         }
 
 
