@@ -2,6 +2,8 @@
 using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Domain.DTO.Payment;
+using Amigo.Domain.Entities;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +13,8 @@ namespace Amigo.Application.Services
     public class PaymentService(
     IUnitOfWork _unitOfWork,
     IPaymentProviderResolver _resolver,
-        IPaymentOrchestrator _paymentOrchestrator) :IPaymentService
+        IPaymentOrchestrator _paymentOrchestrator,
+        ILogger<PaymentOrchestrator> _logger) :IPaymentService
 
     {
         public async Task<Result<CreatePaymentResponseDTO>> CreatePaymentAsync(CreatePaymentRequestDTO dto,string requestId)
@@ -146,14 +149,20 @@ namespace Amigo.Application.Services
             if (payment.Status == PaymentStatus.Pending)
             { 
                 await RecoverPayment(tranRef);
+                payment = await _unitOfWork
+                .GetRepository<Payment, Guid>()
+                .GetByIdAsync(
+                    new GetPaymentByPaymentIntentSpecification(tranRef));
             }
             var result = new PayTabsStatusResponseDTO(Status: payment.Status.ToString());
+            
             return Result.Ok(result);
         }
 
         public async Task RecoverPayment(
             string tranRef)
         {
+           
             var provider =
                 _resolver.Resolve(
                     PaymentProvider.PayTabs);
@@ -161,27 +170,31 @@ namespace Amigo.Application.Services
             var result =
                 await provider.QueryTransactionAsync(
                     tranRef);
+            _logger.LogInformation(
+           "Query ProviderRef = {Ref}",
+           result.ProviderReferenceId);
 
             switch (result.Status)
             {
-                case "Succeeded":
+                case "A":
                     await _paymentOrchestrator
                         .HandleRecoveredSuccessAsync(
                             PaymentProvider.PayTabs,
                             result);
                     break;
 
-                case "Failed":
-                case "Cancelled":
+                case "D":
+                case "E":
                     await _paymentOrchestrator
                         .HandleRecoveredFailureAsync(
                             PaymentProvider.PayTabs,
                             result);
                     break;
 
-                case "Pending":
+                case "P":
                     break;
             }
+
         }
     }
 }

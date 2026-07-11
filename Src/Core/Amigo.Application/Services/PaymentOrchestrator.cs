@@ -81,8 +81,22 @@ namespace Amigo.Application.Services
                 _logger.LogInformation(
                 "Searching PaymentProviderReferenceId={ProviderRefId}",
                 CaptureId);
-                var payment = await paymentRepo
-                        .GetByIdAsync(new GetPaymentByProviderRefSpec(CaptureId));
+                Payment? payment = null;
+
+                if (provider == PaymentProvider.Paypal)
+                { 
+                    payment = await paymentRepo
+                            .GetByIdAsync(new GetPaymentByProviderRefSpec(CaptureId));
+                
+                
+                }
+                if (provider == PaymentProvider.PayTabs)
+                {
+                    payment = await paymentRepo
+                              .GetByIdAsync(new GetPaymentByProviderReferenceIdSpecification(CaptureId));
+
+                }
+
                 _logger.LogInformation(
                 "Payment Found = {Found}",
                 payment != null);
@@ -148,8 +162,21 @@ namespace Amigo.Application.Services
                     var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
                     var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
 
-                    var payment = await paymentRepo
-                        .GetByIdAsync(new GetPaymentByProviderRefSpec(providerRefId));
+                    Payment? payment = null;
+
+                    if (provider == PaymentProvider.Paypal)
+                    {
+                        payment = await paymentRepo
+                                .GetByIdAsync(new GetPaymentByProviderRefSpec(providerRefId));
+
+
+                    }
+                    if (provider == PaymentProvider.PayTabs)
+                    {
+                        payment = await paymentRepo
+                                  .GetByIdAsync(new GetPaymentByProviderReferenceIdSpecification(providerRefId));
+
+                    }
 
                     if (payment == null)
                         return;
@@ -425,6 +452,9 @@ namespace Amigo.Application.Services
             PaymentProvider provider,
             QueryPaymentResponseDTO queryResult)
         {
+            _logger.LogInformation(
+            "Searching PaymentProviderReferenceId={Ref}",
+            queryResult.ProviderReferenceId);
             var strategy =
                 _unitOfWork.CreateExecutionStrategy();
 
@@ -441,14 +471,20 @@ namespace Amigo.Application.Services
                     _unitOfWork.GetRepository<
                         OutboxMessage,
                         Guid>();
-
+                _logger.LogInformation(
+               "befor payment"
+               );
                 var payment =
                     await paymentRepo.GetByIdAsync(
-                        new GetPaymentByProviderRefSpec(
+                        new GetPaymentByProviderReferenceIdSpecification(
                             queryResult.ProviderReferenceId));
 
                 if (payment is null)
+                {
+                    _logger.LogInformation(
+                     "payment is null");
                     return;
+                }
 
                 if (payment.Status ==
                     PaymentStatus.Succeeded)
@@ -456,7 +492,9 @@ namespace Amigo.Application.Services
 
                 payment.Status =
                     PaymentStatus.Succeeded;
-
+                _logger.LogInformation(
+                "Saved Payment Status = {Status}",
+                payment.Status);
                 payment.PaidAt =
                     DateTime.UtcNow;
 
