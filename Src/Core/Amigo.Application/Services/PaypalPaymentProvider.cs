@@ -31,7 +31,7 @@ public class PaypalPaymentProvider : IPaymentProvider
 
     }
 
-    public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Domain.Entities.Order order,string requestId,string? paymentToken)
+    public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Domain.Entities.Order order,string requestId)
     {
 
         var repo =

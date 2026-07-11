@@ -2,7 +2,8 @@
 
 public enum PaymentMethod
 {
-    Linked_card = 0,
+    Unknown = 0,
+    Linked_card = 1,
     PayPal_balance = 1,
     MasterCard = 2,
     Visa = 3

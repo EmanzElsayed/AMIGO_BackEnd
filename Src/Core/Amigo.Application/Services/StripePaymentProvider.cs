@@ -11,7 +11,7 @@ namespace Amigo.Application.Services
     {
         public PaymentProvider Provider => PaymentProvider.Stripe;
 
-        public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId, string? paymentToken)
+        public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId)
         {
 
 

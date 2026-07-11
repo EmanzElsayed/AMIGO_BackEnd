@@ -1,4 +1,5 @@
 ﻿using Amigo.Application.Abstraction.Services;
+using Amigo.Application.Specifications.OrderSpecification;
 using Amigo.Application.Specifications.PaymentSpecification;
 using Amigo.Domain.DTO.Payment;
 using System;
@@ -23,8 +24,8 @@ namespace Amigo.Application.Services
 
                 var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
                 var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
-
-                var order = await orderRepo.GetByIdAsync(dto.OrderId);
+                var spec = new GetOrderByIdWithUserSpecification(dto.OrderId);
+                var order = await orderRepo.GetByIdAsync(spec);
 
                 if (order is null)
                     return Result.Fail("Order not found");
@@ -47,19 +48,20 @@ namespace Amigo.Application.Services
                 var provider = _resolver.Resolve(dto.Provider);
 
                 // 4. Call provider
-                var providerResult = await provider.CreatePaymentAsync(order,requestId,dto.PaymentToken);
+                var providerResult = await provider.CreatePaymentAsync(order,requestId);
 
                 // 5. Save provider reference
                 payment.PaymentProviderReferenceId = providerResult.PaymentIntentId;
                 payment.Provider = dto.Provider;
-                if (string.IsNullOrWhiteSpace(dto.PaymentMethod) && dto.Provider == PaymentProvider.Paypal)
-                    payment.PaymentMethod = PaymentMethod.PayPal_balance;
+                
+                //if (string.IsNullOrWhiteSpace(dto.PaymentMethod) && dto.Provider == PaymentProvider.Paypal)
+                //    payment.PaymentMethod = PaymentMethod.PayPal_balance;
 
-                if (dto.Provider == PaymentProvider.PayTabs)
-                { 
-                     payment.PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? PaymentMethod.MasterCard : EnumsMapping.ToEnum<PaymentMethod>(dto.PaymentMethod, false);
+                //if (dto.Provider == PaymentProvider.PayTabs)
+                //{ 
+                //     payment.PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? PaymentMethod.MasterCard : EnumsMapping.ToEnum<PaymentMethod>(dto.PaymentMethod, false);
                     
-                }
+                //}
                 
                 
                 await _unitOfWork.SaveChangesAsync();

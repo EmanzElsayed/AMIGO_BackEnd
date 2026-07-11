@@ -27,10 +27,10 @@ namespace Amigo.Application.Services
             throw new NotImplementedException();
         }
 
-        public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId, string? paymentToken)
+        public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId)
         {
-            if (string.IsNullOrWhiteSpace(paymentToken))
-                throw new Exception("Payment token missing");
+            //if (string.IsNullOrWhiteSpace(paymentToken))
+            //    throw new Exception("Payment token missing");
 
             var request = new
             {
@@ -45,8 +45,16 @@ namespace Amigo.Application.Services
                 cart_currency = order.Currency.ToString(),
 
                 cart_amount = order.TotalAmount,
-
-                payment_token = paymentToken,
+                cart_description = $"Order {order.Id}",
+                customer_details = new
+                {
+                    name = order.User.FullName,
+                    email = order.User.Email,
+                    phone = order.User.PhoneNumber,
+                    //country = order.User.Address ?? null,
+                    //nationality = order.User.Nationality,
+                },
+                
 
                 callback = $"{_config["BackEnd:url"]}/api/webhook/paytabs", // webhook url
 

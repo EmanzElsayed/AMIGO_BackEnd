@@ -9,14 +9,7 @@ namespace Amigo.Application.Services
     public class CurrentUserService : ICurrentUserService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private static readonly HashSet<string> AllowedLanguages =
-        [
-            "en", "es", "fr", "it", "pt", "br"
-        ];
-        private static readonly HashSet<string> AllowedCurrencies =
-        [
-           "BRL", "PEN", "ARS", "COP", "MXN", "USD","EUR","CLP","GBP"
-        ];
+       
         public CurrentUserService(
             IHttpContextAccessor httpContextAccessor)
         {
@@ -49,12 +42,11 @@ namespace Amigo.Application.Services
                     .Trim()
                     .ToLower();
 
-                lang = AllowedLanguages.Contains(lang)
-                    ? lang
-                    : Constants.BaseLanguage.ToString();
+               
                 return Enum.TryParse<SupportedLanguage>(lang, true, out var parsed)
-                    ? parsed
-                    : Constants.BaseLanguage;
+                      && Enum.IsDefined(typeof(SupportedLanguage), parsed)
+                   ? parsed
+                   : Constants.BaseLanguage;
             }
 
         }
@@ -76,14 +68,12 @@ namespace Amigo.Application.Services
                     .Split(',')[0]
                     .Split('-')[0]
                     .Trim();
-                    
 
-                currency = AllowedCurrencies.Contains(currency)
-                    ? currency
-                    : Constants.BaseCurrency.ToString();
+
                 return Enum.TryParse<CurrencyCode>(currency, true, out var parsed)
-                    ? parsed
-                    : Constants.BaseCurrency;
+                        && Enum.IsDefined(typeof(CurrencyCode), parsed)
+                     ? parsed
+                     : Constants.BaseCurrency;
             }
 
 

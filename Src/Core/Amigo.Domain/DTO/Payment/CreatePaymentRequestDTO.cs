@@ -6,8 +6,8 @@ namespace Amigo.Domain.DTO.Payment
 {
     public record CreatePaymentRequestDTO(
          Guid OrderId,
-         PaymentProvider Provider,
-         string? PaymentToken = null,
-         string? PaymentMethod = null
+         PaymentProvider Provider
+         //string? PaymentToken = null,
+         //string? PaymentMethod = null
     );
 }
