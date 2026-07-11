@@ -42,10 +42,12 @@ namespace Amigo.Application.Services
             "STEP 5 EventId={EventId} ProviderRef={ProviderRef}",
             eventId,
             CaptureId);
+
             //4KH1335590569020X
-            //var providerRefId = "5WK96583WG697635C";
-            //var eventId = "4455";
+            //var CaptureId = "TST2619202296502";
+            //var eventId = "12355";
             //var rawData = "emo";
+
             var strategy = _unitOfWork.CreateExecutionStrategy();
 
             await strategy.ExecuteAsync(async () =>

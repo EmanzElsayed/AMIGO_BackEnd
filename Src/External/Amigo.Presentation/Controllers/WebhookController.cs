@@ -109,6 +109,7 @@ namespace Amigo.Presentation.Controllers
             if (string.IsNullOrWhiteSpace(callback.TranRef))
                 return BadRequest();
 
+           
             if (callback.RespStatus == "A")
             {
                 await _serviceManager

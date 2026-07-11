@@ -56,17 +56,17 @@ namespace Amigo.Application.Services
                 // 5. Save provider reference
                 payment.PaymentProviderReferenceId = providerResult.PaymentIntentId;
                 payment.Provider = dto.Provider;
-                
-                //if (string.IsNullOrWhiteSpace(dto.PaymentMethod) && dto.Provider == PaymentProvider.Paypal)
-                //    payment.PaymentMethod = PaymentMethod.PayPal_balance;
 
-                //if (dto.Provider == PaymentProvider.PayTabs)
-                //{ 
-                //     payment.PaymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? PaymentMethod.MasterCard : EnumsMapping.ToEnum<PaymentMethod>(dto.PaymentMethod, false);
-                    
-                //}
-                
-                
+                if (dto.Provider == PaymentProvider.Paypal)
+                    payment.PaymentMethod = PaymentMethod.PayPal_balance;
+
+                if (dto.Provider == PaymentProvider.PayTabs)
+                {
+                    payment.PaymentMethod = PaymentMethod.Visa;
+
+                }
+
+
                 await _unitOfWork.SaveChangesAsync();
 
                 await tx.CommitAsync();
