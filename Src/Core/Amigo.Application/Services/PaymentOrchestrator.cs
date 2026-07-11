@@ -9,6 +9,7 @@ using Amigo.Application.Specifications.WebhookEventLogSpecification;
 using Amigo.Domain.Abstraction;
 using Amigo.Domain.Abstraction.Repositories;
 using Amigo.Domain.DTO.Cart;
+using Amigo.Domain.DTO.Payment;
 using Amigo.Domain.Entities;
 using Amigo.Domain.Enum;
 using Microsoft.Extensions.Logging;
@@ -234,7 +235,22 @@ namespace Amigo.Application.Services
                 CaptureId);
                 return (CaptureId!, eventId!, payload);
             }
+            if (provider == PaymentProvider.PayTabs)
+            {
+                var root = json.RootElement;
 
+                var tranRef =
+                    root.GetProperty("tran_ref")
+                        .GetString();
+
+                var eventId = tranRef;
+
+                return (
+                    tranRef!,
+                    eventId!,
+                    payload
+                );
+            }
             throw new Exception("Unsupported provider");
         }
 
@@ -402,6 +418,141 @@ namespace Amigo.Application.Services
                     ex,
                     "Error processing refund webhook");
             }
+        }
+
+
+        public async Task HandleRecoveredSuccessAsync(
+            PaymentProvider provider,
+            QueryPaymentResponseDTO queryResult)
+        {
+            var strategy =
+                _unitOfWork.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx =
+                    await _unitOfWork.BeginTransactionAsync();
+
+                var paymentRepo =
+                    _unitOfWork.GetRepository<Payment, Guid>();
+                var eventRepo = _unitOfWork.GetRepository<WebhookEventLog, Guid>();
+
+                var outboxRepo =
+                    _unitOfWork.GetRepository<
+                        OutboxMessage,
+                        Guid>();
+
+                var payment =
+                    await paymentRepo.GetByIdAsync(
+                        new GetPaymentByProviderRefSpec(
+                            queryResult.ProviderReferenceId));
+
+                if (payment is null)
+                    return;
+
+                if (payment.Status ==
+                    PaymentStatus.Succeeded)
+                    return;
+
+                payment.Status =
+                    PaymentStatus.Succeeded;
+
+                payment.PaidAt =
+                    DateTime.UtcNow;
+
+                payment.RawResponseJson =
+                    queryResult.RawResponse;
+
+
+                await eventRepo.AddAsync(
+                new WebhookEventLog
+                {
+                    Id = Guid.NewGuid(),
+
+                    Provider = provider,
+
+                    ProviderEventId =
+                        $"RECOVERY-{queryResult.ProviderReferenceId}",
+
+                    Payload =
+                        queryResult.RawResponse,
+
+                    Processed = true
+                });
+
+                await outboxRepo.AddAsync(
+                    new OutboxMessage
+                    {
+                        Id = Guid.NewGuid(),
+
+                        Type = "PaymentSucceeded",
+
+                        Payload =
+                            payment.Id.ToString(),
+
+                        Status =
+                            OutboxStatus.Pending,
+
+                        RetryCount = 0
+                    });
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await tx.CommitAsync();
+            });
+        }
+
+
+        public async Task HandleRecoveredFailureAsync(PaymentProvider provider,
+            QueryPaymentResponseDTO queryResult)
+        {
+            var strategy = _unitOfWork.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await _unitOfWork.BeginTransactionAsync();
+
+                try
+                {
+
+
+                    var paymentRepo = _unitOfWork.GetRepository<Payment, Guid>();
+                    var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
+                    var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+                    var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
+
+                    var payment = await paymentRepo
+                        .GetByIdAsync(new GetPaymentByProviderRefSpec(queryResult.ProviderReferenceId));
+
+                    if (payment == null)
+                        return;
+
+                    if (payment.Status == PaymentStatus.Failed)
+                        return;
+
+                    payment.Status = PaymentStatus.Failed;
+                    payment.FailureReason = $"{provider} payment failed";
+                    payment.RawResponseJson = queryResult.RawResponse;
+
+                    var order = await orderRepo.GetByIdAsync(payment.OrderId);
+
+                    if (order != null)
+                        order.Status = OrderStatus.PendingPayment;
+
+                    
+
+
+
+                    await _unitOfWork.SaveChangesAsync();
+                    await tx.CommitAsync();
+                }
+                catch
+                {
+                    await tx.RollbackAsync();
+                    throw;
+
+                }
+            });
         }
     }
 }

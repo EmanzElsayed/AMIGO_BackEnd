@@ -7,6 +7,7 @@ namespace Amigo.Domain.Enum
     public enum PaymentProvider
     {
         Paypal = 0,
-        Stripe = 1
+        Stripe = 1,
+        PayTabs = 2
     }
 }

@@ -15,7 +15,10 @@ namespace Amigo.Application.Services
 
         public IPaymentProvider Resolve(PaymentProvider provider)
         {
+            var list = _providers.ToList();
+
             return _providers.First(x => x.Provider == provider);
+            //return _providers.First(x => x.Provider == provider);
         }
     }
 }

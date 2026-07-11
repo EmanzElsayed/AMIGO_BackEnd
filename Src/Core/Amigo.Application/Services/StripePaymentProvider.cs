@@ -11,7 +11,7 @@ namespace Amigo.Application.Services
     {
         public PaymentProvider Provider => PaymentProvider.Stripe;
 
-        public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId)
+        public async Task<CreatePaymentResponseDTO> CreatePaymentAsync(Order order, string requestId, string? paymentToken)
         {
 
 
@@ -54,5 +54,10 @@ namespace Amigo.Application.Services
 
         public Task<bool> VerifyWebhookAsync(HttpRequest req, string body)
             => Task.FromResult(true);
+
+        public Task<QueryPaymentResponseDTO> QueryTransactionAsync(string providerReferenceId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
