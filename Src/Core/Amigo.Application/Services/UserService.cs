@@ -92,6 +92,7 @@ namespace Amigo.Application.Services
             }
             var roles = await _userManager.GetRolesAsync(user);
             var primaryRole = roles.FirstOrDefault() ?? "Public";
+            primaryRole = primaryRole == "VIP" ? "B2B" : "Public";
 
             var mappedUser = user.ToUserDTO(primaryRole);
 

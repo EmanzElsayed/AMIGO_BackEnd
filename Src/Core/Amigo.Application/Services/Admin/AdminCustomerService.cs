@@ -235,6 +235,8 @@ namespace Amigo.Application.Services.Admin
             // Promote to VIP
             if (request.IsVip && !isVip)
             {
+                await _userManager.RemoveFromRoleAsync(user, "Public");
+
                 await _userManager.AddToRoleAsync(user, "VIP");
             }
 
@@ -242,6 +244,8 @@ namespace Amigo.Application.Services.Admin
             if (!request.IsVip && isVip)
             {
                 await _userManager.RemoveFromRoleAsync(user, "VIP");
+                await _userManager.AddToRoleAsync(user, "Public");
+
             }
             return Result.Ok(new UpdateVipResponseDTO(Id: id, IsVIP: request.IsVip));
         }
