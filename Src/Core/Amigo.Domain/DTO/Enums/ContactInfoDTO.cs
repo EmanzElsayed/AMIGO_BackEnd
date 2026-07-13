@@ -14,6 +14,7 @@ namespace Amigo.Domain.DTO.Enums
         string? LinkedInLink,
         string? CreatedAt,
         string? Email,
-        string? Location
+        string? Location,
+        string? Location2
     );
 }

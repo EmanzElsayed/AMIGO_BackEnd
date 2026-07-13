@@ -81,8 +81,8 @@ namespace Amigo.Application.Services
                     LinkedInLink: _configuration["ContactInfo:LinkedInLink"],
                     CreatedAt: _configuration["ContactInfo:CreatedAt"],
                     Email: _configuration["ContactInfo:Email"],
-                    Location: _configuration["ContactInfo:Location"]
-
+                    Location: _configuration["ContactInfo:Location"],
+                    Location2: _configuration["ContactInfo:Location2"]
 
                 );
         }

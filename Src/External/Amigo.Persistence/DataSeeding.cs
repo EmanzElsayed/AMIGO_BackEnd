@@ -62,7 +62,41 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
                 {
                     await _userManager.AddToRoleAsync(admin, "Admin");
                 }
+
+                var clientEmail = _configuration["AdminInfo:ClientEmail"] ?? string.Empty;
+                var clientPassword = _configuration["AdminInfo:ClientPassword"];
+
+                var clientAccount = new ApplicationUser(
+                    clientEmail,
+                    "Amigo Arabe Tours Company",
+                    new DateOnly(1990, 1, 1),
+                    "+201111111111",
+                    Gender.Male,
+                    SupportedLanguage.en,
+                    new Address
+                    {
+                        BuildingNumber = "25",
+                        City = "Ismailia",
+                        Country = "EG"
+                    },
+                    "Amigo Arabe Tours",
+                    "Egyptian"
+                )
+                {
+                    EmailConfirmed = true,
+                    PhoneNumberConfirmed = true
+                };
+
+                var clientResult = await _userManager.CreateAsync(clientAccount, clientPassword);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(clientAccount, "Admin");
+                }
+
             }
+
+            await AddAccount();
+
             if (!_dbIdentityContext.Currency.Any())
             {
                 await AddCurrency();
@@ -84,7 +118,6 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
             throw;
         }
     }
-
 
     private async Task AddCountryInfo()
     {
@@ -162,6 +195,42 @@ public class DataSeeding(RoleManager<IdentityRole> _roleManager,
         await _unitOfWork.GetRepository<CountryInfo, Guid>().AddRangeAsync(countries);
 
     }
+
+    private async Task AddAccount()
+    {
+        var user = await _userManager.FindByEmailAsync("emeratech@gmail.com");
+        if (user is null)
+        {
+            var admin = new ApplicationUser(
+                    "emeratech@gmail.com",
+                    "Emera.AI Company",
+                    new DateOnly(1990, 1, 1),
+                    "+201111111111",
+                    Gender.Female,
+                    SupportedLanguage.en,
+                    new Address
+                    {
+                        BuildingNumber = "25",
+                        City = "Ismailia",
+                        Country = "EG"
+                    },
+                    "Emera.AI",
+                    "Egyptian"
+                )
+            {
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(admin, "$Xz5R28By$/N");
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(admin, "Admin");
+            }
+
+        }
+    }
+
 
     private async Task AddCurrency()
     {
