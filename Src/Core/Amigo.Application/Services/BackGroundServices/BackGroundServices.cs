@@ -62,9 +62,9 @@ public sealed class BookingBackgroundService(
 
         var voucherService = scope.ServiceProvider.GetRequiredService<IVoucherService>();
         //await ExpireReservations(unitOfWork);
-        await ExpireOrders(unitOfWork, paymentService);
         //await SoldOutSlots(unitOfWork);
         await SendVoucherEmails(voucherService, unitOfWork);
+        await ExpireOrders(unitOfWork, paymentService);
         await SendTourReminderEmails(voucherService, unitOfWork);
 
     }
@@ -126,9 +126,9 @@ public sealed class BookingBackgroundService(
         {
             foreach (var payment in payments)
             {
-                if (!string.IsNullOrWhiteSpace(payment.PaymentProviderReferenceId))
+                if (!string.IsNullOrWhiteSpace(payment.PaymentProviderReferenceId) && payment.Provider == PaymentProvider.PayTabs)
                     await paymentService.PayTabsStatus(payment.PaymentProviderReferenceId);
-                else payment.Status = payment.Status = PaymentStatus.Succeeded;
+                else payment.Status = PaymentStatus.Failed;
             }
 
         }
