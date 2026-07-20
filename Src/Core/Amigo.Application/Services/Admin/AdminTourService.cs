@@ -16,6 +16,7 @@ using Amigo.Domain.DTO.BlackoutWeekDays;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.DTO.Price;
+using Amigo.Domain.DTO.Review;
 using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.DTO.Translation;
 using Amigo.Domain.Entities;
@@ -30,6 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using GetCancellationResponseDTO = Amigo.Domain.DTO.Cancellation.GetCancellationResponseDTO;
+using Review = Amigo.Domain.Entities.Review;
 
 namespace Amigo.Application.Services.Admin
 {
@@ -57,7 +59,7 @@ namespace Amigo.Application.Services.Admin
         private readonly ITranslationService _translationService;
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly ILogger<AdminTourService> _logger;
-        
+        private readonly UserManager<ApplicationUser> _userManager;
         public AdminTourService(
             IValidationService validationService,
             IUnitOfWork unitOfWork,
@@ -69,8 +71,8 @@ namespace Amigo.Application.Services.Admin
             ImageCloudService imageCloud,
             ITranslationService translationService,
             IBackgroundTaskQueue backgroundTaskQueue,
-            ILogger<AdminTourService> logger
-           
+            ILogger<AdminTourService> logger,
+            UserManager<ApplicationUser> userManager
             )
         {
             _validationService = validationService;
@@ -84,7 +86,7 @@ namespace Amigo.Application.Services.Admin
             _translationService = translationService;
             _backgroundTaskQueue = backgroundTaskQueue;
             _logger = logger;
-           
+            _userManager = userManager;
         }
 
         
@@ -747,72 +749,80 @@ namespace Amigo.Application.Services.Admin
         }
 
 
-        //public async Task<Result<object>> GetActivityStatsAsync()
-        //{
-        //    var now = DateTime.UtcNow;
-        //    var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        //    var nextMonthStart = monthStart.AddMonths(1);
+        public async Task<Result> AddReview(AdminAddReviewsDTO requestDTO)
+        {
+            var validationResult = await _validationService.ValidateAsync(requestDTO);
+            if (!validationResult.IsSuccess)
+                return validationResult;
 
-        //    var bookingRepo = _unitOfWork.GetRepository<Booking, Guid>();
-        //    var orderRepo = _unitOfWork.GetRepository<Order, Guid>();
-        //    var slotRepo = _unitOfWork.GetRepository<AvailableSlots, Guid>();
-        //    var reservationRepo = _unitOfWork.GetRepository<SlotReservation, Guid>();
+            var normalizedName = SlugHelper.ToUrlSlug(requestDTO.UserName);
+            var userEmail = $"{normalizedName}@gmail.com";
+            var exitUser = await _userManager.FindByEmailAsync(userEmail);
+            var user = exitUser;
+            if (exitUser is null)
+            { 
+                user = new ApplicationUser()
+                {
+                    FullName = requestDTO.UserName,
+                    UserName = normalizedName,
+                    Nationality = requestDTO.UserNationality,
+                    Email = userEmail,
+                    EmailConfirmed = true,
+                    IsActive = true
 
-        //    var bookingsThisMonth = await bookingRepo.GetAllAsync(new GetBookingsByDateSpecification(monthStart, nextMonthStart));
-        //    var bookingsCount = bookingsThisMonth.Count();
+                };
+                var tempPassword = "Amigo@" + Guid.NewGuid().ToString("N").Substring(0, 10);
 
-        //    var orders = await orderRepo.GetAllAsync(new GetOrdersByDateAndStatusSpecification(monthStart, nextMonthStart, OrderStatus.Paid));
-        //    var grossRevenue = orders.Sum(o => o.TotalAmount);
+                var createResult = await _userManager.CreateAsync(user, tempPassword);
 
-        //    var slotsThisMonth = await slotRepo.GetAllAsync(new GetSlotsByDateSpecification(monthStart, nextMonthStart));
-        //    var totalCapacity = slotsThisMonth.Sum(s => s.MaxCapacity);
+                if (!createResult.Succeeded)
+                {
+                    return FluentValidationExtension.FromIdentityErrors(createResult.Errors);
+                }
 
-        //    var confirmedReservationsThisMonth = await reservationRepo.GetAllAsync(new GetConfirmedReservationsByDateSpecification(monthStart, nextMonthStart));
-        //    var totalBookedSeats = confirmedReservationsThisMonth.Sum(r => r.Quantity);
+                await _userManager.AddToRoleAsync(user, "Public");
 
-        //    var avgCapacity = totalCapacity <= 0
-        //        ? 0
-        //        : Math.Clamp((int)Math.Round((decimal)totalBookedSeats * 100m / totalCapacity, MidpointRounding.AwayFromZero), 0, 100);
+            }
+            var tours = await _unitOfWork.GetRepository<Tour, Guid>().GetAllAsync(new GetToursByIdsWithNoIncludsSpecification(requestDTO.ToursId));
 
-        //    var status = avgCapacity >= 90 ? "Low Stock" : "Active";
+            if (!tours.Any())
+                return Result.Fail("Not Found Tours");
 
-        //    var dailyRevenue = new decimal[DateTime.DaysInMonth(now.Year, now.Month)];
-        //    foreach (var order in orders)
-        //        if (order.OrderDate.HasValue)
-        //            dailyRevenue[order.OrderDate.Value.Day - 1] += order.TotalAmount;
+            List<Review> reviews = new List<Review>();
+            foreach (var tour in tours)
+            {
+                var review = new Domain.Entities.Review()
+                {
+                    Id = Guid.NewGuid(),
+                    TourId = tour.Id,
+                    Tour = tour,
+                    User = user,
+                    UserId = user.Id,
+                    Rate = requestDTO.Rating,
+                    Comment = requestDTO.Comment,
+                    Date = DateOnly.FromDateTime(DateTime.UtcNow),
+                    TravelWith = requestDTO.TravelWith,
+                    Images = requestDTO.ImageUrls is not null && requestDTO.ImageUrls.Any() ? requestDTO.ImageUrls
+                                        .Where(url => !string.IsNullOrWhiteSpace(url.ImageUrl) && !string.IsNullOrWhiteSpace(url.PublicId))
+                                        .Select(url => new ReviewImage
+                                        {
+                                            Id = Guid.NewGuid(),
 
-        //    var bookingsPerDestination = bookingsThisMonth
-        //        .Where(b => b.OrderItem != null && b.OrderItem.DestinationName != null)
-        //        .GroupBy(b => b.OrderItem.DestinationName)
-        //        .Select(g => new { Label = g.Key, Count = g.Count() })
-        //        .OrderByDescending(x => x.Count)
-        //        .Take(4)
-        //        .ToList();
+                                            Image = url.ImageUrl.Trim(),
+                                            PublicId = url.PublicId.Trim()
 
-        //    int totalBookings = bookingsCount > 0 ? bookingsCount : 1;
+                                        })
+                                        .ToList() : new List<ReviewImage>()
+                };
+                reviews.Add(review);
+            }
 
-        //    var regionalMix = bookingsPerDestination
-        //        .Select(x => new
-        //        {
-        //            x.Label,
-        //            Pct = (int)Math.Round((decimal)x.Count * 100m / totalBookings),
-        //            x.Count
-        //        })
-        //        .ToList<object>();
-
-        //    if (!regionalMix.Any())
-        //        regionalMix.Add(new { Label = "Global", Pct = 100, Count = 0 });
-
-        //    return Result.Ok<object>(new
-        //    {
-        //        bookingsThisMonth = bookingsCount,
-        //        avgCapacity,
-        //        grossRevenue,
-        //        status,
-        //        dailyRevenue,
-        //        regionalMix
-        //    });
-        //}
+            await _unitOfWork.GetRepository<Review, Guid>().AddRangeAsync(reviews);
+            await _unitOfWork.SaveChangesAsync();
+            return Result.Ok()
+                         .WithSuccess(new Success("Reviews Created Successfully")
+                         .WithMetadata("StatusCode", (int)HttpStatusCode.Created));
+        }
 
 
     }

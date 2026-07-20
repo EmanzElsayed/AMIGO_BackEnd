@@ -305,14 +305,14 @@ public static class UserTourCatalogMapper
             .Select(r =>
             {
 
-                var author = r.User?.UserName ?? r.User?.Email;
+                var author = r.User?.FullName ?? r.User?.Email;
                 var imageUrls = r.Images
                     .Where(i => !i.IsDeleted && !string.IsNullOrWhiteSpace(i.Image))
                     .OrderBy(i => i.Id)
                     .Select(i => i.Image.Trim())
                     .Distinct()
                     .ToList();
-
+                var nationality = r.User?.Nationality;
                 var votedHelpful = currentUserId != null && r.Votes.Any(v => v.UserId == currentUserId);
                 var isOwner = currentUserId != null && r.UserId == currentUserId;
 
@@ -326,7 +326,8 @@ public static class UserTourCatalogMapper
                     TravelWith: r.TravelWith,
                     VotedHelpful: votedHelpful,
                     IsOwner: isOwner,
-                    ImageUrls: imageUrls);
+                    ImageUrls: imageUrls,
+                    Nationality: string.IsNullOrWhiteSpace(nationality) ? null : nationality);
             })
             .ToList();
     }

@@ -1,3 +1,4 @@
+using Amigo.Domain.DTO.Review;
 using Amigo.Domain.DTO.Tour;
 using Amigo.SharedKernal.DTOs.Tour;
 using System;
@@ -13,5 +14,7 @@ namespace Amigo.Application.Abstraction.Services.Admin
         Task<Result<PaginatedResponse<AdminTourListItemResponseDTO>>> GetAllToursAsync(GetAllAdminTourQuery requestQuery);
         Task<Result<GetTourResponseDTO>> GetTourById(string id, GetTourByIdRequestDTO requestDTO);
         //Task<Result<object>> GetActivityStatsAsync();
+        Task<Result> AddReview(AdminAddReviewsDTO requestDTO);
+
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 namespace Amigo.SharedKernal.DTOs.Images
 {
     public record ImageUrlsForReviewRequestDTO(
-        string? ImageUrl,
-        string? PublicId
+        string ImageUrl,
+        string PublicId
      );
 }

@@ -30,7 +30,8 @@ public record UserTourReviewItemDto(
     string? TravelWith,
     bool VotedHelpful,
     bool IsOwner,
-    IReadOnlyList<string> ImageUrls);
+    IReadOnlyList<string> ImageUrls,
+    string? Nationality);
 
 public record UserTourTravelerPhotoDto(
     string ImageUrl,

@@ -1,8 +1,8 @@
 using Amigo.Application.Abstraction;
-using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Abstraction.Services;
 using Amigo.Application.Abstraction.Services.Admin;
 using Amigo.Application.Abstraction.Services.Authentication;
+using Amigo.Application.BackgroundTasks;
 using Amigo.Application.Mapping;
 using Amigo.Application.Services;
 using Amigo.Application.Services.Admin;
@@ -10,12 +10,14 @@ using Amigo.Application.Services.AutoTranslation;
 using Amigo.Application.Services.BackGroundServices;
 using Amigo.Application.Validators.Checkout;
 using Amigo.Application.Validators.CountryInfo;
+using Amigo.Application.Validators.Review;
 using Amigo.Application.Validators.Tour;
 using Amigo.Domain.DTO.AvailableSlots;
 using Amigo.Domain.DTO.Cancellation;
 using Amigo.Domain.DTO.Destination;
 using Amigo.Domain.DTO.Images;
 using Amigo.Domain.DTO.Price;
+using Amigo.Domain.DTO.Review;
 using Amigo.Domain.DTO.Tour;
 using Amigo.Domain.DTO.TourSchedule;
 using Amigo.Domain.Extension;
@@ -262,6 +264,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<CreateCancellationRequestDTO>();
 
         services.AddValidatorsFromAssemblyContaining<PiceWithActivityTypeRequestQuery>();
+        services.AddValidatorsFromAssemblyContaining<AdminAddReviewsDTO>();
 
 
         services.AddHostedService<BookingBackgroundService>();
