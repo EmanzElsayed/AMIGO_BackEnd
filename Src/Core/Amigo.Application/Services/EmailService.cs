@@ -1,58 +1,61 @@
-﻿
-
-
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace Amigo.Application.Services
 {
     public class EmailService(IConfiguration _configuration) : IEmailService
     {
-        private readonly string Host = _configuration["EmailSettings:Host"];
-
-        private readonly string PortValue = _configuration["EmailSettings:Port"];
-
-        private readonly string SenderName = _configuration["EmailSettings:SenderName"];
-
-        private readonly string SenderEmail = _configuration["EmailSettings:SenderEmail"];
-
-        private readonly string Password = _configuration["EmailSettings:Password"];
-
+        private readonly HttpClient _httpClient = new HttpClient();
 
         public async Task SendEmailAsync(string to, string subject, string body, byte[]? qrImage = null)
         {
-            var email = new MimeMessage();
+            var apiKey = Environment.GetEnvironmentVariable("BREVO_API_KEY")
+                         ?? _configuration["Brevo:ApiKey"];
 
-            email.From.Add(new MailboxAddress(SenderName, SenderEmail));
-            email.To.Add(MailboxAddress.Parse(to));
-            email.Subject = subject;
-
-            var builder = new BodyBuilder
+            if (string.IsNullOrEmpty(apiKey))
             {
-                HtmlBody = body
+                throw new Exception("Brevo API Key is missing.");
+            }
+
+            _httpClient.DefaultRequestHeaders.Clear();
+            _httpClient.DefaultRequestHeaders.Add("api-key", apiKey);
+
+            var emailPayload = new Dictionary<string, object>
+            {
+                { "sender", new { email = "info@amigoarabe.tours", name = "Amigo Arabe Tours" } },
+                { "to", new[] { new { email = to } } },
+                { "subject", subject },
+                { "htmlContent", body }
             };
 
-            if (qrImage != null)
+            if (qrImage != null && qrImage.Length > 0)
             {
-                var image = builder.LinkedResources.Add("qr.png", qrImage);
-                image.ContentId = "qrCode"; 
+                var base64Image = Convert.ToBase64String(qrImage);
+
+                var attachments = new[]
+                {
+                    new
+                    {
+                        content = base64Image,
+                        name = "qr.png",
+                        cid = "qrCode"
+                    }
+                };
+
+                emailPayload.Add("attachment", attachments);
             }
 
-            email.Body = builder.ToMessageBody();
-            int.TryParse(PortValue, out int Port);
-            using var smtp = new SmtpClient();
-            try
+            var content = new StringContent(JsonSerializer.Serialize(emailPayload), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("https://api.brevo.com/v3/smtp/email", content);
+
+            if (!response.IsSuccessStatusCode)
             {
-               await smtp.ConnectAsync(Host, Port, SecureSocketOptions.SslOnConnect);
-                await smtp.AuthenticateAsync(SenderEmail, Password);
-                await smtp.SendAsync(email);
-                await smtp.DisconnectAsync(true);
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to send email via Brevo: {errorResponse}");
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-           
         }
     }
 }
-
